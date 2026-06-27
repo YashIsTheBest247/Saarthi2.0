@@ -11,7 +11,7 @@ import {
   Circle,
 } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { FEATURES, FeatureMeta } from "../lib/features";
+import { FEATURES, FeatureMeta, featureByKey } from "../lib/features";
 import { FeatureKey } from "../lib/api";
 import { Reveal, Eyebrow } from "./ui";
 import { AgentAvatar } from "./AgentAvatar";
@@ -273,6 +273,87 @@ function Capabilities() {
   );
 }
 
+/* -------------------------- Samay flagship ------------------------- */
+function SamayFlagship({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
+  const { t } = useApp();
+  const s = featureByKey("samay");
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-10">
+      <Reveal>
+        <div className="relative overflow-hidden rounded-[2rem] text-white" style={{ background: s.accent }}>
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-40 blur-3xl" style={{ background: s.accentDark }} />
+          <div className="relative grid gap-8 p-7 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium">
+                <s.icon className="h-3.5 w-3.5" /> {t("flag.eyebrow")}
+              </span>
+              <h2 className="display mt-4 text-balance text-3xl font-bold leading-tight tracking-tight deva sm:text-4xl">
+                {t("flag.title")}
+              </h2>
+              <p className="mt-3 max-w-md leading-relaxed text-white/70 deva">{t(s.descKey)}</p>
+
+              <div className="mt-6 grid max-w-md grid-cols-2 gap-3">
+                {s.stats.map((st, i) => (
+                  <div key={i} className="rounded-2xl bg-white/10 p-3">
+                    <div className="display text-base font-bold">{st.v}</div>
+                    <div className="mt-0.5 text-[11px] leading-snug text-white/60">{st.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={() => onOpen("samay")} className="btn mt-6 bg-white px-5 py-3 text-[15px] text-ink hover:-translate-y-0.5">
+                {t("common.meet")} {t(s.nameKey)} <ArrowUpRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-xs">
+              <AgentAvatar photo={s.photo} name={t(s.nameKey)} tint={s.tint} accent={s.accent} rounded="rounded-3xl" className="h-full w-full ring-1 ring-white/20" />
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/* ------------------------- Eight quiet jobs ------------------------ */
+function QuietJobs({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
+  const { t } = useApp();
+  const sehat = featureByKey("sehat");
+  const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
+  return (
+    <section className="bg-mist py-20">
+      <div className="mx-auto max-w-6xl px-5">
+        <Reveal className="max-w-2xl">
+          <Eyebrow color={sehat.accent}>{t("quiet.eyebrow")}</Eyebrow>
+          <h2 className="display mt-4 text-balance text-4xl font-bold tracking-tight deva sm:text-5xl">
+            {t("quiet.titleA")} <span className="serif-italic font-normal text-muted">{t("quiet.titleB")}</span>
+          </h2>
+          <p className="mt-4 text-lg text-muted deva">{t("quiet.sub")}</p>
+        </Reveal>
+
+        <div className="mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+          {roman.map((r, i) => (
+            <Reveal key={i} delay={(i % 4) * 0.06}>
+              <div className="border-t border-line pt-4">
+                <div className="serif-italic text-2xl" style={{ color: sehat.accent }}>{r}</div>
+                <h3 className="display mt-2 text-lg font-bold deva">{t(`quiet.${i + 1}.t`)}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted deva">{t(`quiet.${i + 1}.d`)}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal className="mt-12">
+          <button onClick={() => onOpen("sehat")} className="btn-primary text-[15px]">
+            {t("quiet.cta")} <ArrowUpRight className="h-4 w-4" />
+          </button>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------ Trusted references ----------------------- */
 function Trusted() {
   const { t } = useApp();
@@ -472,8 +553,10 @@ export function Landing({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     <>
       <Hero onOpen={onOpen} />
       <Capabilities />
+      <SamayFlagship onOpen={(k) => onOpen(k)} />
       <Trusted />
       <AgentsGrid onOpen={(k) => onOpen(k)} />
+      <QuietJobs onOpen={(k) => onOpen(k)} />
       <TeamPanel onOpen={(k) => onOpen(k)} />
       <How />
       <Closing onOpen={() => onOpen()} />

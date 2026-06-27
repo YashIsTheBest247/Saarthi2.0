@@ -43,7 +43,7 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
           >
             <div className="grid grid-cols-1 sm:grid-cols-[15rem_1fr]">
               {/* left: agent list */}
-              <div className="border-b border-line p-3 sm:border-b-0 sm:border-r">
+              <div className="border-b border-line p-3 sm:max-h-[24rem] sm:overflow-y-auto sm:border-b-0 sm:border-r">
                 <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">
                   {t("nav.agents")}
                 </div>
