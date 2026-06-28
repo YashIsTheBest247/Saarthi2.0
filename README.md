@@ -32,6 +32,7 @@ safe in a disaster, and get you hired. By **voice or text, in English and Hindi*
 
 | Agent | Role | What it does |
 |------|------|--------------|
+| **Disha** | Career Copilot | The direct **Redrob ecosystem hook** (careers / hiring). Build a job-ready résumé, **find real live job openings** (Remotive/Arbeitnow), run mock interviews, map skill gaps — plus a **Resume Tailor** (Simple text + **Advanced LaTeX**) that rewrites your résumé to a JD and exports **PDF / .tex / Overleaf**. |
 | **Abhay** | Scam Shield | Forward any suspicious SMS / WhatsApp / call / email → instant fraud verdict, risk score, red flags, what to do. Crime map, fraud-network graph, voice-spoof & counterfeit checks, and a **live scam-news ticker** (RSS). |
 | **Vidya** | Document Decoder | Paste or photograph a bill, insurance, legal notice or govt letter → plain language + hidden charges flagged. |
 | **Haq** | Scheme Finder | Share a short profile → central + state schemes you likely qualify for, with how-to-apply steps. |
@@ -42,7 +43,6 @@ safe in a disaster, and get you hired. By **voice or text, in English and Hindi*
 | **Adhrit** | Grievance Autopilot | Describe a problem → the right authority, a ready complaint, the escalation ladder, and a rights library. |
 | **Bhupati** | Kisan Saathi | Snap a crop photo → diagnosis, action plan, farm schemes, timely advisory. |
 | **Narayan** | Disaster Response | Fuse **live** weather + river-discharge + earthquake feeds → flood/wildfire/quake risk scored per city, safe routes, resource allocation, live hazard map (with an "updated" timestamp). |
-| **Disha** | Career Copilot | Build a job-ready résumé, find openings that fit, run mock interviews, and map the skills to learn next — the direct **Redrob ecosystem hook** (careers / hiring). |
 
 Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
 got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real
@@ -62,8 +62,9 @@ helplines), a ready script, and what the agent will do for you.
 - **Live data feeds (keyless)** — Narayan pulls **real** weather + river-discharge from
   [Open-Meteo](https://open-meteo.com) and **live earthquakes** from
   [USGS](https://earthquake.usgs.gov), scoring risk on-device; Abhay's ticker streams **live
-  scam-news** via RSS. (Satellite imagery & social signals are simulated — no free keyless
-  source — and the app falls back to sample data if a feed is unreachable.)
+  scam-news** via RSS; Disha's Job search pulls **real openings** from
+  [Remotive](https://remotive.com) (Arbeitnow fallback). (Satellite imagery & social signals are
+  simulated — no free keyless source — and the app falls back to sample data if a feed is unreachable.)
 - **Deterministic engines** — tax, EMI/SIP, the scam classifier, Smriti's forecasts/ICS, and
   Narayan's risk & resource maths run **on-device** for reproducible, defensible numbers; the
   LLM is used for understanding, extraction and language.
