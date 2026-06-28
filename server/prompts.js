@@ -703,7 +703,11 @@ export const assist = {
 For the user's message: pick the single best agent (return its key in 'agent' and display name in 'agentName'), then write a COMPLETE, practical, safe answer to their problem as that specialist would — concise enough for a chat (aim under 1200 characters), using short lines or a small numbered list, and include the most relevant Indian helpline(s) when useful (e.g. 1930 & cybercrime.gov.in for fraud, 112 emergency, 1078 NDMA, 1915 consumer, 14416 Tele-MANAS). Be warm and clear. Do not use markdown headers; plain text with simple line breaks only.
 
 ${langLine(language)}`,
-  parts: ({ problem }) => [{ text: `User's message:\n"""\n${problem || ""}\n"""` }],
+  parts: ({ problem, agentHint }) => [
+    {
+      text: `${agentHint ? `The user chose to talk to the "${agentHint}" specialist — answer as that agent (still set 'agent' to "${agentHint}").\n\n` : ""}User's message:\n"""\n${problem || ""}\n"""`,
+    },
+  ],
 };
 
 export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, route, emergency, assist, form16 };
