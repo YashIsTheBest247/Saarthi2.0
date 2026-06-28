@@ -5,7 +5,9 @@ import { generateJSON, hasKey, modelName } from "./gemini.js";
 import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
 import { getNews } from "./news.js";
+import { getJobs } from "./jobs.js";
 import { handleTelegram } from "./telegram.js";
+import { handleResumePdf } from "./resumePdf.js";
 
 /**
  * The Express app, with no `listen()` — so it can be used both by the local
@@ -55,6 +57,9 @@ app.post("/api/setu", makeHandler("setu"));
 app.post("/api/krishi", makeHandler("krishi"));
 app.post("/api/kar", makeHandler("kar"));
 app.post("/api/raahat", makeHandler("raahat"));
+app.post("/api/disha", makeHandler("disha"));
+app.post("/api/resume", makeHandler("resume"));
+app.post("/api/resume/pdf", (req, res) => handleResumePdf(req, res));
 app.post("/api/route", makeHandler("route"));
 app.post("/api/emergency", makeHandler("emergency"));
 app.post("/api/form16", makeHandler("form16"));
@@ -64,6 +69,15 @@ app.get("/api/news", async (_req, res) => {
     res.json(await getNews());
   } catch (err) {
     res.json({ items: [], live: false, _error: String(err?.message || err) });
+  }
+});
+
+app.get("/api/jobs", async (req, res) => {
+  try {
+    const jobs = await getJobs(req.query.q || "", req.query.loc || "");
+    res.json({ jobs, live: jobs.length > 0 });
+  } catch (err) {
+    res.json({ jobs: [], live: false, _error: String(err?.message || err) });
   }
 });
 

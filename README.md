@@ -1,9 +1,9 @@
 # सारथी · Saarthi
 
-**An all-in-one AI copilot for everyday life in India** — ten specialist AI agents that
+**An all-in-one AI copilot for everyday life in India** — eleven specialist AI agents that
 spot scams, decode documents, claim government benefits, save on health, make sense of
-money, file taxes, plan your work, fight unfair treatment, protect your crop, and keep you
-safe in a disaster. By **voice or text, in English and Hindi**, on web **and Telegram**.
+money, file taxes, plan your work, fight unfair treatment, protect your crop, keep you
+safe in a disaster, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
 > Hackathon track: *Challenge 3 — Improve Everyday Life with AI.*
 > Real AI (Google **Gemini 2.5 Flash**), premium responsive UI, deterministic on-device
@@ -17,7 +17,7 @@ safe in a disaster. By **voice or text, in English and Hindi**, on web **and Tel
 
 ## Highlights
 
-- **10 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
+- **11 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
 - **Floating AI assistant** that understands your problem and routes you to the right agent.
 - **Telegram bot** with the same brain — chat, get full answers, and deep-link back into the app.
 - **"Already affected?" emergency mode** on every agent — calm worst-case next steps + real helplines.
@@ -42,6 +42,7 @@ safe in a disaster. By **voice or text, in English and Hindi**, on web **and Tel
 | **Adhrit** | Grievance Autopilot | Describe a problem → the right authority, a ready complaint, the escalation ladder, and a rights library. |
 | **Bhupati** | Kisan Saathi | Snap a crop photo → diagnosis, action plan, farm schemes, timely advisory. |
 | **Narayan** | Disaster Response | Fuse **live** weather + river-discharge + earthquake feeds → flood/wildfire/quake risk scored per city, safe routes, resource allocation, live hazard map (with an "updated" timestamp). |
+| **Disha** | Career Copilot | Build a job-ready résumé, find openings that fit, run mock interviews, and map the skills to learn next — the direct **Redrob ecosystem hook** (careers / hiring). |
 
 Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
 got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real

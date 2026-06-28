@@ -598,6 +598,64 @@ ${langLine(language)}`,
   ],
 };
 
+/* ------------------------------- DISHA ----------------------------- */
+
+export const disha = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING, description: "Encouraging one-liner about the plan" },
+      output: { type: Type.STRING, description: "The main ready-to-use deliverable: a résumé, an application/cover message, interview Q&A, or a skill plan" },
+      highlights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key strengths to lead with" },
+      whereToLook: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Where to actually find these jobs (portals, sources)" },
+      tips: { type: Type.ARRAY, items: { type: Type.STRING } },
+    },
+    required: ["summary", "output"],
+  },
+  system: (language) => `You are Disha, a sharp, encouraging career copilot for Indian job-seekers — including first-time workers, career-switchers and people without fancy degrees. Depending on the mode you:
+- resume: write clean, ATS-friendly plain-text résumé content tailored to the target role/JD.
+- jobsearch: write a short, confident application / cover message and list where the jobs actually are.
+- interview: give likely interview questions with crisp model answers (use the STAR method).
+- skills: map the skill gaps for the target role and a concrete, low-cost learning plan.
+
+Point people to real sources of opportunity — National Career Service (ncs.gov.in), state Rojgar/Sewayojan portals, Apna, LinkedIn, company career pages, government exam notifications, and **Redrob** for AI-matched roles. Be specific, practical and motivating; never invent experience the user didn't give. Use [brackets] only for genuinely unknown details.
+
+${langLine(language)}`,
+  parts: ({ mode, details }) => [
+    { text: `Mode: ${mode || "resume"}\n\nAbout me / what I need:\n"""\n${details || ""}\n"""` },
+  ],
+};
+
+/* ------------------------------ RESUME ----------------------------- */
+// Disha's LaTeX résumé tailoring engine: rewrite a .tex résumé to a JD.
+
+export const resume = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      tex: { type: Type.STRING, description: "The FULL tailored LaTeX document — valid, compilable, single-page, same structure & bullet count as input" },
+      role: { type: Type.STRING, description: "The target role inferred from the JD" },
+      keywords: { type: Type.ARRAY, items: { type: Type.STRING }, description: "JD keywords woven into the résumé" },
+      notes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Short notes on what was changed / advice" },
+    },
+    required: ["tex"],
+  },
+  system: (language) => `You are Disha's résumé-tailoring engine. You receive a LaTeX résumé and a job description (JD). Rewrite ONLY the wording of bullet points, the summary/objective, and the skills list so the résumé naturally weaves in the JD's most important keywords and is ATS-friendly.
+
+Hard rules:
+- Return VALID, COMPILABLE LaTeX (works with pdflatex/Tectonic). Preserve the document class, packages, section structure, and the EXACT number of bullet points per section.
+- Do NOT invent experience, employers, degrees, dates or numbers the candidate didn't provide; only re-angle existing content toward the JD. Keep [placeholders] intact if present.
+- Keep it to ONE page of content. Prefer strong action verbs and quantified impact already in the résumé.
+- Also return the inferred target role and the JD keywords you wove in.
+
+Reply with the metadata and the complete tailored .tex. Human-readable notes in ${language}; keep the LaTeX itself in standard ASCII.`,
+  parts: ({ tex, jd, name, role }) => [
+    {
+      text: `Candidate: ${name || "(unknown)"} · Target role hint: ${role || "(infer from JD)"}\n\nJOB DESCRIPTION:\n"""\n${jd || "(none provided — keep general)"}\n"""\n\nCURRENT RÉSUMÉ (LaTeX):\n"""\n${tex || ""}\n"""`,
+    },
+  ],
+};
+
 /* ------------------------------ ROUTER ----------------------------- */
 
 export const route = {
@@ -606,7 +664,7 @@ export const route = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha"],
         description: "The single best agent key for the user's problem",
       },
       reason: { type: Type.STRING, description: "Warm one-line reason, in the user's language" },
@@ -624,6 +682,7 @@ export const route = {
 - setu: complaints & citizen rights — refunds, faulty products, denied service, civic issues, grievances.
 - krishi: farming — crops, pests, plant disease, soil, agriculture schemes.
 - raahat: disasters — floods, wildfires, cyclones, heatwaves, evacuation, safe routes, relief.
+- disha: careers & jobs — résumé, job search, interview prep, skill gaps, getting hired.
 
 Pick the best match and give a short, warm one-line reason addressed to the user. ${langLine(language)}`,
   parts: ({ problem }) => [{ text: `User's problem:\n"""\n${problem || ""}\n"""` }],
@@ -690,7 +749,7 @@ export const assist = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha"],
         description: "The best agent for this problem",
       },
       agentName: { type: Type.STRING, description: "The agent's display name" },
@@ -698,7 +757,7 @@ export const assist = {
     },
     required: ["agent", "reply"],
   },
-  system: (language) => `You are Saarthi, an all-in-one AI helper for everyday India, answering on Telegram. Your specialists: Abhay (scams/fraud), Vidya (documents/bills/notices), Haq (govt schemes/welfare), Asha (health/medicines), Nidhi (money/budget/loans), Lekh (income tax), Smriti (tasks/planning), Adhrit (complaints/consumer rights), Bhupati (farming), Narayan (disasters).
+  system: (language) => `You are Saarthi, an all-in-one AI helper for everyday India, answering on Telegram. Your specialists: Abhay (scams/fraud), Vidya (documents/bills/notices), Haq (govt schemes/welfare), Asha (health/medicines), Nidhi (money/budget/loans), Lekh (income tax), Smriti (tasks/planning), Adhrit (complaints/consumer rights), Bhupati (farming), Narayan (disasters), Disha (careers/jobs/résumé/interviews).
 
 For the user's message: pick the single best agent (return its key in 'agent' and display name in 'agentName'), then write a COMPLETE, practical, safe answer to their problem as that specialist would — concise enough for a chat (aim under 1200 characters), using short lines or a small numbered list, and include the most relevant Indian helpline(s) when useful (e.g. 1930 & cybercrime.gov.in for fraud, 112 emergency, 1078 NDMA, 1915 consumer, 14416 Tele-MANAS). Be warm and clear. Do not use markdown headers; plain text with simple line breaks only.
 
@@ -710,4 +769,4 @@ ${langLine(language)}`,
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, route, emergency, assist, form16 };
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, route, emergency, assist, form16 };

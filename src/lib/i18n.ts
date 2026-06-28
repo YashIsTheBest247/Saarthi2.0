@@ -16,7 +16,7 @@ const en: Dict = {
   "hero.titleB": "for",
   "hero.titleC": "everyday India",
   "hero.sub":
-    "Ten AI companions that protect you from scams, explain any document, find the schemes you deserve, and save you money on health — in your language, by voice or text.",
+    "Eleven AI companions that protect you from scams, explain any document, find the schemes you deserve, save you money on health, and even get you hired — in your language, by voice or text.",
   "hero.cta1": "Meet the agents",
   "hero.cta2": "See how it works",
   "hero.trust1": "No login needed",
@@ -44,7 +44,7 @@ const en: Dict = {
   "team.region": "Pan-India",
   "team.title": "Helping India handle the confusing, costly and scary parts of everyday life.",
   "team.body":
-    "Ten specialists, one Saarthi. Together they cover scams, paperwork, government schemes and health — so no one has to face the hard parts alone.",
+    "Eleven specialists, one Saarthi. Together they cover scams, paperwork, schemes, health, money, taxes, work and careers — so no one has to face the hard parts alone.",
   "team.cta": "Meet the whole team",
 
   "cap.title": "Agent capabilities",
@@ -177,7 +177,7 @@ const en: Dict = {
   "sv.visit.symptoms": "Symptoms & questions for the doctor", "sv.visit.generate": "Build visit summary", "sv.visit.empty": "Add medicines, vitals or notes first.", "sv.visit.title2": "Your visit summary",
 
   "quiet.eyebrow": "Saarthi · your everyday companion",
-  "quiet.titleA": "Ten quiet jobs.",
+  "quiet.titleA": "Eleven quiet jobs.",
   "quiet.titleB": "One calm app.",
   "quiet.sub": "Saarthi quietly handles the confusing, costly and scary parts of everyday Indian life — one calm app, in your language.",
   "quiet.cta": "Meet the agents",
@@ -201,6 +201,8 @@ const en: Dict = {
   "quiet.9.d": "Diagnose pests and disease from a photo, get an action plan and match farm schemes.",
   "quiet.10.t": "Stay safe in disasters",
   "quiet.10.d": "Predict floods and wildfires, find safe routes and plan relief — before disaster strikes.",
+  "quiet.11.t": "Grow your career",
+  "quiet.11.d": "Build a job-ready résumé, find openings that fit, practise interviews and learn the right skills.",
 
   "pa.name": "Nidhi",
   "pa.tag": "Money Autopilot",
@@ -241,6 +243,16 @@ const en: Dict = {
   "rh.resources": "Resource allocation",
   "rh.vulnerable": "Who needs priority",
   "rh.advisory": "Official advisory",
+
+  "ds.name": "Disha",
+  "ds.tag": "Career Copilot",
+  "ds.desc": "Disha builds a job-ready résumé, finds openings that fit you, runs mock interviews, and maps the exact skills to learn next — your career, with direction.",
+  "ds.persona": "I help you get hired — a sharp résumé, the right openings, interview practice, and a skill plan that moves you forward.",
+  "ds.ph": "Tell me about yourself & your goal… e.g. 2 yrs as a sales exec in Pune, want a customer-success role; or paste a job description to tailor to",
+  "ds.output": "Your draft",
+  "ds.highlights": "Your strengths",
+  "ds.where": "Where to look",
+  "ds.tips": "Tips",
   "kr.ph": "Describe your crop & problem… e.g. yellow spots on tomato leaves, Nashik, started 3 days ago",
   "kr.diagnosis": "Likely diagnosis",
   "kr.severity": "Severity",
@@ -303,7 +315,7 @@ const en: Dict = {
   "how.s1.t": "Tell any agent",
   "how.s1.d": "Paste a message, snap a bill or letter, or just speak — in English or Hindi.",
   "how.s2.t": "The right specialist takes over",
-  "how.s2.d": "Nine expert agents — Abhay, Nidhi, Lekh, Asha and more — pick up exactly what you need.",
+  "how.s2.d": "Eleven expert agents — Disha, Abhay, Nidhi, Asha and more — pick up exactly what you need.",
   "how.s3.t": "Real AI, verified math",
   "how.s3.d": "Gemini reads and reasons; built-in engines compute taxes, EMIs and risk scores — accurately.",
   "how.s4.t": "Act from your dashboard",
@@ -440,7 +452,7 @@ const hi: Dict = {
   "hero.titleB": "हर दिन के",
   "hero.titleC": "भारत के लिए",
   "hero.sub":
-    "चार AI साथी जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, और सेहत पर पैसे बचाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
+    "ग्यारह AI साथी जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, सेहत पर पैसे बचाते हैं, और नौकरी तक दिलाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
   "hero.cta1": "एजेंट से मिलें",
   "hero.cta2": "कैसे काम करता है देखें",
   "hero.trust1": "कोई लॉगिन नहीं",
@@ -468,7 +480,7 @@ const hi: Dict = {
   "team.region": "पूरे भारत में",
   "team.title": "रोज़मर्रा की ज़िंदगी के उलझे, महँगे और डरावने हिस्सों में भारत की मदद।",
   "team.body":
-    "चार माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, सरकारी योजनाएँ और सेहत संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
+    "ग्यारह माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, योजनाएँ, सेहत, पैसा, टैक्स, काम और करियर संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
   "team.cta": "पूरी टीम से मिलें",
 
   "cap.title": "एजेंट की काबिलियत",
@@ -601,7 +613,7 @@ const hi: Dict = {
   "sv.visit.symptoms": "लक्षण और डॉक्टर के लिए सवाल", "sv.visit.generate": "विज़िट समरी बनाएँ", "sv.visit.empty": "पहले दवाइयाँ, वाइटल्स या नोट्स जोड़ें।", "sv.visit.title2": "आपकी विज़िट समरी",
 
   "quiet.eyebrow": "सारथी · आपका रोज़मर्रा का साथी",
-  "quiet.titleA": "दस शांत काम।",
+  "quiet.titleA": "ग्यारह शांत काम।",
   "quiet.titleB": "एक शांत ऐप।",
   "quiet.sub": "सारथी चुपचाप रोज़मर्रा की भारतीय ज़िंदगी के उलझे, महँगे और डरावने हिस्सों को संभालता है — एक शांत ऐप में, आपकी भाषा में।",
   "quiet.cta": "एजेंट से मिलें",
@@ -625,6 +637,8 @@ const hi: Dict = {
   "quiet.9.d": "फ़ोटो से कीट और रोग पहचानें, कार्ययोजना पाएँ और फ़सल योजनाओं से जुड़ें।",
   "quiet.10.t": "आपदा में सुरक्षित रहें",
   "quiet.10.d": "बाढ़ और जंगल की आग का अनुमान, सुरक्षित रास्ते और राहत की योजना — आपदा से पहले।",
+  "quiet.11.t": "करियर बढ़ाएँ",
+  "quiet.11.d": "नौकरी के लायक रेज़्यूमे बनाएँ, सही ओपनिंग ढूँढें, इंटरव्यू की तैयारी करें और सही स्किल सीखें।",
 
   "pa.name": "निधि",
   "pa.tag": "मनी ऑटोपायलट",
@@ -665,6 +679,16 @@ const hi: Dict = {
   "rh.resources": "संसाधन आवंटन",
   "rh.vulnerable": "किसे प्राथमिकता चाहिए",
   "rh.advisory": "आधिकारिक सलाह",
+
+  "ds.name": "दिशा",
+  "ds.tag": "करियर सहायक",
+  "ds.desc": "दिशा नौकरी के लायक रेज़्यूमे बनाती है, आपके लिए सही ओपनिंग ढूँढती है, मॉक इंटरव्यू कराती है, और बताती है आगे कौन-से स्किल सीखने हैं — आपके करियर को दिशा देती है।",
+  "ds.persona": "मैं आपको नौकरी दिलाने में मदद करती हूँ — दमदार रेज़्यूमे, सही ओपनिंग, इंटरव्यू की तैयारी, और आगे बढ़ने का स्किल प्लान।",
+  "ds.ph": "अपने बारे में और लक्ष्य बताएँ… जैसे पुणे में 2 साल सेल्स एग्ज़ीक्यूटिव, अब कस्टमर-सक्सेस रोल चाहिए; या जॉब डिस्क्रिप्शन पेस्ट करें",
+  "ds.output": "आपका ड्राफ़्ट",
+  "ds.highlights": "आपकी ख़ूबियाँ",
+  "ds.where": "कहाँ ढूँढें",
+  "ds.tips": "सुझाव",
   "kr.ph": "अपनी फ़सल और समस्या बताएँ… जैसे टमाटर की पत्तियों पर पीले धब्बे, नासिक, 3 दिन से",
   "kr.diagnosis": "संभावित निदान",
   "kr.severity": "गंभीरता",
@@ -727,7 +751,7 @@ const hi: Dict = {
   "how.s1.t": "किसी भी एजेंट को बताएँ",
   "how.s1.d": "मैसेज चिपकाएँ, बिल या चिट्ठी की फ़ोटो लें, या बस बोलें — हिंदी या अंग्रेज़ी में।",
   "how.s2.t": "सही विशेषज्ञ संभाल लेता है",
-  "how.s2.d": "नौ एक्सपर्ट एजेंट — अभय, निधि, लेख, आशा और भी — ठीक वही काम संभालते हैं जो आपको चाहिए।",
+  "how.s2.d": "ग्यारह एक्सपर्ट एजेंट — दिशा, अभय, निधि, आशा और भी — ठीक वही काम संभालते हैं जो आपको चाहिए।",
   "how.s3.t": "असली AI, पक्का हिसाब",
   "how.s3.d": "Gemini पढ़ता और सोचता है; अंदर के इंजन टैक्स, EMI और जोखिम सही-सही जोड़ते हैं।",
   "how.s4.t": "अपने डैशबोर्ड से कदम उठाएँ",

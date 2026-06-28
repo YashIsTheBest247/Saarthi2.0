@@ -13,6 +13,7 @@ import { SetuConsole } from "./features/console/SetuConsole";
 import { KrishiConsole } from "./features/console/KrishiConsole";
 import { KarConsole } from "./features/console/KarConsole";
 import { RaahatConsole } from "./features/console/RaahatConsole";
+import { DishaConsole } from "./features/console/DishaConsole";
 import { FloatingChat } from "./components/FloatingChat";
 import { FeatureKey } from "./lib/api";
 
@@ -31,7 +32,7 @@ function Shell() {
     const p = new URLSearchParams(window.location.search);
     const a = p.get("agent");
     const q = p.get("q");
-    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat"];
+    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha"];
     if (a && valid.includes(a)) setView(a as FeatureKey);
     else if (q) window.dispatchEvent(new CustomEvent("saarthi:openchat", { detail: { q } }));
     if (a || q) window.history.replaceState({}, "", window.location.pathname);
@@ -71,6 +72,7 @@ function Shell() {
           {view === "krishi" && <KrishiConsole key={`krishi-${L}`} onBack={back} />}
           {view === "kar" && <KarConsole key={`kar-${L}`} onBack={back} />}
           {view === "raahat" && <RaahatConsole key={`raahat-${L}`} onBack={back} />}
+          {view === "disha" && <DishaConsole key={`disha-${L}`} onBack={back} />}
         </AnimatePresence>
       </main>
 

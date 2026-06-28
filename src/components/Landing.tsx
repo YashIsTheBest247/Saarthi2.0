@@ -484,7 +484,7 @@ function NodeDecor({ flip = false }: { flip?: boolean }) {
 /* ------------------------- Ten quiet jobs ------------------------ */
 function QuietJobs() {
   const { t } = useApp();
-  const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+  const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi"];
   return (
     <section className="bg-mist py-20">
       <div className="mx-auto max-w-6xl px-5">

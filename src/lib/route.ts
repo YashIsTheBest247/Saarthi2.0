@@ -16,6 +16,7 @@ const KEYWORDS: Record<string, string[]> = {
   setu: ["complaint", "refund", "consumer", "faulty", "denied", "civic", "water supply", "electricity", "grievance", "rights", "शिकायत", "उपभोक्ता", "अधिकार", "रिफंड"],
   krishi: ["crop", "farm", "pest", "disease", "soil", "kisan", "harvest", "fertilizer", "plant", "agriculture", "फसल", "खेत", "कीट", "किसान", "खाद"],
   raahat: ["flood", "wildfire", "fire", "cyclone", "disaster", "evacuate", "rescue", "earthquake", "relief", "storm", "heatwave", "landslide", "बाढ़", "आपदा", "चक्रवात", "राहत", "भूकंप"],
+  disha: ["job", "jobs", "resume", "résumé", "cv", "interview", "career", "hiring", "hire", "internship", "salary", "fresher", "vacancy", "naukri", "नौकरी", "रिज्यूमे", "रेज़्यूमे", "इंटरव्यू", "करियर"],
 };
 
 export function routeToAgent(text: string): FeatureKey | null {
@@ -33,4 +34,4 @@ export function routeToAgent(text: string): FeatureKey | null {
   return bestScore > 0 ? best : null;
 }
 
-export const AGENT_KEYS: FeatureKey[] = ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat"];
+export const AGENT_KEYS: FeatureKey[] = ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha"];

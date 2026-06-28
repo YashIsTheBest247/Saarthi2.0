@@ -29,6 +29,7 @@ export const EMERGENCY: Record<string, { domain: string; preset: string }> = {
   setu: { domain: "consumer & citizen rights", preset: "I paid for a product, got cheated, and the company is completely ignoring my complaints." },
   krishi: { domain: "farming & crop loss", preset: "My crop is suddenly dying and I've suffered loss. What do I do now and what can I claim?" },
   raahat: { domain: "disaster & safety", preset: "A flood is rising in my area right now and water is entering homes. How do I keep my family safe?" },
+  disha: { domain: "jobs & careers", preset: "I was suddenly laid off / fired and I'm panicking about money and what to do next." },
 };
 
 function contactHref(c: string): string | null {

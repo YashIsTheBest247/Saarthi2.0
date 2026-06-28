@@ -310,6 +310,36 @@ export const mocks = {
     disclaimer: "Narayan is decision-support, not an official warning. Always follow NDMA / SDMA / local administration instructions.",
   },
 
+  disha: {
+    _mock: true,
+    summary: "Here's a tighter, job-ready version of your profile and where to apply next.",
+    output: "RAHUL SHARMA\nCustomer Success Associate · Pune\n\nSUMMARY\nResults-driven professional with 2+ years in B2B sales, moving into customer success. Strong at relationship-building, retention and turning churn risk into renewals.\n\nEXPERIENCE\nSales Executive — [Company], Pune (2023–present)\n• Managed a 60-account portfolio; grew renewals by [X]%.\n• Cut response time by setting up a simple follow-up cadence.\n\nSKILLS\nCRM (HubSpot), account management, onboarding, upselling, communication.\n\nEDUCATION\n[Degree], [University].",
+    highlights: [
+      "Reframe sales wins as retention/renewal outcomes — exactly what CS roles want.",
+      "Quantify impact: add real numbers for renewals, accounts, response time.",
+    ],
+    whereToLook: [
+      "Redrob — AI-matched roles to your profile.",
+      "Apna and LinkedIn for customer-success openings in Pune.",
+      "National Career Service (ncs.gov.in) and company career pages.",
+    ],
+    tips: [
+      "Tailor the summary line to each job description's keywords.",
+      "Prepare 3 STAR stories: a save, an upsell, and a tough customer.",
+    ],
+  },
+
+  resume: {
+    _mock: true,
+    role: "Customer Success Associate",
+    keywords: ["customer success", "retention", "onboarding", "CRM", "renewals"],
+    notes: [
+      "Re-angled sales bullets toward retention & renewals to match the JD.",
+      "Add a free GEMINI_API_KEY for live, JD-specific tailoring.",
+    ],
+    tex: "% Sample (mock) output — set GEMINI_API_KEY for real tailoring.\n% Your edited résumé is returned tailored to the job description here.",
+  },
+
   route: {
     _mock: true,
     agent: "samajh",
