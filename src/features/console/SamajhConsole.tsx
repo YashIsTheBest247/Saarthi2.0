@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LayoutDashboard, ScanText, FolderOpen, Plus, Trash2 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Samajh } from "../Samajh";
 
@@ -59,5 +61,6 @@ export function SamajhConsole({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="samajh" /> });
   return <AgentConsole agentKey="samajh" platform="Document Decoder" badge={ScanText} modules={modules} onBack={onBack} />;
 }

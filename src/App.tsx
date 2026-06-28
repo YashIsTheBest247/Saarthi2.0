@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { AppProvider } from "./app/AppContext";
+import { AppProvider, useApp } from "./app/AppContext";
 import { Nav } from "./components/Nav";
 import { Landing } from "./components/Landing";
 import { KavachConsole } from "./features/kavach/KavachConsole";
@@ -19,7 +19,9 @@ import { FeatureKey } from "./lib/api";
 type View = "home" | FeatureKey;
 
 function Shell() {
+  const { lang } = useApp();
   const [view, setView] = useState<View>("home");
+  const L = lang.iso; // include in keys so a language switch cross-fades smoothly
 
   // scroll to top on view change
   useEffect(() => {
@@ -35,17 +37,17 @@ function Shell() {
 
       <main className="relative z-10">
         <AnimatePresence mode="wait">
-          {view === "home" && <Landing key="home" onOpen={open} />}
-          {view === "kavach" && <KavachConsole key="kavach" onBack={back} />}
-          {view === "samajh" && <SamajhConsole key="samajh" onBack={back} />}
-          {view === "haq" && <HaqConsole key="haq" onBack={back} />}
-          {view === "sehat" && <SehatConsole key="sehat" onBack={back} />}
-          {view === "paisa" && <PaisaConsole key="paisa" onBack={back} />}
-          {view === "samay" && <SamayConsole key="samay" onBack={back} />}
-          {view === "setu" && <SetuConsole key="setu" onBack={back} />}
-          {view === "krishi" && <KrishiConsole key="krishi" onBack={back} />}
-          {view === "kar" && <KarConsole key="kar" onBack={back} />}
-          {view === "raahat" && <RaahatConsole key="raahat" onBack={back} />}
+          {view === "home" && <Landing key={`home-${L}`} onOpen={open} />}
+          {view === "kavach" && <KavachConsole key={`kavach-${L}`} onBack={back} />}
+          {view === "samajh" && <SamajhConsole key={`samajh-${L}`} onBack={back} />}
+          {view === "haq" && <HaqConsole key={`haq-${L}`} onBack={back} />}
+          {view === "sehat" && <SehatConsole key={`sehat-${L}`} onBack={back} />}
+          {view === "paisa" && <PaisaConsole key={`paisa-${L}`} onBack={back} />}
+          {view === "samay" && <SamayConsole key={`samay-${L}`} onBack={back} />}
+          {view === "setu" && <SetuConsole key={`setu-${L}`} onBack={back} />}
+          {view === "krishi" && <KrishiConsole key={`krishi-${L}`} onBack={back} />}
+          {view === "kar" && <KarConsole key={`kar-${L}`} onBack={back} />}
+          {view === "raahat" && <RaahatConsole key={`raahat-${L}`} onBack={back} />}
         </AnimatePresence>
       </main>
 

@@ -455,161 +455,29 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   );
 }
 
-/* ---------- Per-agent node-graph illustration ---------- */
-const AGENT_TASKS: Record<string, string[]> = {
-  kavach: ["Scan message", "Score risk", "Flag the scam"],
-  samajh: ["Read document", "Explain plainly", "Flag charges"],
-  haq: ["Match schemes", "Check eligibility", "How to apply"],
-  sehat: ["Read prescription", "Find generics", "Save money"],
-  paisa: ["Sort spends", "Find leaks", "Save plan"],
-  kar: ["Read Form-16", "Compute tax", "Compare regimes"],
-  samay: ["Capture tasks", "Prioritize", "Schedule"],
-  setu: ["Find authority", "Draft complaint", "Escalate"],
-  krishi: ["Diagnose crop", "Action plan", "Match schemes"],
-  raahat: ["Fuse signals", "Predict risk", "Plan relief"],
-};
-const AGENT_INPUTS: Record<string, string[]> = {
-  kavach: ["SMS / WhatsApp", "Call transcript", "Email"],
-  samajh: ["Bill / notice", "Photo scan", "PDF"],
-  haq: ["Your profile", "Income", "Location"],
-  sehat: ["Prescription", "Symptoms", "Photo"],
-  paisa: ["Bank SMS", "Bills", "Spends"],
-  kar: ["Form-16", "Salary", "Capital gains"],
-  samay: ["Tasks", "Email", "Voice note"],
-  setu: ["Complaint", "Proof photo", "Details"],
-  krishi: ["Crop photo", "Symptoms", "Location"],
-  raahat: ["Weather", "Satellite", "News & social"],
-};
-
-function AgentGraph({ f }: { f: FeatureMeta }) {
-  const { t } = useApp();
-  const tasks = AGENT_TASKS[f.key] ?? [];
-  const inputs = AGENT_INPUTS[f.key] ?? [];
-  const rows = [20, 50, 80];
-  const metric = f.stats[0]?.v ?? "Done";
-
+/* faint node-graph decoration behind each quiet-job card */
+function NodeDecor({ flip = false }: { flip?: boolean }) {
   return (
-    <div className="relative h-[420px] min-w-[940px] overflow-hidden rounded-[2rem] border border-line bg-paper"
-         style={{ backgroundImage: "radial-gradient(#E3DED3 1px, transparent 1px)", backgroundSize: "22px 22px" }}>
-      {/* hub glow */}
-      <div className="pointer-events-none absolute h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" style={{ left: "33%", top: "50%", background: f.accent, opacity: 0.12 }} />
-
-      {/* live label */}
-      <div className="absolute left-5 top-4 flex items-center gap-2 rounded-full border border-line bg-paper/80 px-3 py-1 text-[11px] font-semibold text-graphite backdrop-blur">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#138A72] opacity-70" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#138A72]" />
-        </span>
-        Live agent pipeline
-      </div>
-
-      {/* connectors (animated flow) */}
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
-        <g className="flow-line" stroke={f.accent} strokeOpacity="0.55" strokeWidth="1" vectorEffect="non-scaling-stroke">
-          <path d="M13,24 C20,24 22,50 24,50" />
-          <path d="M13,50 L24,50" />
-          <path d="M13,76 C20,76 22,50 24,50" />
-          <path d="M42,50 C48,50 50,20 52,20" />
-          <path d="M42,50 L52,50" />
-          <path d="M42,50 C48,50 50,80 52,80" />
-          <path d="M68,20 C73,20 74,50 76,50" />
-          <path d="M68,50 L76,50" />
-          <path d="M68,80 C73,80 74,50 76,50" />
-          <path d="M86,50 L89,50" />
-        </g>
-      </svg>
-
-      {/* input nodes */}
-      {inputs.map((inp, i) => (
-        <div key={i} className="absolute w-[128px] -translate-x-1/2 -translate-y-1/2" style={{ left: "7%", top: `${[24, 50, 76][i]}%` }}>
-          <div className="flex items-center gap-2 rounded-xl border border-line bg-paper px-2.5 py-2 shadow-soft">
-            <span className="h-1.5 w-1.5 flex-none rounded-full bg-faint" />
-            <span className="truncate text-[12px] font-medium text-graphite deva">{inp}</span>
-          </div>
-        </div>
-      ))}
-      <div className="absolute -translate-y-1/2 text-[10px] font-semibold uppercase tracking-wider text-faint" style={{ left: "7%", top: "8%", transform: "translate(-50%,-50%)" }}>Inputs</div>
-
-      {/* agent hub (AI core) */}
-      <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "33%", top: "50%" }}>
-        <div className="relative rounded-2xl border-2 bg-paper p-3.5 shadow-float" style={{ borderColor: f.accent }}>
-          <div className="flex items-center gap-3">
-            <div className="relative flex-none">
-              <motion.span className="absolute inset-0 rounded-xl" style={{ background: f.accent }}
-                animate={{ scale: [1, 1.55], opacity: [0.4, 0] }} transition={{ duration: 1.9, repeat: Infinity, ease: "easeOut" }} />
-              <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-xl" className="relative h-12 w-12" />
-            </div>
-            <div className="min-w-0">
-              <div className="truncate text-[15px] font-bold text-ink deva">{t(f.nameKey)}</div>
-              <div className="truncate text-[11px] text-faint deva">{t(f.tagKey)}</div>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-mist px-2 py-1">
-            <span className="flex-none" style={{ color: f.accent }}><BrandMark className="h-3 w-3" /></span>
-            <span className="text-[10px] font-medium text-graphite">reasoning · engine</span>
-            <Loader2 className="ml-auto h-3 w-3 flex-none animate-spin" style={{ color: f.accent }} />
-          </div>
-        </div>
-      </div>
-
-      {/* task nodes */}
-      {tasks.map((task, i) => (
-        <div key={i} className="absolute w-[156px] -translate-x-1/2 -translate-y-1/2" style={{ left: "60%", top: `${rows[i]}%` }}>
-          <div className="rounded-xl border border-line bg-paper p-2.5 shadow-soft">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-md text-[10px] font-bold text-white" style={{ background: f.accent }}>{i + 1}</span>
-              <span className="truncate text-[13px] font-semibold text-ink deva">{task}</span>
-              <span className="ml-auto h-1.5 w-1.5 flex-none animate-pulse rounded-full" style={{ background: f.accent }} />
-            </div>
-            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-mist">
-              <div className="h-full rounded-full" style={{ width: `${[88, 64, 76][i]}%`, background: f.accent, opacity: 0.6 }} />
-            </div>
-          </div>
-        </div>
-      ))}
-      <div className="absolute text-[10px] font-semibold uppercase tracking-wider text-faint" style={{ left: "60%", top: "8%", transform: "translate(-50%,-50%)" }}>Agent tasks</div>
-
-      {/* verify node */}
-      <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "80%", top: "50%" }}>
-        <div className="flex items-center gap-2.5 rounded-2xl border border-line bg-paper p-3 shadow-float">
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-[#138A72] text-white"><CheckCircle2 className="h-4 w-4" /></span>
-          <div><div className="text-sm font-bold text-ink">Verified</div><div className="text-[11px] text-faint">on-device checks</div></div>
-        </div>
-      </div>
-
-      {/* done node */}
-      <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: "93%", top: "50%" }}>
-        <div className="rounded-2xl border-2 border-ink bg-ink p-3 text-white shadow-float">
-          <div className="text-[11px] text-white/60">Result</div>
-          <div className="display text-base font-bold leading-tight">{metric}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AgentGraphShowcase() {
-  const { t } = useApp();
-  const [sel, setSel] = useState<FeatureMeta>(FEATURES[0]);
-  return (
-    <div>
-      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        {FEATURES.map((f) => {
-          const on = sel.key === f.key;
-          return (
-            <button key={f.key} onClick={() => setSel(f)}
-              className={`flex flex-none items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${on ? "text-white" : "border-line bg-paper text-graphite hover:bg-mist"}`}
-              style={on ? { background: f.accent, borderColor: f.accent } : undefined}>
-              <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-5 w-5 flex-none" />
-              <span className="deva">{t(f.nameKey)}</span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="no-scrollbar mt-4 overflow-x-auto">
-        <AgentGraph f={sel} />
-      </div>
-    </div>
+    <svg
+      viewBox="0 0 180 130"
+      className="pointer-events-none absolute -right-5 -top-5 h-36 w-48 text-[#2D6BFF] transition-opacity duration-300 group-hover:opacity-100"
+      style={{ opacity: 0.13, transform: flip ? "scaleX(-1)" : undefined }}
+      fill="none"
+      aria-hidden="true"
+    >
+      <g stroke="currentColor" strokeWidth="2" strokeDasharray="4 4">
+        <path d="M28,34 H78 V70 H128" />
+        <path d="M78,34 H128 V18" />
+        <path d="M78,70 V104 H40" />
+      </g>
+      <g fill="currentColor">
+        <circle cx="28" cy="34" r="5.5" />
+        <rect x="66" y="24" width="24" height="20" rx="6" />
+        <rect x="116" y="60" width="24" height="20" rx="6" />
+        <circle cx="128" cy="18" r="4.5" />
+        <circle cx="40" cy="104" r="4.5" />
+      </g>
+    </svg>
   );
 }
 
@@ -628,15 +496,17 @@ function QuietJobs() {
           <p className="mt-4 text-lg text-muted deva">{t("quiet.sub")}</p>
         </Reveal>
 
-        <Reveal className="mt-10"><AgentGraphShowcase /></Reveal>
-
-        <div className="mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {roman.map((r, i) => (
             <Reveal key={i} delay={(i % 4) * 0.06}>
-              <div className="border-t border-line pt-4">
-                <div className="serif-italic text-2xl" style={{ color: "#2D6BFF" }}>{r}</div>
-                <h3 className="display mt-2 text-lg font-bold deva">{t(`quiet.${i + 1}.t`)}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted deva">{t(`quiet.${i + 1}.d`)}</p>
+              <div className="group relative h-full overflow-hidden rounded-2xl border border-line bg-paper p-5 transition-all hover:-translate-y-1 hover:shadow-float"
+                   style={{ backgroundImage: "radial-gradient(#E6E1D6 1px, transparent 1px)", backgroundSize: "16px 16px" }}>
+                <NodeDecor flip={i % 2 === 1} />
+                <div className="relative">
+                  <div className="serif-italic text-2xl" style={{ color: "#2D6BFF" }}>{r}</div>
+                  <h3 className="display mt-2 text-lg font-bold deva">{t(`quiet.${i + 1}.t`)}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted deva">{t(`quiet.${i + 1}.d`)}</p>
+                </div>
               </div>
             </Reveal>
           ))}
@@ -672,7 +542,8 @@ function Trusted() {
 function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
   return (
-    <section id="agents" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-14">
+    <section className="mx-auto max-w-6xl px-5 py-14">
+      <span id="agents" className="block scroll-mt-28" />
       <Reveal className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
           <Eyebrow>{t("agents.eyebrow")}</Eyebrow>
@@ -730,7 +601,8 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const members = FEATURES.filter(tab.match);
 
   return (
-    <section id="team" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-14">
+    <section className="mx-auto max-w-6xl px-5 py-14">
+      <span id="team" className="block scroll-mt-28" />
       <div className="overflow-hidden rounded-[2rem] border border-line bg-linen p-6 sm:p-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           {/* left: tabs + member cards */}
@@ -897,8 +769,9 @@ function How() {
     { t: t("how.s4.t"), d: t("how.s4.d") },
   ];
   return (
-    <section id="how" className="scroll-mt-24 bg-panel py-20">
+    <section className="bg-panel py-20">
       <div className="mx-auto max-w-6xl px-5">
+        <span id="how" className="block scroll-mt-28" />
         <Reveal className="max-w-2xl">
           <Eyebrow>{t("nav.how")}</Eyebrow>
           <h2 className="display mt-4 text-balance text-3xl font-bold tracking-tight deva sm:text-5xl">{t("how.title")}</h2>
@@ -997,6 +870,7 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
             <a href="#agents" className={link}>{t("nav.agents")}</a>
             <a href="#team" className={link}>{t("nav.features")}</a>
             <a href="#flagship" className={link}>{t("cap.title")}</a>
+            <button onClick={() => window.dispatchEvent(new Event("saarthi:helplines"))} className={link}>{t("help.title")}</button>
           </FooterCol>
         </div>
 

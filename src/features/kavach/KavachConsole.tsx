@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, LayoutDashboard, ShieldAlert, Workflow, Waves, Network,
-  Banknote, MapPin, BarChart3, Newspaper, Radio,
+  Banknote, MapPin, BarChart3, Newspaper, Radio, Siren,
 } from "lucide-react";
 import { useApp } from "../../app/AppContext";
 import { featureByKey } from "../../lib/features";
 import { LanguagePicker } from "../../components/LanguagePicker";
 import { StatusBadge } from "../../components/ui";
 import { AgentAvatar } from "../../components/AgentAvatar";
+import { Emergency } from "../Emergency";
 import {
   Dashboard, Detector, ThreatFusion, VoiceSpoof, FraudGraph, Counterfeit, GeoMap, MetricsView, NewsWatch,
 } from "./KavachModules";
@@ -25,6 +26,7 @@ const MODULES = [
   { id: "map", label: "kv.nav.map", icon: MapPin },
   { id: "metrics", label: "kv.nav.metrics", icon: BarChart3 },
   { id: "news", label: "kv.nav.news", icon: Newspaper },
+  { id: "sos", label: "kv.nav.sos", icon: Siren },
 ];
 
 function Ticker() {
@@ -70,6 +72,7 @@ export function KavachConsole({ onBack }: { onBack: () => void }) {
       case "map": return <GeoMap />;
       case "metrics": return <MetricsView />;
       case "news": return <NewsWatch />;
+      case "sos": return <Emergency agentKey="kavach" />;
       default: return <Dashboard go={setActive} />;
     }
   };

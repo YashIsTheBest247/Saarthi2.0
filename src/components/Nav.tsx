@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ArrowUpRight, ArrowRight, Search, Menu as MenuIcon, X } from "lucide-react";
+import { ChevronDown, ArrowUpRight, ArrowRight, Phone, Menu as MenuIcon, X } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { LanguagePicker } from "./LanguagePicker";
 import { FEATURES, FeatureMeta } from "../lib/features";
 import { FeatureKey } from "../lib/api";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
-import { CommandPalette } from "./CommandPalette";
+import { HelplinesModal } from "./Helplines";
 
 /* ------------------------------ Mega-menu ------------------------------ */
 function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: boolean }) {
@@ -117,17 +117,12 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
   const [darkZone, setDarkZone] = useState(true); // over a dark section (hero / footer)
   const [mobile, setMobile] = useState(false);
   const [atFlagship, setAtFlagship] = useState(false);
-  const [cmdOpen, setCmdOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setCmdOpen(true);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const h = () => setHelpOpen(true);
+    window.addEventListener("saarthi:helplines", h);
+    return () => window.removeEventListener("saarthi:helplines", h);
   }, []);
 
   const toTop = () => { onHome(); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -213,14 +208,14 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
             )}
           </AnimatePresence>
           <button
-            onClick={() => setCmdOpen(true)}
-            aria-label={t("cmd.open")}
-            className={`hidden h-10 items-center gap-2 rounded-full border px-3 transition-colors sm:flex ${
-              dark ? "border-white/25 text-white/90 hover:bg-white/10" : "border-line bg-paper text-graphite hover:text-ink"
+            onClick={() => setHelpOpen(true)}
+            aria-label={t("help.title")}
+            className={`hidden h-10 items-center gap-2 rounded-full border px-3.5 transition-colors sm:flex ${
+              dark ? "border-white/25 text-white hover:bg-white/10" : "border-line bg-paper text-graphite hover:text-ink"
             }`}
           >
-            <Search className="h-4 w-4" />
-            <span className={`hidden rounded-md px-1.5 py-0.5 text-[11px] font-semibold lg:inline ${dark ? "bg-white/15" : "bg-mist text-faint"}`}>⌘K</span>
+            <Phone className="h-4 w-4" />
+            <span className="hidden text-sm font-medium lg:inline">{t("nav.helplines")}</span>
           </button>
           <div className="hidden sm:block">
             <LanguagePicker compact />
@@ -266,6 +261,13 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
                   <span className="text-xs text-faint">{t(f.tagKey)}</span>
                 </button>
               ))}
+              <button
+                onClick={() => { setMobile(false); setHelpOpen(true); }}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left hover:bg-mist"
+              >
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-ink text-white"><Phone className="h-4 w-4" /></span>
+                <span className="display font-bold deva">{t("nav.helplines")}</span>
+              </button>
               <div className="px-1 pt-2">
                 <LanguagePicker />
               </div>
@@ -274,7 +276,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
         )}
       </AnimatePresence>
 
-      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} onOpen={onOpen} />
+      <HelplinesModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </header>
   );
 }

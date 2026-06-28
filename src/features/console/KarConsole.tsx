@@ -1,5 +1,7 @@
 import { LayoutDashboard, Calculator, ListChecks, Check } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles } from "./kit";
 import { Kar } from "../kar/Kar";
 
@@ -64,5 +66,6 @@ export function KarConsole({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="kar" /> });
   return <AgentConsole agentKey="kar" platform="Tax Filing Copilot" badge={Calculator} modules={modules} onBack={onBack} />;
 }

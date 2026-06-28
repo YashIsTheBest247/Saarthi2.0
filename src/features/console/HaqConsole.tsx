@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LayoutDashboard, Search, Bookmark, Plus, Trash2, BadgeCheck, FileCheck, Check } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Haq } from "../Haq";
 
@@ -98,5 +100,6 @@ export function HaqConsole({ onBack }: { onBack: () => void }) {
     ),
   });
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="haq" /> });
   return <AgentConsole agentKey="haq" platform="Scheme Finder" badge={Search} modules={modules} onBack={onBack} />;
 }

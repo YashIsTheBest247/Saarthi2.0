@@ -27,6 +27,7 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [glowDone, setGlowDone] = useState(false);
+  const [pending, setPending] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([{ id: 0, from: "bot", text: t("chat.greet") }]);
   const bodyRef = useRef<HTMLDivElement>(null);
   const voice = useVoice(lang.speech, setInput);
@@ -35,12 +36,26 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy, open]);
 
-  // let other parts of the app open the chat (e.g. the "Start with any tool" CTA)
+  // let other parts of the app open the chat (CTA, command palette) — optionally with a question
   useEffect(() => {
-    const h = () => setOpen(true);
+    const h = (e: Event) => {
+      setOpen(true);
+      const q = (e as CustomEvent).detail?.q;
+      if (q) setPending(q);
+    };
     window.addEventListener("saarthi:openchat", h);
     return () => window.removeEventListener("saarthi:openchat", h);
   }, []);
+
+  // auto-send a prefilled question once the panel is open
+  useEffect(() => {
+    if (open && pending) {
+      const q = pending;
+      setPending(null);
+      handle(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pending]);
 
   const add = (m: Omit<Msg, "id">) => setMsgs((prev) => [...prev, { ...m, id: mid++ }]);
 
@@ -230,7 +245,7 @@ function AgentSuggestion({ agent, reason, onOpen, close }: { agent: FeatureKey; 
       {reason && <p className="px-3 pt-2.5 text-sm leading-relaxed text-graphite deva">{reason}</p>}
       <div className="p-3">
         <button onClick={() => { onOpen(agent); close(); }} className="btn w-full justify-center py-2.5 text-sm text-white" style={{ background: f.accent }}>
-          {t("chat.open")} {t(f.nameKey)}
+          {t("chat.talk").replace("{name}", t(f.nameKey))}
         </button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LayoutDashboard, LifeBuoy, Siren, Map as MapIcon, Activity, Boxes } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles } from "./kit";
 import { Raahat } from "../Raahat";
 import {
@@ -240,5 +241,6 @@ export function RaahatConsole({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="raahat" /> });
   return <AgentConsole agentKey="raahat" platform="Disaster Response" badge={LifeBuoy} modules={modules} onBack={onBack} />;
 }

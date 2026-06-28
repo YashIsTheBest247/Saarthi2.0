@@ -316,6 +316,30 @@ export const mocks = {
     reason: "Let's start by understanding the details — Vidya can break this down for you.",
   },
 
+  emergency: {
+    _mock: true,
+    headline: "Take a breath — this can still be handled, and you're not alone.",
+    severity: "Act now",
+    immediateSteps: [
+      { step: "Stop any further loss", detail: "Don't pay, share, or sign anything more until you've acted on the steps below.", window: "right now" },
+      { step: "Report it on the official channel", detail: "Use the helpline/portal listed below — reporting fast gives the best chance of recovery.", window: "within the golden hour" },
+      { step: "Preserve evidence", detail: "Keep screenshots, messages, receipts and reference numbers together in one place.", window: "today" },
+      { step: "Inform the people who can freeze/act", detail: "Your bank, the authority, or the company — tell them in writing and note the complaint number.", window: "today" },
+    ],
+    contacts: [
+      { name: "National Emergency", contact: "112", why: "For any immediate danger to life or safety." },
+      { name: "Cyber Fraud Helpline", contact: "1930 · cybercrime.gov.in", why: "To report online fraud and try to freeze the transaction." },
+      { name: "Tele-MANAS (mental health)", contact: "14416", why: "If the stress feels overwhelming — free, confidential, 24×7." },
+    ],
+    whatToSay: "Namaste, I need to report an urgent issue. Here is what happened: [brief facts, date, amount, reference number]. Please register my complaint and share the complaint/reference number.",
+    whatSaarthiDoes: [
+      "Draft your complaint/report so it's ready to send.",
+      "Point you to the exact office, portal or helpline for your case.",
+      "Walk you through each step and what to expect next.",
+    ],
+    reassurance: "Acting quickly matters far more than acting perfectly. Take the first step now — Saarthi will guide the rest.",
+  },
+
   form16: {
     _mock: true,
     grossSalary: 1500000,

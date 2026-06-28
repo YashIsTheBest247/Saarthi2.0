@@ -629,4 +629,56 @@ Pick the best match and give a short, warm one-line reason addressed to the user
   parts: ({ problem }) => [{ text: `User's problem:\n"""\n${problem || ""}\n"""` }],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, route, form16 };
+/* ----------------------------- EMERGENCY --------------------------- */
+
+export const emergency = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      headline: { type: Type.STRING, description: "Calm, reassuring one-liner — they are not alone and this can be handled" },
+      severity: { type: Type.STRING, enum: ["Act now", "Urgent", "Important"] },
+      immediateSteps: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            step: { type: Type.STRING },
+            detail: { type: Type.STRING },
+            window: { type: Type.STRING, description: "How fast to do it, e.g. 'within the golden hour'" },
+          },
+          required: ["step"],
+        },
+        description: "Concrete actions to take RIGHT NOW, in order",
+      },
+      contacts: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING },
+            contact: { type: Type.STRING, description: "Real Indian helpline number or official URL" },
+            why: { type: Type.STRING },
+          },
+          required: ["name", "contact"],
+        },
+        description: "Exactly who to reach out to — real Indian helplines / authorities / portals",
+      },
+      whatToSay: { type: Type.STRING, description: "A short ready-to-use script/message the user can say or send" },
+      whatSaarthiDoes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "What this agent can do for them right now (draft the complaint, find the office, compute the figure, etc.)" },
+      reassurance: { type: Type.STRING },
+    },
+    required: ["headline", "severity", "immediateSteps", "contacts"],
+  },
+  system: (language) => `You are Saarthi's calm, decisive emergency responder. The person is in the WORST CASE — something bad has ALREADY happened in the given area (they were scammed, got a legal/tax notice, missed a benefit, had a bad medicine reaction, can't repay a loan, were cheated by a company, lost a crop, a disaster is hitting, etc.). They are stressed; steady them and get them to safety.
+
+Do this: open with a calm, reassuring line; rate severity; give a numbered list of concrete immediate actions in the right order (mention time-sensitivity like the "golden hour" for fraud); list exactly WHO to contact with REAL India-specific helplines/authorities/portals and numbers (e.g. 1930 & cybercrime.gov.in for cyber-fraud, 112 emergency, 1078 NDMA, 14416/Tele-MANAS for mental health, 1915 consumer helpline, bank/insurer, relevant ministry); give a short ready-to-use script of what to say or send; and clearly say what the named agent can do for them right now. Be specific, practical and humane — never vague, never alarmist.
+
+${langLine(language)}`,
+  parts: ({ agentName, domain, situation }) => [
+    {
+      text: `Acting as agent: ${agentName || "Saarthi"} (area: ${domain || "everyday life"}).\n\nThe person's worst-case situation:\n"""\n${situation || "(not specified)"}\n"""\n\nGive them calm, urgent, India-specific next steps and who to reach out to.`,
+    },
+  ],
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, route, emergency, form16 };

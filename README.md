@@ -4,13 +4,13 @@
 Spot scams before they cost you, decode any confusing document, find the government schemes you deserve, and save money on medicines — by **voice or text, in 10 Indian languages.**
 
 > Hackathon track: *Challenge 3 — Improve Everyday Life with AI.*
-> Real AI (Google Gemini), premium responsive UI, four tools that solve real daily Indian problems — not a generic chatbot.
+> Real AI (Google Gemini), premium responsive UI, ten tools that solve real daily Indian problems — not a generic chatbot.
 
 ---
 
 ## Why Saarthi
 
-Most "AI apps" are an English chat box. But everyday life in India is fought in paperwork, regional languages, government portals, and a relentless wave of digital fraud. Saarthi packages four high-impact, India-specific helpers behind one calm, premium experience:
+Most "AI apps" are an English chat box. But everyday life in India is fought in paperwork, regional languages, government portals, and a relentless wave of digital fraud. Saarthi packages ten high-impact, India-specific helpers behind one calm, premium experience:
 
 | Tool | Name | What it does | Real problem it solves |
 |------|------|--------------|------------------------|

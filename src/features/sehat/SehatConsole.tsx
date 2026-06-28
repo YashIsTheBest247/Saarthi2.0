@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, LayoutDashboard, ScanText, Pill, Activity, ClipboardList,
-  Send, ImagePlus, X, Plus, Trash2, Stethoscope, IndianRupee, Info, HeartPulse, Calendar,
+  Send, ImagePlus, X, Plus, Trash2, Stethoscope, IndianRupee, Info, HeartPulse, Calendar, Siren,
 } from "lucide-react";
 import { useApp } from "../../app/AppContext";
 import { featureByKey } from "../../lib/features";
+import { Emergency } from "../Emergency";
 import { callFeature, fileToInlineData } from "../../lib/api";
 import { useVoice } from "../../hooks/useVoice";
 import { LanguagePicker } from "../../components/LanguagePicker";
@@ -300,6 +301,7 @@ const MODULES = [
   { id: "meds", label: "sv.nav.meds", icon: Pill },
   { id: "vitals", label: "sv.nav.vitals", icon: Activity },
   { id: "visit", label: "sv.nav.visit", icon: ClipboardList },
+  { id: "sos", label: "sv.nav.sos", icon: Siren },
 ];
 
 export function SehatConsole({ onBack }: { onBack: () => void }) {
@@ -315,6 +317,7 @@ export function SehatConsole({ onBack }: { onBack: () => void }) {
       case "meds": return <Medicines meds={meds} setMeds={setMeds} />;
       case "vitals": return <Vitals vitals={vitals} setVitals={setVitals} />;
       case "visit": return <VisitPrep meds={meds} vitals={vitals} />;
+      case "sos": return <Emergency agentKey="sehat" />;
       default: return <Dashboard meds={meds} vitals={vitals} />;
     }
   };

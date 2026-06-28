@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LayoutDashboard, Sprout, CalendarDays, Plus, Trash2 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Krishi } from "../Krishi";
 
@@ -64,5 +66,6 @@ export function KrishiConsole({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="krishi" /> });
   return <AgentConsole agentKey="krishi" platform="Kisan Saathi" badge={Sprout} modules={modules} onBack={onBack} />;
 }

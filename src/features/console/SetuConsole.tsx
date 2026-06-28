@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LayoutDashboard, Scale, FolderOpen, Plus, Trash2, ChevronRight, BookOpen, ExternalLink } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Setu } from "../Setu";
 
@@ -94,5 +96,6 @@ export function SetuConsole({ onBack }: { onBack: () => void }) {
     ),
   });
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="setu" /> });
   return <AgentConsole agentKey="setu" platform="Grievance Autopilot" badge={Scale} modules={modules} onBack={onBack} />;
 }

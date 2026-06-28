@@ -4,6 +4,8 @@ import {
   CalendarPlus, Download, Play, Pause, RotateCcw, AlertTriangle, LifeBuoy, Flame, Sparkles, X,
 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Samay } from "../Samay";
 import { confetti } from "../../lib/confetti";
@@ -309,5 +311,6 @@ export function SamayConsole({ onBack }: { onBack: () => void }) {
     { id: "goals", label: "Goals & habits", icon: Trophy, render: () => GoalsTab },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="samay" /> });
   return <AgentConsole agentKey="samay" platform="Chief of Staff" badge={Target} modules={modules} onBack={onBack} />;
 }

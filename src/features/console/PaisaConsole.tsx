@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { LayoutDashboard, Wallet, PiggyBank, Plus, Trash2, Calculator, TrendingUp } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
+import { Siren } from "lucide-react";
+import { Emergency } from "../Emergency";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Paisa } from "../Paisa";
 import { inr } from "../kar/taxEngine";
@@ -156,5 +158,6 @@ export function PaisaConsole({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  modules.push({ id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="paisa" /> });
   return <AgentConsole agentKey="paisa" platform="Money Autopilot" badge={Wallet} modules={modules} onBack={onBack} />;
 }
