@@ -96,10 +96,11 @@ function Chain({ agents }: { agents: string[] }) {
   );
 }
 
-export function WorkflowsView({ onBack }: { onBack: () => void }) {
+export function WorkflowsView({ onBack, initialId }: { onBack: () => void; initialId?: string }) {
   const { t, lang } = useApp();
-  const [sel, setSel] = useState<WfMeta | null>(null);
-  const [seed, setSeed] = useState("");
+  const preset = initialId ? WF.find((w) => w.id === initialId) ?? null : null;
+  const [sel, setSel] = useState<WfMeta | null>(preset);
+  const [seed, setSeed] = useState(preset?.example ?? "");
   const [running, setRunning] = useState(false);
   const [active, setActive] = useState(-1); // index currently executing (-1 = none)
   const [steps, setSteps] = useState<StepResult[]>([]);

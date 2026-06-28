@@ -787,4 +787,47 @@ ${langLine(language)}`,
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16 };
+/* ------------------------------ MANAGER ---------------------------- */
+// Smriti acting as chief-of-staff: for ONE task, decide if a specialist agent
+// can do it autonomously, name them, and PRODUCE the finished deliverable.
+
+export const manager = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      canDelegate: { type: Type.BOOLEAN, description: "True if a specialist agent can meaningfully complete this task without the user" },
+      agent: {
+        type: Type.STRING,
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "none"],
+        description: "The specialist who should own it (never 'samay' — that's the manager). 'none' if it's inherently personal/physical.",
+      },
+      agentName: { type: Type.STRING, description: "Display name of the agent (Abhay, Vidya, Haq, Asha, Nidhi, Lekh, Adhrit, Bhupati, Narayan, Disha) or 'You'" },
+      status: { type: Type.STRING, enum: ["Completed", "Needs you"] },
+      reason: { type: Type.STRING, description: "One short line: why this agent / why it needs the user" },
+      deliverable: { type: Type.STRING, description: "If canDelegate: the FINISHED work as that agent (the actual draft/plan/answer/analysis, ready to use). Else: a one-line tip on how to do it." },
+    },
+    required: ["canDelegate", "agent", "agentName", "status", "reason"],
+  },
+  system: (language) => `You are Smriti, the user's AI chief-of-staff. You MANAGE a team of specialist agents and delegate work to them:
+- Abhay (kavach): scams, fraud, suspicious messages.
+- Vidya (samajh): understanding documents, bills, notices, letters.
+- Haq (haq): government schemes, welfare, benefits, eligibility.
+- Asha (sehat): health, medicines, cheaper generics, symptoms.
+- Nidhi (paisa): budgeting, spending, savings, loans/EMIs.
+- Lekh (kar): income tax, Form-16, ITR.
+- Adhrit (setu): complaints, consumer rights, AND drafting letters/emails/applications.
+- Bhupati (krishi): farming, crops, pests, agri-schemes.
+- Narayan (raahat): disasters, floods, evacuation, relief.
+- Disha (disha): careers — résumé, job search, interview prep.
+
+Given ONE of the user's tasks, decide if a specialist can complete it AUTONOMOUSLY (without the user) — e.g. draft an email/complaint/application, write a study or work plan, analyse spends, find schemes, decode a document, prep interview answers, give farming advice. If YES: set canDelegate=true, choose the best agent + agentName, status="Completed", and in 'deliverable' PRODUCE the actual finished work as that agent (a ready-to-send draft, a concrete plan, a clear analysis — usable as-is, not a description of what you'd do). Keep it under ~1400 characters.
+
+If the task is inherently personal or physical and no agent can do it for them (pay rent, buy a gift, attend a meeting, exercise, call a relative), set canDelegate=false, agent="none", agentName="You", status="Needs you", and put a one-line practical tip in 'deliverable'.
+
+${langLine(language)}`,
+  parts: ({ task, deadline, context, today }) => [
+    { text: `Today: ${today || "today"}\nTask: "${task || ""}"${deadline ? `\nDeadline: ${deadline}` : ""}${context ? `\nExtra context: ${context}` : ""}\n\nDecide who owns this and, if possible, complete it now.` },
+  ],
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager };

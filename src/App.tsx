@@ -26,6 +26,7 @@ function Shell() {
   const L = lang.iso; // include in keys so a language switch cross-fades smoothly
   const homeScroll = useRef(0);   // remembered landing scroll position
   const wantRestore = useRef(false); // restore it when returning via Back
+  const [wfInitial, setWfInitial] = useState<string | undefined>(undefined); // preselected workflow id
 
   // deep links (e.g. from the Telegram bot): ?agent=kavach opens that console,
   // ?q=... opens the chat pre-filled. URL is cleaned afterwards.
@@ -39,12 +40,17 @@ function Shell() {
     if (a || q) window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
-  // open the agentic workflows view from anywhere (nav, landing)
+  // open the agentic workflows view from anywhere (nav, landing); an optional
+  // detail.id preselects that specific workflow for a smooth "open this" feel.
   useEffect(() => {
-    const h = () => { homeScroll.current = window.scrollY; setView("workflows"); };
+    const h = (e: Event) => {
+      if (view === "home") homeScroll.current = window.scrollY;
+      setWfInitial((e as CustomEvent).detail?.id);
+      setView("workflows");
+    };
     window.addEventListener("saarthi:workflows", h);
     return () => window.removeEventListener("saarthi:workflows", h);
-  }, []);
+  }, [view]);
 
   const open = (k?: FeatureKey) => {
     if (view === "home") homeScroll.current = window.scrollY; // remember where we were
@@ -81,7 +87,7 @@ function Shell() {
           {view === "kar" && <KarConsole key={`kar-${L}`} onBack={back} />}
           {view === "raahat" && <RaahatConsole key={`raahat-${L}`} onBack={back} />}
           {view === "disha" && <DishaConsole key={`disha-${L}`} onBack={back} />}
-          {view === "workflows" && <WorkflowsView key={`workflows-${L}`} onBack={back} />}
+          {view === "workflows" && <WorkflowsView key={`workflows-${L}`} onBack={back} initialId={wfInitial} />}
         </AnimatePresence>
       </main>
 

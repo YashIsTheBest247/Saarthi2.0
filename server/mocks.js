@@ -390,4 +390,15 @@ export const mocks = {
     employerNps: 0,
     note: "Parsed from a sample Form-16.",
   },
+
+  manager: {
+    _mock: true,
+    canDelegate: true,
+    agent: "setu",
+    agentName: "Adhrit",
+    status: "Completed",
+    reason: "This needs a written draft — Adhrit handles letters & emails.",
+    deliverable:
+      "Subject: Following up on my project query\n\nDear Professor,\n\nI hope you're well. I'm writing to follow up on the project we discussed. Could you please confirm the expected scope and the submission deadline? I want to make sure I'm aligned before I proceed.\n\nThank you for your time and guidance.\n\nWarm regards,\n[Your name]",
+  },
 };

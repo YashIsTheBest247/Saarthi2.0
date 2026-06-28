@@ -460,12 +460,12 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
 
 /* -------------------------- Truly Agentic -------------------------- */
 const FLOWS = [
-  { title: "Weather → Crop → Schemes → Budget → Plan", desc: "The biggest chain: live weather drives crop advice, then schemes, an input budget and a full season plan.", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"] },
-  { title: "Decode → Complaint → Schedule", desc: "A confusing notice becomes a filed complaint with deadlines.", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"] },
-  { title: "Check scam → Act → Report", desc: "Verify a message, get urgent steps, draft the report.", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"] },
-  { title: "Tailor résumé → Interview → Plan", desc: "From background to tailored résumé, mock interview and a plan.", accent: "#6D4AA7", agents: ["disha", "disha", "samay"] },
-  { title: "Analyse spends → Plan savings", desc: "Make sense of money, then schedule what actually saves it.", accent: "#138A72", agents: ["paisa", "samay"] },
-  { title: "Decode Rx → Refill reminders", desc: "Cheaper generics, then timely refill reminders.", accent: "#C0453B", agents: ["sehat", "samay"] },
+  { id: "kisan-cycle", title: "Weather → Crop → Schemes → Budget → Plan", desc: "The biggest chain: live weather drives crop advice, then schemes, an input budget and a full season plan.", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"] },
+  { id: "resolve-grievance", title: "Decode → Complaint → Schedule", desc: "A confusing notice becomes a filed complaint with deadlines.", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"] },
+  { id: "scam-to-safety", title: "Check scam → Act → Report", desc: "Verify a message, get urgent steps, draft the report.", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"] },
+  { id: "land-a-job", title: "Tailor résumé → Interview → Plan", desc: "From background to tailored résumé, mock interview and a plan.", accent: "#6D4AA7", agents: ["disha", "disha", "samay"] },
+  { id: "money-makeover", title: "Analyse spends → Plan savings", desc: "Make sense of money, then schedule what actually saves it.", accent: "#138A72", agents: ["paisa", "samay"] },
+  { id: "health-savings", title: "Decode Rx → Refill reminders", desc: "Cheaper generics, then timely refill reminders.", accent: "#C0453B", agents: ["sehat", "samay"] },
 ];
 
 function FlowChain({ agents }: { agents: string[] }) {
@@ -496,6 +496,7 @@ function FlowChain({ agents }: { agents: string[] }) {
 
 function TrulyAgentic() {
   const open = () => window.dispatchEvent(new Event("saarthi:workflows"));
+  const openWf = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workflows", { detail: { id } }));
   return (
     <section className="mx-auto max-w-6xl px-5 py-16">
       <Reveal className="max-w-2xl">
@@ -507,7 +508,7 @@ function TrulyAgentic() {
       <div className="mt-10 grid gap-4 lg:grid-cols-2">
         {FLOWS.map((fl, i) => (
           <Reveal key={fl.title} delay={(i % 2) * 0.06}>
-            <button onClick={open} className="group flex h-full w-full flex-col rounded-2xl border border-line bg-paper p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
+            <button onClick={() => openWf(fl.id)} className="group flex h-full w-full flex-col rounded-2xl border border-line bg-paper p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-white" style={{ background: fl.accent }}><Workflow className="h-4 w-4" /></span>
                 <span className="display text-lg font-bold deva">{fl.title}</span>

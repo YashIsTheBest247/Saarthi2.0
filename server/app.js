@@ -64,6 +64,7 @@ app.post("/api/resume/pdf", (req, res) => handleResumePdf(req, res));
 app.post("/api/extract", makeHandler("extract"));
 app.post("/api/route", makeHandler("route"));
 app.post("/api/emergency", makeHandler("emergency"));
+app.post("/api/manager", makeHandler("manager"));
 app.post("/api/form16", makeHandler("form16"));
 
 app.get("/api/news", async (_req, res) => {

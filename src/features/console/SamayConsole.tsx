@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Target, ListTodo, Timer, Trophy, Plus, Trash2, Check, Flag,
   CalendarPlus, Download, Play, Pause, RotateCcw, AlertTriangle, LifeBuoy, Flame, X,
+  Users, Loader2, Sparkles, CheckCircle2, UserCheck, RefreshCw,
 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
 import { Siren } from "lucide-react";
@@ -10,6 +11,11 @@ import { Emergency } from "../Emergency";
 import { Select } from "../../components/Select";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Samay } from "../Samay";
+import { useApp } from "../../app/AppContext";
+import { callFeature } from "../../lib/api";
+import { FEATURES } from "../../lib/features";
+import { AgentAvatar } from "../../components/AgentAvatar";
+import { CopyBlock } from "../../components/ui";
 import { confetti } from "../../lib/confetti";
 import {
   Task, Goal, Habit, Recur, onTimeProb, realityCheck, nextRecurrence,
@@ -33,10 +39,163 @@ const fmtDeadline = (iso?: string) => {
 
 const WORK = 25 * 60, BREAK = 5 * 60;
 
+/* A task delegated by Smriti to a specialist agent. */
+interface Deleg {
+  agent: string;       // feature key or "none"
+  agentName: string;   // display name (Adhrit, Disha…) or "You"
+  status: "Completed" | "Needs you";
+  reason: string;
+  deliverable?: string;
+  at: number;
+}
+
+const agentFace = (key: string) => FEATURES.find((f) => f.key === key);
+
+/* ------------------------- MANAGER TAB (Smriti delegates) ------------------------- */
+function ManagerTab({ tasks, setTasks, delegated, setDelegated, accent }: {
+  tasks: Task[];
+  setTasks: (u: (p: Task[]) => Task[]) => void;
+  delegated: Record<number, Deleg>;
+  setDelegated: (u: (p: Record<number, Deleg>) => Record<number, Deleg>) => void;
+  accent: string;
+}) {
+  const { t, lang } = useApp();
+  const [busy, setBusy] = useState<number | null>(null);
+  const [running, setRunning] = useState(false);
+  const [autoRan, setAutoRan] = useState(false);
+
+  const pending = tasks.filter((tk) => !delegated[tk.id]);
+  const completed = tasks.filter((tk) => delegated[tk.id]?.status === "Completed");
+  const needsYou = tasks.filter((tk) => delegated[tk.id]?.status === "Needs you");
+
+  async function delegateOne(tk: Task) {
+    setBusy(tk.id);
+    try {
+      const r = await callFeature<any>("manager", { task: tk.title, deadline: tk.deadline, today: new Date().toDateString(), language: lang.name });
+      const d: Deleg = {
+        agent: r.canDelegate ? r.agent : "none",
+        agentName: r.agentName || (r.canDelegate ? "Specialist" : "You"),
+        status: r.canDelegate ? "Completed" : "Needs you",
+        reason: r.reason || "",
+        deliverable: r.deliverable,
+        at: Date.now(),
+      };
+      setDelegated((p) => ({ ...p, [tk.id]: d }));
+      if (d.status === "Completed") { confetti(36); setTasks((p) => p.map((x) => (x.id === tk.id ? { ...x, done: true } : x))); }
+    } catch {
+      setDelegated((p) => ({ ...p, [tk.id]: { agent: "none", agentName: "You", status: "Needs you", reason: "Couldn't reach the team — try again.", at: Date.now() } }));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function delegateAll() {
+    if (running) return;
+    setRunning(true);
+    const todo = tasks.filter((tk) => !delegated[tk.id]);
+    for (const tk of todo) await delegateOne(tk);
+    setRunning(false);
+  }
+
+  function undo(id: number) {
+    setDelegated((p) => { const n = { ...p }; delete n[id]; return n; });
+    setTasks((p) => p.map((x) => (x.id === id ? { ...x, done: false } : x)));
+  }
+
+  // automatically allot pending tasks the first time the manager opens
+  useEffect(() => {
+    if (!autoRan && pending.length) { setAutoRan(true); delegateAll(); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const DelegCard = ({ tk }: { tk: Task }) => {
+    const d = delegated[tk.id];
+    const face = agentFace(d.agent);
+    const ok = d.status === "Completed";
+    return (
+      <div className="card p-5">
+        <div className="flex items-start gap-3">
+          {face ? (
+            <AgentAvatar photo={face.photo} name={face.nameKey ? t(face.nameKey) : d.agentName} tint={face.tint} accent={face.accent} rounded="rounded-xl" className="h-10 w-10 flex-none" />
+          ) : (
+            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-white" style={{ background: ok ? accent : "#B07A1E" }}><UserCheck className="h-5 w-5" /></span>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: ok ? "#E4F1EA" : "#F7EEDB", color: ok ? "#2E6F52" : "#B07A1E" }}>
+                {ok ? <><CheckCircle2 className="h-3.5 w-3.5" /> Done by {d.agentName}</> : <>Needs you</>}
+              </span>
+              <span className="text-[15px] font-semibold text-ink deva">{tk.title}</span>
+              <button onClick={() => undo(tk.id)} className="ml-auto text-faint hover:text-danger" title="Undo / re-delegate"><RotateCcw className="h-4 w-4" /></button>
+            </div>
+            {d.reason && <p className="mt-1 text-sm text-muted deva">{d.reason}</p>}
+            {d.deliverable && (ok ? <div className="mt-3"><CopyBlock text={d.deliverable} /></div> : <p className="mt-2 text-sm text-graphite deva">{d.deliverable}</p>)}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Wrap>
+      <H title="Smriti — your manager" sub="Smriti reviews every task, hands each to the right specialist agent, and brings back finished work." />
+
+      <div className="card mb-5 flex flex-wrap items-center gap-3 p-5">
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-white" style={{ background: accent }}><Users className="h-5 w-5" /></span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] text-graphite deva">
+            {tasks.length === 0 ? "Add tasks on the Task board, then Smriti will delegate them to your AI team."
+              : running ? <>Delegating… <b>{completed.length + needsYou.length}/{tasks.length}</b> reviewed.</>
+              : <><b>{completed.length}</b> completed by the team · <b>{needsYou.length}</b> need you · <b>{pending.length}</b> pending.</>}
+          </p>
+        </div>
+        <button onClick={delegateAll} disabled={running || pending.length === 0} className="btn-accent text-[15px]" style={{ background: accent }}>
+          {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Working…</> : <><Sparkles className="h-4 w-4" /> Delegate {pending.length ? `${pending.length} task${pending.length > 1 ? "s" : ""}` : "tasks"}</>}
+        </button>
+        {tasks.some((tk) => tk.deadline) && (
+          <button onClick={() => downloadICS(tasks)} className="btn-ghost text-sm"><Download className="h-4 w-4" /> Add all to calendar (.ics)</button>
+        )}
+      </div>
+
+      {/* live: tasks still being reviewed */}
+      {pending.length > 0 && (
+        <div className="mb-5 space-y-2">
+          {pending.map((tk) => (
+            <div key={tk.id} className="card flex items-center gap-3 p-4">
+              {busy === tk.id ? <Loader2 className="h-5 w-5 flex-none animate-spin" style={{ color: accent }} />
+                : <span className="h-5 w-5 flex-none rounded-full border-2 border-dashed" style={{ borderColor: accent }} />}
+              <span className="truncate text-[15px] text-graphite deva">{tk.title}</span>
+              <span className="ml-auto flex-none text-xs text-faint">{busy === tk.id ? "Assigning…" : "Queued"}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* completed by the team */}
+      {completed.length > 0 && (
+        <div className="mb-5">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted"><CheckCircle2 className="h-4 w-4 text-[#2E6F52]" /> Completed by your team</h3>
+          <div className="space-y-3">{completed.map((tk) => <DelegCard key={tk.id} tk={tk} />)}</div>
+        </div>
+      )}
+
+      {/* needs you */}
+      {needsYou.length > 0 && (
+        <div>
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted"><UserCheck className="h-4 w-4" style={{ color: "#B07A1E" }} /> Only you can do these</h3>
+          <div className="space-y-3">{needsYou.map((tk) => <DelegCard key={tk.id} tk={tk} />)}</div>
+        </div>
+      )}
+
+      {tasks.length === 0 && <p className="text-sm text-muted">No tasks yet — add some on the Task board and come back.</p>}
+    </Wrap>
+  );
+}
+
 export function SamayConsole({ onBack }: { onBack: () => void }) {
   const [tasks, setTasks] = useLocal<Task[]>("saarthi.samay.tasks", []);
   const [goals, setGoals] = useLocal<Goal[]>("saarthi.samay.goals", []);
   const [habits, setHabits] = useLocal<Habit[]>("saarthi.samay.habits", []);
+  const [delegated, setDelegated] = useLocal<Record<number, Deleg>>("saarthi.samay.delegated", {});
   const [focus, setFocus] = useLocal("saarthi.samay.focus", { sessions: 0, streak: 0, lastDate: "" });
 
   const [form, setForm] = useState<{ title: string; priority: string; deadline: string; estimateMins: string; recur: Recur }>({ title: "", priority: "High", deadline: "", estimateMins: "", recur: "none" });
@@ -273,7 +432,11 @@ export function SamayConsole({ onBack }: { onBack: () => void }) {
               {next3[0] ? <>Start with <b>{next3[0].title}</b>.</> : "Nothing urgent — add a task to begin."}
             </p>
           </div>
-          <button onClick={() => setRescueOpen((x) => !x)} className="btn px-4 py-2 text-sm bg-clay-500 text-white hover:bg-clay-600"><LifeBuoy className="h-4 w-4" /> Rescue mode</button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => go("manager")} className="btn-accent px-4 py-2 text-sm" style={{ background: ACCENT }}><Users className="h-4 w-4" /> Delegate to team</button>
+            {tasks.some((tk) => tk.deadline) && <button onClick={() => downloadICS(tasks)} className="btn-ghost px-4 py-2 text-sm"><Download className="h-4 w-4" /> Add to calendar</button>}
+            <button onClick={() => setRescueOpen((x) => !x)} className="btn px-4 py-2 text-sm bg-clay-500 text-white hover:bg-clay-600"><LifeBuoy className="h-4 w-4" /> Rescue mode</button>
+          </div>
         </div>
         {rescueOpen && (
           <div className="border-t border-line bg-mist/60 p-5">
@@ -308,6 +471,7 @@ export function SamayConsole({ onBack }: { onBack: () => void }) {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, render: (go) => dashboard(go) },
     { id: "plan", label: "Plan", icon: Target, render: () => <Wrap><Samay embedded /></Wrap> },
     { id: "tasks", label: "Task board", icon: ListTodo, render: () => TasksTab },
+    { id: "manager", label: "Manager", icon: Users, render: () => <ManagerTab tasks={tasks} setTasks={setTasks} delegated={delegated} setDelegated={setDelegated} accent={ACCENT} /> },
     { id: "focus", label: "Focus", icon: Timer, render: () => FocusTab },
     { id: "goals", label: "Goals & habits", icon: Trophy, render: () => GoalsTab },
   ];
