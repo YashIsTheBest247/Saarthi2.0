@@ -92,8 +92,8 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     setRunning(false);
   }
 
-  const center = (key: string) => nodes.find((n) => n.key === key);
   const edgeActive = (key: string) => active === key || done.has(key);
+  const nameOf = (key: string) => { const f = FEATURES.find((x) => x.key === key); return f ? t(f.nameKey) : key; };
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="mx-auto max-w-6xl px-5 pb-24 pt-6">
@@ -192,6 +192,29 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
             </div>
           </div>
 
+          {/* live processing indicator */}
+          {running && (
+            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card flex items-center gap-3 p-4">
+              <span className="relative flex h-9 w-9 flex-none">
+                <svg viewBox="0 0 36 36" className="h-9 w-9 animate-spin">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke={`${SMRITI.accent}22`} strokeWidth="4" />
+                  <circle cx="18" cy="18" r="15" fill="none" stroke={SMRITI.accent} strokeWidth="4" strokeLinecap="round" strokeDasharray="64 36" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-ink deva">
+                  {smritiBusy ? `${t(SMRITI.nameKey)} is reading & prioritising…` : active ? `Handing off to ${nameOf(active)}…` : "Working…"}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted deva">
+                  Routing your request to the right agents
+                  <span className="inline-flex gap-0.5">
+                    {[0, 1, 2].map((d) => <motion.span key={d} animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.1, delay: d * 0.18 }} className="text-ink">.</motion.span>)}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {summary && (
             <div className="card flex items-start gap-2 p-4">
               <Sparkles className="mt-0.5 h-4 w-4 flex-none" style={{ color: SMRITI.accent }} />
@@ -231,7 +254,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
                 <Sparkles className="h-4 w-4" style={{ color: SMRITI.accent }} /> Done — {done.size} agent{done.size === 1 ? "" : "s"} handled it.
               </div>
             )}
-            {!running && feed.length === 0 && (
+            {!running && feed.length === 0 && !summary && (
               <p className="px-1 text-sm text-muted deva">Smriti will read your input, then light up the agents she hands work to and bring back their results here.</p>
             )}
           </div>
