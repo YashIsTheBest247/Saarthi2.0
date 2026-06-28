@@ -898,7 +898,7 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
 
 export function Landing({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   return (
-    <>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
       <Hero onOpen={onOpen} />
       <Trusted />
       <AgentsGrid onOpen={(k) => onOpen(k)} />
@@ -909,6 +909,6 @@ export function Landing({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
       <QuietJobs />
       <Closing />
       <Footer onOpen={onOpen} />
-    </>
+    </motion.div>
   );
 }

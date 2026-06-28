@@ -27,9 +27,8 @@ const isHindi = (s) => /[ऀ-ॿ]/.test(s || "");
  * deep link that opens the right agent in the web app.
  */
 export async function handleTelegram(req, res) {
-  // Always 200 fast so Telegram doesn't retry.
-  res.json({ ok: true });
-
+  // IMPORTANT: on serverless the function can be frozen as soon as the response
+  // is sent — so we do ALL the work (Gemini + sendMessage) and only THEN ack 200.
   try {
     const msg = req.body?.message || req.body?.edited_message;
     const chatId = msg?.chat?.id;
@@ -79,5 +78,8 @@ export async function handleTelegram(req, res) {
     await send(chatId, reply);
   } catch (err) {
     console.error("[telegram] handler", err?.message || err);
+  } finally {
+    // Ack last, after the reply has been sent, so the lambda isn't frozen early.
+    if (!res.headersSent) res.json({ ok: true });
   }
 }

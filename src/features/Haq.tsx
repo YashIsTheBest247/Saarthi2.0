@@ -4,6 +4,7 @@ import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
 import { callFeature } from "../lib/api";
 import { FeatureShell } from "../components/FeatureShell";
+import { Select } from "../components/Select";
 import { Thinking, ResultCard, MockNote, Reveal } from "../components/ui";
 
 interface Scheme {
@@ -60,14 +61,10 @@ export function Haq({ onBack, embedded }: { onBack?: () => void; embedded?: bool
     }
   }
 
-  const Select = ({ k, label, opts }: { k: string; label: string; opts: string[] }) => (
+  const ProfileField = ({ k, label, opts }: { k: string; label: string; opts: string[] }) => (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium text-graphite deva">{label}</span>
-      <select value={(form as any)[k]} onChange={(e) => set(k, e.target.value)} className="field deva">
-        {opts.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
+      <Select value={(form as any)[k]} onChange={(v) => set(k, v)} options={opts.map((o) => ({ value: o, label: o }))} ariaLabel={label} />
     </label>
   );
 
@@ -85,11 +82,11 @@ export function Haq({ onBack, embedded }: { onBack?: () => void; embedded?: bool
               className="field"
             />
           </label>
-          <Select k="gender" label={t("h.gender")} opts={["Female", "Male", "Other"]} />
-          <Select k="state" label={t("h.state")} opts={STATES} />
-          <Select k="occupation" label={t("h.occupation")} opts={OCCUPATIONS} />
-          <Select k="income" label={t("h.income")} opts={["Below ₹1 lakh", "₹1–3 lakh", "₹3–6 lakh", "₹6–10 lakh", "Above ₹10 lakh"]} />
-          <Select k="category" label={t("h.category")} opts={["General", "OBC", "SC", "ST", "EWS"]} />
+          <ProfileField k="gender" label={t("h.gender")} opts={["Female", "Male", "Other"]} />
+          <ProfileField k="state" label={t("h.state")} opts={STATES} />
+          <ProfileField k="occupation" label={t("h.occupation")} opts={OCCUPATIONS} />
+          <ProfileField k="income" label={t("h.income")} opts={["Below ₹1 lakh", "₹1–3 lakh", "₹3–6 lakh", "₹6–10 lakh", "Above ₹10 lakh"]} />
+          <ProfileField k="category" label={t("h.category")} opts={["General", "OBC", "SC", "ST", "EWS"]} />
         </div>
 
         <div className="mt-5">

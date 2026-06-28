@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { AppProvider, useApp } from "./app/AppContext";
 import { Nav } from "./components/Nav";
@@ -22,11 +22,8 @@ function Shell() {
   const { lang } = useApp();
   const [view, setView] = useState<View>("home");
   const L = lang.iso; // include in keys so a language switch cross-fades smoothly
-
-  // scroll to top on view change
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [view]);
+  const homeScroll = useRef(0);   // remembered landing scroll position
+  const wantRestore = useRef(false); // restore it when returning via Back
 
   // deep links (e.g. from the Telegram bot): ?agent=kavach opens that console,
   // ?q=... opens the chat pre-filled. URL is cleaned afterwards.
@@ -40,15 +37,29 @@ function Shell() {
     if (a || q) window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
-  const open = (k?: FeatureKey) => setView(k ?? "kavach");
-  const back = () => setView("home");
+  const open = (k?: FeatureKey) => {
+    if (view === "home") homeScroll.current = window.scrollY; // remember where we were
+    setView(k ?? "kavach");
+  };
+  const back = () => { wantRestore.current = true; setView("home"); };
+
+  // run after the outgoing page has animated out and the new one is in the DOM
+  const onExitComplete = () => {
+    if (view === "home" && wantRestore.current) {
+      wantRestore.current = false;
+      requestAnimationFrame(() => window.scrollTo({ top: homeScroll.current }));
+    } else if (view !== "home") {
+      window.scrollTo({ top: 0 });
+    }
+    // (language switch on home: leave the scroll position untouched)
+  };
 
   return (
     <div className="page-bg relative min-h-screen">
       {view === "home" && <Nav onHome={() => setView("home")} onOpen={open} />}
 
       <main className="relative z-10">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" onExitComplete={onExitComplete}>
           {view === "home" && <Landing key={`home-${L}`} onOpen={open} />}
           {view === "kavach" && <KavachConsole key={`kavach-${L}`} onBack={back} />}
           {view === "samajh" && <SamajhConsole key={`samajh-${L}`} onBack={back} />}

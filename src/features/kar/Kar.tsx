@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Calculator, Sparkles, BadgeIndianRupee, FileUp, Check, Download, Scale } from "lucide-react";
+import { Calculator, BadgeIndianRupee, FileUp, Check, Download, Scale } from "lucide-react";
+import { BrandMark } from "../../components/Logo";
 import { useApp } from "../../app/AppContext";
 import { featureByKey } from "../../lib/features";
 import { callFeature, fileToInlineData } from "../../lib/api";
@@ -257,7 +258,7 @@ export function Kar({ onBack, embedded }: { onBack?: () => void; embedded?: bool
           <div className="card p-6">
             <h3 className="display text-lg font-bold deva">{t("tx.advisor")}</h3>
             <textarea value={q} onChange={(e) => setQ(e.target.value)} rows={2} placeholder={t("tx.advisorPh")} className="field mt-3 resize-none deva" />
-            <button onClick={getAdvice} disabled={loading} className="btn-primary mt-3 text-[15px]"><Sparkles className="h-4 w-4" /> {t("tx.getTips")}</button>
+            <button onClick={getAdvice} disabled={loading} className="btn-primary mt-3 text-[15px]"><BrandMark className="h-4 w-4" /> {t("tx.getTips")}</button>
 
             {loading && <div className="mt-5"><Thinking label={t("common.running")} /></div>}
 

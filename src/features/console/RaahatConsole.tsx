@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { LayoutDashboard, LifeBuoy, Siren, Map as MapIcon, Activity, Boxes } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
 import { Emergency } from "../Emergency";
+import { Select } from "../../components/Select";
 import { useLocal, H, Wrap, StatTiles } from "./kit";
 import { Raahat } from "../Raahat";
 import {
@@ -220,11 +221,8 @@ export function RaahatConsole({ onBack }: { onBack: () => void }) {
                     <td className="p-3 font-medium text-ink">{p.name}</td>
                     <td className="p-3"><input type="number" min={0} value={areas[i].affected} onChange={(e) => setArea(i, { affected: Math.max(0, Number(e.target.value)) })} className="w-24 rounded-lg border border-line bg-paper px-2 py-1" /></td>
                     <td className="p-3">
-                      <select value={areas[i].severity} onChange={(e) => setArea(i, { severity: Number(e.target.value) })} className="rounded-lg border border-line bg-paper px-2 py-1">
-                        <option value={1}>1 · Low</option>
-                        <option value={2}>2 · High</option>
-                        <option value={3}>3 · Severe</option>
-                      </select>
+                      <Select value={String(areas[i].severity)} onChange={(v) => setArea(i, { severity: Number(v) })} ariaLabel="Severity" className="w-32"
+                        options={[{ value: "1", label: "1 · Low" }, { value: "2", label: "2 · High" }, { value: "3", label: "3 · Severe" }]} />
                     </td>
                     <td className="p-3 font-semibold" style={{ color: ACCENT }}>{Math.round(p.share * 100)}%</td>
                     <td className="p-3">{p.boats}</td>

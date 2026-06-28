@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Target, ListTodo, Timer, Trophy, Plus, Trash2, Check, Flag,
-  CalendarPlus, Download, Play, Pause, RotateCcw, AlertTriangle, LifeBuoy, Flame, Sparkles, X,
+  CalendarPlus, Download, Play, Pause, RotateCcw, AlertTriangle, LifeBuoy, Flame, X,
 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "./AgentConsole";
 import { Siren } from "lucide-react";
+import { BrandMark } from "../../components/Logo";
 import { Emergency } from "../Emergency";
+import { Select } from "../../components/Select";
 import { useLocal, H, Wrap, StatTiles, uid } from "./kit";
 import { Samay } from "../Samay";
 import { confetti } from "../../lib/confetti";
@@ -112,11 +114,10 @@ export function SamayConsole({ onBack }: { onBack: () => void }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="New task" className="field" />
           <div className="grid grid-cols-3 gap-2">
-            <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="field">{PRIOS.map((p) => <option key={p}>{p}</option>)}</select>
+            <Select value={form.priority} onChange={(v) => setForm({ ...form, priority: v })} options={PRIOS.map((p) => ({ value: p, label: p }))} ariaLabel="Priority" />
             <input value={form.estimateMins} onChange={(e) => setForm({ ...form, estimateMins: e.target.value })} placeholder="mins" inputMode="numeric" className="field" />
-            <select value={form.recur} onChange={(e) => setForm({ ...form, recur: e.target.value as Recur })} className="field">
-              <option value="none">Once</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option>
-            </select>
+            <Select value={form.recur} onChange={(v) => setForm({ ...form, recur: v as Recur })} ariaLabel="Repeat"
+              options={[{ value: "none", label: "Once" }, { value: "daily", label: "Daily" }, { value: "weekdays", label: "Weekdays" }, { value: "weekly", label: "Weekly" }]} />
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -266,7 +267,7 @@ export function SamayConsole({ onBack }: { onBack: () => void }) {
         <div className="h-1.5 w-full" style={{ background: ACCENT }} />
         <div className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 flex-none" style={{ color: ACCENT }} />
+            <span className="flex-none" style={{ color: ACCENT }}><BrandMark className="h-5 w-5" /></span>
             <p className="text-[15px] text-graphite">
               <span className="font-semibold">Daily standup:</span> {dueToday} due today, {overdue} overdue.{" "}
               {next3[0] ? <>Start with <b>{next3[0].title}</b>.</> : "Nothing urgent — add a task to begin."}

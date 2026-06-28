@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Siren, Phone, ExternalLink } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
@@ -45,6 +45,14 @@ export function Emergency({ agentKey }: { agentKey: FeatureKey; embedded?: boole
   const [text, setText] = useState(cfg.preset);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EResult | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result) {
+      const id = window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      return () => window.clearTimeout(id);
+    }
+  }, [result]);
 
   async function run() {
     if (!text.trim()) return;
@@ -79,7 +87,7 @@ export function Emergency({ agentKey }: { agentKey: FeatureKey; embedded?: boole
       {loading && <div className="card mt-6 p-8"><Thinking label={t("common.running")} /></div>}
 
       {result && !loading && (
-        <div className="mt-6 space-y-5">
+        <div ref={resultRef} className="mt-6 space-y-5 scroll-mt-20">
           <div className="rounded-2xl border border-line bg-paper p-5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background: SEV[result.severity] || "#C0453B" }}>{result.severity}</span>

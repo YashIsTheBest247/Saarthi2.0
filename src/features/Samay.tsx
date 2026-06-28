@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Send, ImagePlus, X, Clock, CalendarClock, Flag, Sparkles } from "lucide-react";
+import { Send, ImagePlus, X, Clock, CalendarClock, Flag } from "lucide-react";
+import { BrandMark } from "../components/Logo";
 import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
 import { callFeature, fileToInlineData } from "../lib/api";
@@ -121,7 +122,7 @@ export function Samay({ onBack, embedded }: { onBack?: () => void; embedded?: bo
             <p className="display text-lg font-semibold leading-snug deva">{result.summary}</p>
             {/* do this first */}
             <div className="mt-4 flex gap-3 rounded-2xl p-5" style={{ background: meta.tint }}>
-              <Sparkles className="mt-0.5 h-5 w-5 flex-none" style={{ color: meta.accent }} />
+              <span className="mt-0.5 flex-none" style={{ color: meta.accent }}><BrandMark className="h-5 w-5" /></span>
               <div className="deva">
                 <div className="text-xs font-bold uppercase tracking-wide" style={{ color: meta.accentDark }}>{t("sm.first")}</div>
                 <p className="mt-1 text-[15px] font-medium text-ink">{result.topPriority}</p>

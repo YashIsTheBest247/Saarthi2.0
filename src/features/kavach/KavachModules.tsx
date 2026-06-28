@@ -3,12 +3,13 @@ import { motion } from "framer-motion";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
-  Send, ShieldAlert, Sparkles, AlertTriangle, Check, Workflow, ArrowRight,
+  Send, ShieldAlert, AlertTriangle, Check, Workflow, ArrowRight,
   Waves, Banknote, ImagePlus, X, ExternalLink, RefreshCw, Radio,
 } from "lucide-react";
 import { useApp } from "../../app/AppContext";
 import { callFeature, fileToInlineData } from "../../lib/api";
 import { RiskRing } from "../../components/Landing";
+import { BrandMark } from "../../components/Logo";
 import { Thinking, CopyBlock, ListBlock, MockNote } from "../../components/ui";
 import {
   classifyScam, confusion, pct, Metrics,
@@ -110,6 +111,14 @@ export function Detector() {
   const [loading, setLoading] = useState(false);
   const [rule, setRule] = useState<ReturnType<typeof classifyScam> | null>(null);
   const [ai, setAi] = useState<any>(null);
+  const resRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (rule && !loading) {
+      const id = window.setTimeout(() => resRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      return () => window.clearTimeout(id);
+    }
+  }, [rule, loading, ai]);
 
   async function run() {
     if (!text.trim()) return;
@@ -148,7 +157,7 @@ export function Detector() {
             >
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${deep && health.live ? "left-[22px]" : "left-0.5"}`} />
             </button>
-            <Sparkles className="h-4 w-4" style={{ color: ACCENT }} /> <span className="deva">{t("kv.det.deep")}</span>
+            <span className="flex-none" style={{ color: ACCENT }}><BrandMark className="h-4 w-4" /></span> <span className="deva">{t("kv.det.deep")}</span>
           </label>
         </div>
         {!health.live && <p className="mt-2 text-xs text-faint deva">{t("kv.det.noKey")}</p>}
@@ -157,7 +166,7 @@ export function Detector() {
       {loading && <div className="card mt-5 p-8"><Thinking label={t("kv.det.thinking")} /></div>}
 
       {rule && !loading && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card mt-5 overflow-hidden">
+        <motion.div ref={resRef} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card mt-5 scroll-mt-20 overflow-hidden">
           <div className="h-1.5 w-full" style={{ background: vColor }} />
           <div className="p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -188,7 +197,7 @@ export function Detector() {
             {ai && (
               <div className="mt-6 rounded-2xl border p-5" style={{ borderColor: ACCENT, background: "#EAF1FF" }}>
                 <div className="flex items-center gap-2 text-sm font-semibold deva" style={{ color: ACCENT_DARK }}>
-                  <Sparkles className="h-4 w-4" /> {t("kv.det.aiTitle")} · {ai.category}
+                  <BrandMark className="h-4 w-4" /> {t("kv.det.aiTitle")} · {ai.category}
                 </div>
                 <p className="mt-2 deva text-[15px] text-graphite">{ai.headline}</p>
                 <p className="mt-1 deva text-sm text-muted">{ai.summary}</p>

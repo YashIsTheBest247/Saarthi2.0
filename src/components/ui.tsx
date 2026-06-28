@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Mic, Square, Sparkles, Check, AlertTriangle, ArrowRight, Copy } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { Mic, Square, Check, AlertTriangle, ArrowRight, Copy } from "lucide-react";
+import { ReactNode, useState, useRef, useEffect } from "react";
 import { useApp } from "../app/AppContext";
+import { BrandMark } from "./Logo";
 
 /* ---------- Motion reveal ---------- */
 export function Reveal({
@@ -63,15 +64,15 @@ export function StatusBadge({ live, label }: { live: boolean; label: string }) {
 export function Thinking({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 text-graphite">
-      <span className="relative inline-flex h-5 w-5">
-        <Sparkles className="h-5 w-5 animate-pulse text-clay-500" />
+      <span className="relative inline-flex h-5 w-5 animate-pulse text-[#2D6BFF]">
+        <BrandMark className="h-5 w-5" />
       </span>
       <span className="text-sm font-medium">{label}</span>
       <span className="flex gap-1">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
-            className="h-1.5 w-1.5 rounded-full bg-clay-300"
+            className="h-1.5 w-1.5 rounded-full bg-[#2D6BFF]/50"
             animate={{ opacity: [0.2, 1, 0.2] }}
             transition={{ duration: 1, repeat: Infinity, delay: i * 0.18 }}
           />
@@ -176,12 +177,19 @@ export function CopyBlock({ text }: { text: string }) {
 
 /* ---------- Animated card wrapper for results ---------- */
 export function ResultCard({ children, accent }: { children: ReactNode; accent?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  // scroll the answer into view as soon as it renders
+  useEffect(() => {
+    const id = window.setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    return () => window.clearTimeout(id);
+  }, []);
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="card overflow-hidden"
+      className="card scroll-mt-20 overflow-hidden"
     >
       {accent && <div className="h-1.5 w-full" style={{ background: accent }} />}
       <div className="p-6 sm:p-8">{children}</div>

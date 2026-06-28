@@ -5,6 +5,7 @@ import { featureByKey } from "../lib/features";
 import { callFeature } from "../lib/api";
 import { useVoice } from "../hooks/useVoice";
 import { FeatureShell } from "../components/FeatureShell";
+import { Select } from "../components/Select";
 import { Thinking, VoiceButton, ListBlock, ResultCard, MockNote } from "../components/ui";
 
 interface Hazard {
@@ -75,9 +76,7 @@ export function Raahat({ onBack, embedded }: { onBack?: () => void; embedded?: b
       <div className="card p-6 sm:p-7">
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
           <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location / region (e.g. Guwahati, Assam)" className="field deva" />
-          <select value={focus} onChange={(e) => setFocus(e.target.value)} className="field sm:w-44">
-            {FOCUS.map((f) => <option key={f}>{f}</option>)}
-          </select>
+          <Select value={focus} onChange={setFocus} options={FOCUS.map((f) => ({ value: f, label: f }))} className="sm:w-44" ariaLabel="Hazard focus" />
         </div>
         <textarea value={situation} onChange={(e) => setSituation(e.target.value)} placeholder={t("rh.ph")} rows={4} className="field mt-3 resize-none deva" />
         <div className="mt-4 flex flex-wrap items-center gap-2">
