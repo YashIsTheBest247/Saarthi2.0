@@ -228,4 +228,3 @@ vercel.json         build + /api routing + function config
 
 ---
 
-*Made for India · Powered by Gemini.*

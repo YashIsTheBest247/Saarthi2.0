@@ -9,7 +9,7 @@ import { getJobs } from "./jobs.js";
 import { handleTelegram } from "./telegram.js";
 import { handleResumePdf } from "./resumePdf.js";
 import { buildDoc, MIME, slug } from "./docgen.js";
-import { runWorkflow, runStep, planWorkflow, workflowList } from "./workflows.js";
+import { runWorkflow, runStep, planWorkflow, workflowList, getWeather } from "./workflows.js";
 
 /**
  * The Express app, with no `listen()` — so it can be used both by the local
@@ -69,6 +69,10 @@ app.post("/api/manager", makeHandler("manager"));
 app.post("/api/study", makeHandler("study"));
 app.post("/api/intake", makeHandler("intake"));
 app.post("/api/assist", makeHandler("assist"));
+app.get("/api/weather", async (req, res) => {
+  try { res.json(await getWeather(req.query.place || "")); }
+  catch (err) { res.json({ summary: "Live weather unavailable.", _error: String(err?.message || err) }); }
+});
 
 // Export Acharya's content as a real document: Times New Roman, 12pt, formatted.
 app.post("/api/study/export", async (req, res) => {

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Send, ImagePlus, X, Scale, Building2, ExternalLink, ArrowUpRight } from "lucide-react";
+import { Send, ImagePlus, X, Scale, Building2, ExternalLink, ArrowUpRight, FileText } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
 import { callFeature, fileToInlineData } from "../lib/api";
@@ -27,6 +27,7 @@ export function Setu({ onBack, embedded }: { onBack?: () => void; embedded?: boo
   const [problem, setProblem] = useState("");
   const [image, setImage] = useState<{ mimeType: string; data: string } | null>(null);
   const [preview, setPreview] = useState("");
+  const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SetuResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -36,7 +37,12 @@ export function Setu({ onBack, embedded }: { onBack?: () => void; embedded?: boo
     const file = e.target.files?.[0];
     if (!file) return;
     setImage(await fileToInlineData(file));
-    setPreview(URL.createObjectURL(file));
+    setFileName(file.name);
+    setPreview(file.type.startsWith("image/") ? URL.createObjectURL(file) : "");
+  }
+  function clearFile() {
+    setImage(null); setPreview(""); setFileName("");
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   async function run() {
@@ -58,14 +64,21 @@ export function Setu({ onBack, embedded }: { onBack?: () => void; embedded?: boo
         {preview && (
           <div className="relative mb-4 inline-block">
             <img src={preview} alt="proof" className="max-h-44 rounded-2xl border border-line" />
-            <button onClick={() => { setImage(null); setPreview(""); if (fileRef.current) fileRef.current.value = ""; }} className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white"><X className="h-4 w-4" /></button>
+            <button onClick={clearFile} className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white"><X className="h-4 w-4" /></button>
+          </div>
+        )}
+        {image && !preview && (
+          <div className="relative mb-4 inline-flex items-center gap-2 rounded-2xl border border-line bg-mist px-4 py-3">
+            <FileText className="h-5 w-5" style={{ color: meta.accent }} />
+            <span className="max-w-[14rem] truncate text-sm font-medium text-graphite deva">{fileName || "Document"}</span>
+            <button onClick={clearFile} className="ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white"><X className="h-3.5 w-3.5" /></button>
           </div>
         )}
         <textarea value={problem} onChange={(e) => setProblem(e.target.value)} placeholder={t("st.ph")} rows={4} className="field resize-none deva" />
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button onClick={run} disabled={loading || (!problem.trim() && !image)} className="btn-accent text-[15px]"><Send className="h-4 w-4" />{t("common.run")}</button>
-          <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
-          <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm"><ImagePlus className="h-4 w-4" />{t("common.upload")}</button>
+          <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" />
+          <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm"><ImagePlus className="h-4 w-4" />{t("common.upload")} <span className="ml-1 text-faint">(photo / PDF)</span></button>
           {voice.supported && <VoiceButton listening={voice.listening} onClick={() => (voice.listening ? voice.stop() : voice.start(problem))} speakLabel={t("common.speak")} listeningLabel={t("common.listening")} />}
           <button onClick={() => setProblem(EXAMPLE)} className="btn-ghost text-sm">{t("common.example")}</button>
         </div>

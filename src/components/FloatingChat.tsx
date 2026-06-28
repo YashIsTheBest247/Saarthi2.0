@@ -36,6 +36,11 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy, open]);
 
+  // keep the opening greeting in the current language (chat persists across switches)
+  useEffect(() => {
+    setMsgs((m) => (m.length === 1 && m[0].id === 0 ? [{ id: 0, from: "bot", text: t("chat.greet") }] : m));
+  }, [lang.iso]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // let other parts of the app open the chat (CTA, command palette) — optionally with a question
   useEffect(() => {
     const h = (e: Event) => {

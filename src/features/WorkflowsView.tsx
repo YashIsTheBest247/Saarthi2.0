@@ -11,16 +11,16 @@ import { notify } from "../lib/reminders";
 import { WorkflowBuilder } from "./WorkflowBuilder";
 import { Plus } from "lucide-react";
 
-interface WfMeta { id: string; title: string; desc: string; accent: string; seedLabel: string; agents: string[]; example: string }
+interface WfMeta { id: string; k: string; accent: string; agents: string[]; example: string }
 
 const WF: WfMeta[] = [
-  { id: "kisan-cycle", title: "Weather → Crop → Schemes → Budget → Plan", desc: "Saarthi's biggest chain: live weather feeds weather-aware crop advice, then farm schemes, an input budget and a full sowing schedule — five agents, one ask.", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"], seedLabel: "Your crop, place & problem (e.g. tomato in Nashik, leaves yellowing)", example: "Tomato crop in Nashik, leaves turning yellow with spots. Small farmer, half acre." },
-  { id: "homework-to-submission", title: "Write homework → Schedule submission", desc: "Acharya writes the assignment to your brief; Smriti schedules review time and reminds you to submit before the deadline.", accent: "#7A4FB0", agents: ["study", "samay"], seedLabel: "What to write + when it's due", example: "Write a history essay on the Salt March of 1930 — causes, the march, and why it mattered. Due Friday 5pm." },
-  { id: "resolve-grievance", title: "Decode → Complaint → Schedule", desc: "Turn a confusing notice or problem into a filed complaint with follow-up deadlines.", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"], seedLabel: "Paste the notice / describe the problem", example: "I ordered a phone for ₹15,000; it came damaged and the seller refuses a refund." },
-  { id: "scam-to-safety", title: "Check scam → Act → Report", desc: "Verify a suspicious message, get urgent next steps, and draft the report to file.", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"], seedLabel: "Paste the suspicious SMS / call / email", example: "Your electricity will be disconnected tonight. Pay now or call 9xxxxxxxxx immediately." },
-  { id: "land-a-job", title: "Tailor résumé → Interview → Plan", desc: "From your background to a tailored résumé, a mock interview, and an application plan.", accent: "#6D4AA7", agents: ["disha", "disha", "samay"], seedLabel: "Your background + target role", example: "2 yrs as a sales exec in Pune, B.Com; want to move into a customer-success role." },
-  { id: "money-makeover", title: "Analyse spends → Plan savings", desc: "Make sense of your spending, then schedule the actions that actually save money.", accent: "#138A72", agents: ["paisa", "samay"], seedLabel: "Paste your spends / bank SMS / bills", example: "Swiggy 450, Netflix 199, rent 12000, petrol 1500, shopping 2200, credit card due 5th." },
-  { id: "health-savings", title: "Decode Rx → Refill reminders", desc: "Decode a prescription into cheaper generics, then schedule timely refills.", accent: "#C0453B", agents: ["sehat", "samay"], seedLabel: "Paste the prescription / medicines", example: "Glycomet 500 twice daily, Ecosprin 75 after dinner." },
+  { id: "kisan-cycle", k: "wf.kisan", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"], example: "Tomato crop in Nashik, leaves turning yellow with spots. Small farmer, half acre." },
+  { id: "homework-to-submission", k: "wf.hw", accent: "#7A4FB0", agents: ["study", "samay"], example: "Write a history essay on the Salt March of 1930 — causes, the march, and why it mattered. Due Friday 5pm." },
+  { id: "resolve-grievance", k: "wf.grievance", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"], example: "I ordered a phone for ₹15,000; it came damaged and the seller refuses a refund." },
+  { id: "scam-to-safety", k: "wf.scam", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"], example: "Your electricity will be disconnected tonight. Pay now or call 9xxxxxxxxx immediately." },
+  { id: "land-a-job", k: "wf.job", accent: "#6D4AA7", agents: ["disha", "disha", "samay"], example: "2 yrs as a sales exec in Pune, B.Com; want to move into a customer-success role." },
+  { id: "money-makeover", k: "wf.money", accent: "#138A72", agents: ["paisa", "samay"], example: "Swiggy 450, Netflix 199, rent 12000, petrol 1500, shopping 2200, credit card due 5th." },
+  { id: "health-savings", k: "wf.health", accent: "#C0453B", agents: ["sehat", "samay"], example: "Glycomet 500 twice daily, Ecosprin 75 after dinner." },
 ];
 
 const agentMeta = (k: string) => FEATURES.find((f) => f.key === (k as FeatureKey));
@@ -144,7 +144,7 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
         setSteps([...acc]);
       }
       setDone(true);
-      notify("Workflow complete ✅", `${wf.title} — ${acc.length} agents finished.`);
+      notify("Workflow complete ✅", `${t(`${wf.k}.t`)} — ${acc.length} agents finished.`);
     } catch {
       setError("Couldn't finish the workflow. Please try again.");
     } finally {
@@ -164,15 +164,15 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="mx-auto max-w-6xl px-5 pb-24 pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={sel ? reset : onBack} className="btn-ghost px-4 py-2 text-sm"><ArrowLeft className="h-4 w-4" />{sel ? "All workflows" : t("common.back")}</button>
+        <button onClick={sel ? reset : onBack} className="btn-ghost px-4 py-2 text-sm"><ArrowLeft className="h-4 w-4" />{sel ? t("wf.all") : t("common.back")}</button>
         <LanguagePicker compact />
       </div>
 
       <div className="mt-6 flex items-start gap-4">
         <span className="flex h-16 w-16 flex-none items-center justify-center rounded-2xl bg-ink text-white"><Workflow className="h-7 w-7" /></span>
         <div>
-          <h1 className="display text-3xl font-bold deva">Agentic Workflows</h1>
-          <p className="mt-1 max-w-2xl text-[15px] text-muted deva">One ask, many agents. Saarthi chains specialists end-to-end — each agent's output feeds the next, live.</p>
+          <h1 className="display text-3xl font-bold deva">{t("wf.title")}</h1>
+          <p className="mt-1 max-w-2xl text-[15px] text-muted deva">{t("wf.sub")}</p>
         </div>
       </div>
 
@@ -183,15 +183,15 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
             <div className="flex w-full items-center gap-3">
               <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-white" style={{ background: "#2D6BFF" }}><Plus className="h-5 w-5" /></span>
               <div>
-                <div className="display text-lg font-bold deva">Build your own workflow</div>
-                <p className="text-sm text-muted deva">Drag agents onto a canvas, connect them into a chain, and run it.</p>
+                <div className="display text-lg font-bold deva">{t("wf.build")}</div>
+                <p className="text-sm text-muted deva">{t("wf.buildSub")}</p>
               </div>
             </div>
           </button>
           {WF.map((wf) => (
             <button key={wf.id} onClick={() => { setSel(wf); setSeed(wf.example); setSteps([]); setDone(false); setError(""); }} className="card p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
-              <div className="display text-lg font-bold deva">{wf.title}</div>
-              <p className="mt-1 text-sm leading-relaxed text-muted deva">{wf.desc}</p>
+              <div className="display text-lg font-bold deva">{t(`${wf.k}.t`)}</div>
+              <p className="mt-1 text-sm leading-relaxed text-muted deva">{t(`${wf.k}.d`)}</p>
               <div className="mt-4"><Chain agents={wf.agents} /></div>
             </button>
           ))}
@@ -203,12 +203,12 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
         <div className="mt-8">
           <div className="card p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="display text-lg font-bold deva">{sel.title}</div>
+              <div className="display text-lg font-bold deva">{t(`${sel.k}.t`)}</div>
               <Chain agents={sel.agents} />
             </div>
-            <textarea value={seed} onChange={(e) => setSeed(e.target.value)} rows={4} placeholder={sel.seedLabel} className="field mt-4 resize-none deva" />
+            <textarea value={seed} onChange={(e) => setSeed(e.target.value)} rows={4} placeholder={t(`${sel.k}.s`)} className="field mt-4 resize-none deva" />
             <button onClick={() => run(sel)} disabled={running || !seed.trim()} className="btn-accent mt-4 text-[15px]" style={{ background: sel.accent }}>
-              {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Running the agents…</> : <><Play className="h-4 w-4" /> Run workflow</>}
+              {running ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("wf.running")}</> : <><Play className="h-4 w-4" /> {t("wf.run")}</>}
             </button>
           </div>
 
@@ -220,8 +220,8 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
                   {running && <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: sel.accent }} />}
                   <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: running ? sel.accent : "#138A72" }} />
                 </span>
-                {running ? "Agents working…" : "Run complete"}
-                <span className="ml-auto normal-case text-faint">{steps.length}/{sel.agents.length} steps</span>
+                {running ? t("wf.working") : t("wf.complete")}
+                <span className="ml-auto normal-case text-faint">{steps.length}/{sel.agents.length} {t("wf.steps")}</span>
               </div>
               <div className="no-scrollbar flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-1">
                 {sel.agents.map((a, i) => {
@@ -270,7 +270,7 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
 
             {done && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-4 text-sm font-medium text-graphite">
-                <Sparkle className="h-4 w-4" style={{ color: sel.accent }} /> Workflow complete — {steps.length} agents, one flow.
+                <Sparkle className="h-4 w-4" style={{ color: sel.accent }} /> {t("wf.doneA")} {steps.length} {t("wf.doneB")}
               </motion.div>
             )}
           </div>

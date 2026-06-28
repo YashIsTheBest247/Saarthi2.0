@@ -98,7 +98,7 @@ async function geocode(q) {
     return { in: list.find((x) => x.country_code === "IN") || null, any: list[0] || null };
   } catch { return { in: null, any: null }; }
 }
-async function getWeather(place) {
+export async function getWeather(place) {
   let g = null;        // best Indian match (preferred)
   let anyMatch = null; // first match overall (fallback)
   if (place) {

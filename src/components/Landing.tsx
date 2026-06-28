@@ -91,7 +91,7 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#15110D] via-[#15110D]/10 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-5 pb-12 pt-28 sm:pb-16 sm:pt-32">
+      <div className="relative mx-auto max-w-6xl px-5 pb-10 pt-24 sm:pb-14 sm:pt-28">
         <motion.h1
           initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }}
           className="display max-w-2xl text-[2.7rem] font-bold leading-[0.98] tracking-tight sm:text-[4.6rem]"
@@ -123,7 +123,7 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
 
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.32 }}
-          className="mt-7 flex flex-wrap items-center gap-3"
+          className="mt-6 flex flex-wrap items-center gap-3"
         >
           <div className="flex -space-x-3">
             {FEATURES.map((f) => (
@@ -935,10 +935,8 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
           </div>
 
           <div>
-            <div className="grid grid-cols-2 gap-x-6">
-              <div className="display text-base font-bold text-[#2D6BFF]">{t("footer.agents")}</div>
-              <div className="text-[15px] leading-snug text-linen/40 deva">{t("footer.agentsTag")}</div>
-            </div>
+            <div className="display text-base font-bold text-[#2D6BFF]">{t("footer.agents")}</div>
+            <div className="mt-1 text-[15px] font-medium text-[#2D6BFF] deva">{t("footer.agentsTag")}</div>
             <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-[17px]">
               {[...FEATURES].sort((a, b) => t(a.nameKey).length - t(b.nameKey).length).map((f) => (
                 <button key={f.key} onClick={() => onOpen(f.key)} className={link}>
