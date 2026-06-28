@@ -131,7 +131,7 @@ export async function handleTelegram(req, res) {
     // replying to a "talk to <agent>" prompt → force that agent
     const repliedTo = msg.reply_to_message?.text || "";
     const tag = repliedTo.match(/#([a-z]+)/);
-    const agentHint = tag && NAME[tag[1]] ? NAME[tag[1]] : undefined;
+    const agentHint = tag && NAME[tag[1]] ? tag[1] : undefined; // pass the agent KEY to the model
 
     await runAssist(chatId, text, agentHint);
   } catch (err) {

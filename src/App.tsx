@@ -71,11 +71,13 @@ function Shell() {
 
   // run after the outgoing page has animated out and the new one is in the DOM
   const onExitComplete = () => {
+    // jump instantly — bypass the global smooth scroll-behavior so a new page
+    // doesn't visibly scroll up from wherever the button was on the old page
     if (view === "home" && wantRestore.current) {
       wantRestore.current = false;
-      requestAnimationFrame(() => window.scrollTo({ top: homeScroll.current }));
+      requestAnimationFrame(() => { document.documentElement.scrollTop = homeScroll.current; });
     } else if (view !== "home") {
-      window.scrollTo({ top: 0 });
+      document.documentElement.scrollTop = 0;
     }
     // (language switch on home: leave the scroll position untouched)
   };

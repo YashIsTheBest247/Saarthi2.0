@@ -62,6 +62,13 @@ helplines), a ready script, and what the agent will do for you.
   (Abhay → Emergency → Adhrit), *Tailor résumé → Interview → Plan* (Disha → Disha → Smriti),
   *Analyse spends → Plan savings*, *Decode Rx → Refill reminders*. An AI **planner** picks the
   right chain from a free-text problem, and finishing a chain fires a **completion reminder**.
+- **Orchestrator** (the *Start with any tool* CTA) — a **node-graph** view with **Smriti at the
+  top of the hierarchy** managing the team. Drop a file or describe a problem in the dialogue box
+  and watch **control flow live down the edges** to exactly the agents Smriti picks (each node
+  lights up, runs, returns its result) — a visual, real-time multi-agent hand-off.
+- **Build your own workflow** — a **drag-and-drop canvas**: drag agents + sources (Weather,
+  Photo/PDF) + outputs (PDF/Word/PPT, Reminder) onto the board, link them into a chain with rules
+  (Smriti & outputs are final steps; no loops), then run it and see the result on the page.
 - **Smriti as manager** — Smriti reviews your task board, **delegates** each task to the right
   specialist agent, brings back the **finished deliverable** (e.g. Adhrit drafts the email), and
   shows it under *Completed by your team*; tasks with deadlines export to **.ics** with alarms.
@@ -154,6 +161,7 @@ npm start            # runs the local API server (server/index.js)
 | Var | Required | Purpose |
 |-----|----------|---------|
 | `GEMINI_API_KEY` | for live AI | Google AI Studio key (else demo/mock mode) |
+| `GEMINI_API_KEY_2/3…` | optional | extra keys — auto-**rotated** when one hits its free-tier quota (or use `GEMINI_API_KEYS=k1,k2,k3`) |
 | `GEMINI_MODEL` | optional | defaults to `gemini-2.5-flash` |
 | `PORT` | optional | local API port (default `8787`) |
 | `TELEGRAM_BOT_TOKEN` | for the bot | from @BotFather |

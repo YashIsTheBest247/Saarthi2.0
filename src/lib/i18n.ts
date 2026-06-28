@@ -17,9 +17,10 @@ const en: Dict = {
   "hero.titleB": "for",
   "hero.titleC": "everyday India",
   "hero.sub":
-    "Twelve AI companions that protect you from scams, explain any document, find the schemes you deserve, save you money on health, write your homework, and even get you hired — in your language, by voice or text.",
+    "Twelve AI companions that protect you from scams, explain any document, find the schemes you deserve, save you money on health, stand up for women's safety, write your homework, and even get you hired — in your language, by voice or text.",
   "hero.cta1": "Meet the agents",
   "hero.cta2": "See how it works",
+  "hero.cta3": "Chat on Telegram",
   "hero.trust1": "No login needed",
   "hero.trust2": "English & Hindi",
   "hero.trust3": "Works by voice",
@@ -535,9 +536,10 @@ const hi: Dict = {
   "hero.titleB": "हर दिन के",
   "hero.titleC": "भारत के लिए",
   "hero.sub":
-    "बारह AI साथी जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, सेहत पर पैसे बचाते हैं, होमवर्क लिखते हैं, और नौकरी तक दिलाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
+    "बारह AI साथी जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, सेहत पर पैसे बचाते हैं, महिला सुरक्षा में साथ देते हैं, होमवर्क लिखते हैं, और नौकरी तक दिलाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
   "hero.cta1": "एजेंट से मिलें",
   "hero.cta2": "कैसे काम करता है देखें",
+  "hero.cta3": "टेलीग्राम पर बात करें",
   "hero.trust1": "कोई लॉगिन नहीं",
   "hero.trust2": "अंग्रेज़ी और हिन्दी",
   "hero.trust3": "बोलकर भी चलता है",
