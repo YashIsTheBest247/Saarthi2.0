@@ -123,4 +123,14 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-ticker {
+    animation: ticker 38s linear infinite;
+  }
+  .animate-ticker:hover {
+    animation-play-state: paused;
+  }
 }

@@ -4,6 +4,7 @@ import cors from "cors";
 import { generateJSON, hasKey, modelName } from "./gemini.js";
 import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
+import { getNews } from "./news.js";
 
 const app = express();
 app.use(cors());
@@ -45,10 +46,18 @@ app.post("/api/kavach", makeHandler("kavach"));
 app.post("/api/samajh", makeHandler("samajh"));
 app.post("/api/haq", makeHandler("haq"));
 app.post("/api/sehat", makeHandler("sehat"));
-app.post("/api/lekhak", makeHandler("lekhak"));
-app.post("/api/vyapaar", makeHandler("vyapaar"));
-app.post("/api/naukri", makeHandler("naukri"));
+app.post("/api/paisa", makeHandler("paisa"));
 app.post("/api/samay", makeHandler("samay"));
+app.post("/api/setu", makeHandler("setu"));
+app.post("/api/krishi", makeHandler("krishi"));
+
+app.get("/api/news", async (_req, res) => {
+  try {
+    res.json(await getNews());
+  } catch (err) {
+    res.json({ items: [], live: false, _error: String(err?.message || err) });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`\n  ⚡ Saarthi API on http://localhost:${PORT}`);

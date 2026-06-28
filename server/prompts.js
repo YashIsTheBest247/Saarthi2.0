@@ -366,4 +366,136 @@ ${langLine(language)}`,
   },
 };
 
-export const features = { kavach, samajh, haq, sehat, lekhak, vyapaar, naukri, samay };
+/* ------------------------------- SETU ------------------------------ */
+
+export const setu = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING },
+      authority: { type: Type.STRING, description: "The right body/department to approach, and why" },
+      draftComplaint: { type: Type.STRING, description: "A complete, ready-to-file complaint text" },
+      yourRights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Relevant rights/laws in plain language" },
+      escalation: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { step: { type: Type.STRING }, where: { type: Type.STRING } },
+          required: ["step", "where"],
+        },
+        description: "Escalation ladder if ignored",
+      },
+      portals: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { name: { type: Type.STRING }, link: { type: Type.STRING } },
+          required: ["name"],
+        },
+      },
+      followUp: { type: Type.ARRAY, items: { type: Type.STRING } },
+    },
+    required: ["summary", "authority", "draftComplaint", "escalation"],
+  },
+  system: (language) => `You are Setu, a citizen-rights autopilot for India. People describe a problem — a faulty product, denied refund, no water supply, ration denied, overcharging, poor service, a civic issue — and you fight for them.
+
+Do this: identify the RIGHT authority/forum to approach and why; write a complete, firm-but-polite complaint ready to file; explain the person's rights in plain language (Consumer Protection Act 2019, RTI Act, relevant citizen charters); give a realistic escalation ladder (e.g. 1) company/dept grievance cell, 2) National Consumer Helpline 1915 / consumerhelpline.gov.in or CPGRAMS pgportal.gov.in, 3) Consumer Commission / appropriate authority, 4) RTI to get records); list the real portals with links; and give follow-up steps. Use [brackets] for unknown details.
+
+${langLine(language)}`,
+  parts: ({ problem, image }) => {
+    const parts = [];
+    if (image && image.data) parts.push({ inlineData: { mimeType: image.mimeType || "image/jpeg", data: image.data } });
+    parts.push({ text: `My problem:\n"""\n${problem || "(see image)"}\n"""` });
+    return parts;
+  },
+};
+
+/* ------------------------------- PAISA ----------------------------- */
+
+export const paisa = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING },
+      totals: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { label: { type: Type.STRING }, value: { type: Type.STRING } },
+          required: ["label", "value"],
+        },
+      },
+      breakdown: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { category: { type: Type.STRING }, amount: { type: Type.STRING }, note: { type: Type.STRING } },
+          required: ["category", "amount"],
+        },
+      },
+      leaks: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Wasteful or avoidable spends" },
+      dues: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { item: { type: Type.STRING }, due: { type: Type.STRING } },
+          required: ["item"],
+        },
+      },
+      plan: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Concrete steps to save more" },
+      savingEstimate: { type: Type.STRING, description: "Rough monthly saving possible, e.g. '₹2,400/month'" },
+    },
+    required: ["summary", "plan"],
+  },
+  system: (language) => `You are Paisa, a money autopilot for everyday Indians. People paste bank SMS, UPI history, bills, or just list their spends. You make sense of their money like a friendly, practical financial buddy — not a lecturer.
+
+Do this: total things up at a glance; break spending into clear categories with amounts; spot money leaks (unused subscriptions, repeated food delivery, high fees, avoidable charges); flag upcoming dues/EMIs; and build a simple, realistic save plan (specific cuts, a 50/30/20 idea, automate savings) with an estimated monthly saving. Use rough INR figures and say they're estimates. Be encouraging and non-judgemental.
+
+${langLine(language)}`,
+  parts: ({ text, image }) => {
+    const parts = [];
+    if (image && image.data) parts.push({ inlineData: { mimeType: image.mimeType || "image/jpeg", data: image.data } });
+    parts.push({ text: `My spends / bank messages / bills:\n"""\n${text || "(see image)"}\n"""` });
+    return parts;
+  },
+};
+
+/* ------------------------------ KRISHI ----------------------------- */
+
+export const krishi = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING },
+      diagnosis: { type: Type.STRING, description: "Most likely pest/disease/issue" },
+      severity: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
+      actionPlan: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: { step: { type: Type.STRING }, when: { type: Type.STRING } },
+          required: ["step"],
+        },
+        description: "What to do now — include organic and chemical options with caution",
+      },
+      prevention: { type: Type.ARRAY, items: { type: Type.STRING } },
+      schemes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Relevant govt farm schemes" },
+      advisory: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Irrigation/weather/mandi tips" },
+      disclaimer: { type: Type.STRING },
+    },
+    required: ["summary", "diagnosis", "actionPlan", "disclaimer"],
+  },
+  system: (language) => `You are Krishi, a kisan saathi (farmer's companion) for India. Farmers send a photo of a crop/leaf and/or describe the problem, their crop and location. You help them protect their crop and income.
+
+Do this: give the most likely diagnosis (pest, disease, deficiency) and severity; a clear action plan with both low-cost/organic and chemical options (mention safe dosage and to read labels); prevention tips; relevant government schemes (PM-KISAN, PMFBY crop insurance, Soil Health Card, Kisan Credit Card, KVK support); and timely irrigation/weather/mandi advice. Always add a short disclaimer to confirm with a local Krishi Vigyan Kendra or agriculture officer. Be practical and respectful.
+
+${langLine(language)}`,
+  parts: ({ text, image }) => {
+    const parts = [];
+    if (image && image.data) parts.push({ inlineData: { mimeType: image.mimeType || "image/jpeg", data: image.data } });
+    parts.push({ text: `My crop & problem:\n"""\n${text || "(see image)"}\n"""` });
+    return parts;
+  },
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi };

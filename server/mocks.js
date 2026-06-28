@@ -133,39 +133,81 @@ export const mocks = {
     disclaimer: "Sehat is not a doctor. This is general information — confirm any change with your doctor or pharmacist. Prices are rough estimates.",
   },
 
-  lekhak: {
+  setu: {
     _mock: true,
-    title: "Complaint Letter — Wrong Electricity Bill",
-    to: "The Executive Engineer, Electricity Board",
-    subject: "Complaint regarding incorrect electricity bill for consumer no. [Consumer Number]",
-    letter:
-      "To,\nThe Executive Engineer,\n[Electricity Board Office Address]\n\nSubject: Complaint regarding incorrect electricity bill\n\nRespected Sir/Madam,\n\nI am [Your Name], residing at [Your Address], holding consumer number [Consumer Number]. My electricity bill for the month of [Month] shows an amount of ₹[Amount], which is far higher than my usual monthly bill of around ₹[Usual Amount].\n\nI believe there has been an error in the meter reading or billing. I request you to kindly review my meter reading and issue a corrected bill at the earliest.\n\nI am attaching a copy of the disputed bill for your reference. Kindly do the needful.\n\nThank you.\n\nYours faithfully,\n[Your Name]\n[Phone Number]\n[Date]",
-    attachments: ["Copy of the disputed bill", "Copy of a previous normal bill", "ID proof"],
-    tips: ["Keep a copy of this letter and note down the complaint number you receive.", "You can also file this on the board's online portal or helpline."],
-  },
-
-  vyapaar: {
-    _mock: true,
-    title: "Diwali Offer — WhatsApp Message",
-    content:
-      "🪔 *Diwali Dhamaka at [Shop Name]!* 🪔\n\nMake this festival sweeter — *20% OFF* on all sweets & dry fruits! 🎉\n\n✨ Fresh, pure & made with love\n📍 Visit us at [Area] or message to order\n🛵 Home delivery available\n\nOffer till [Date]. Happy Diwali to you and your family! 🙏",
-    variations: [
-      "🎉 This Diwali, gift health & taste! Flat 20% off on premium dry fruits at [Shop Name]. Order on WhatsApp now! 🪔",
-      "Sweeten your celebrations 🍬 20% off all mithai this Diwali at [Shop Name]. Limited time — visit today!",
+    summary: "You have a strong case under the Consumer Protection Act. Here's your complaint and exactly how to escalate it.",
+    authority: "Start with the seller's grievance cell, then the National Consumer Helpline (1915). If unresolved, the District Consumer Disputes Redressal Commission — your purchase qualifies.",
+    draftComplaint:
+      "To,\nThe Grievance Officer,\n[Seller / Company Name]\n\nSubject: Complaint regarding a defective product and refusal of refund — Order [Order Number]\n\nRespected Sir/Madam,\n\nI, [Your Name], purchased [Product] on [Date] for ₹[Amount] (Order [Order Number]). The product was delivered in a damaged/defective condition. Despite my request on [Date], a refund/replacement has been refused.\n\nThis is a deficiency in service and sale of defective goods under the Consumer Protection Act, 2019. I request a full refund/replacement within 7 days, failing which I will approach the National Consumer Helpline and the Consumer Commission.\n\nI am attaching the invoice and photos of the defect.\n\nYours sincerely,\n[Your Name] · [Phone] · [Date]",
+    yourRights: [
+      "Under the Consumer Protection Act 2019, you have the right to a refund or replacement for defective goods.",
+      "You can claim compensation for deficiency in service.",
     ],
-    hashtags: ["#DiwaliOffer", "#[ShopName]", "#Sweets", "#ShopLocal", "#FestiveSale"],
-    tips: ["Send between 10am–12pm or 6–8pm for best response.", "Add one clear photo of your product to double replies."],
+    escalation: [
+      { step: "1. Seller's grievance cell", where: "Email/portal of the company — give 7 days" },
+      { step: "2. National Consumer Helpline", where: "Call 1915 or file at consumerhelpline.gov.in" },
+      { step: "3. District Consumer Commission", where: "File at edaakhil.nic.in (online consumer case)" },
+      { step: "4. RTI (if a govt body)", where: "Ask for records via rtionline.gov.in" },
+    ],
+    portals: [
+      { name: "National Consumer Helpline", link: "consumerhelpline.gov.in · 1915" },
+      { name: "e-Daakhil (consumer case)", link: "edaakhil.nic.in" },
+      { name: "CPGRAMS (govt grievances)", link: "pgportal.gov.in" },
+    ],
+    followUp: ["Note the complaint/docket number you receive.", "Keep all screenshots, bills and chats together.", "Escalate to the next step if there's no reply in the stated time."],
   },
 
-  naukri: {
+  paisa: {
     _mock: true,
-    title: "Resume — Retail Sales Associate",
-    summary: "Here's a clean, ready-to-use resume based on your details. Tailor the [brackets] before sending.",
-    output:
-      "[YOUR NAME]\n[City] · [Phone] · [Email]\n\nOBJECTIVE\nHardworking and customer-friendly sales associate with 2 years of retail experience, seeking a role where I can grow and deliver great service.\n\nSKILLS\n• Customer service & billing\n• Stock management\n• Spoken Hindi & English\n• Basic computer / UPI handling\n\nEXPERIENCE\nSales Associate — [Shop/Company], [City] (2022–2024)\n• Handled daily sales and billing for 50+ customers\n• Managed stock and reduced shortages\n\nEDUCATION\n12th Pass — [School/Board], [Year]",
-    highlights: ["2 years retail experience", "Customer service & billing", "Bilingual (Hindi/English)"],
-    whereToLook: ["National Career Service — ncs.gov.in", "Your state Rojgar / Sewayojan portal", "Apna app for local jobs", "Employment News (weekly)"],
-    tips: ["Keep your resume to one page.", "Carry 2-3 printed copies and a soft copy on your phone."],
+    summary: "You spent about ₹19,650 this month. With a few easy cuts, you could save roughly ₹2,800 every month.",
+    totals: [
+      { label: "Total spent", value: "₹19,650" },
+      { label: "Biggest category", value: "Food & delivery" },
+      { label: "Possible saving", value: "₹2,800/mo" },
+    ],
+    breakdown: [
+      { category: "Food & delivery", amount: "₹5,400", note: "18 orders — eating out is your top spend" },
+      { category: "Subscriptions", amount: "₹1,290", note: "Netflix, Spotify, 2 unused apps" },
+      { category: "Rent & bills", amount: "₹9,800", note: "Essential" },
+      { category: "Shopping", amount: "₹3,160", note: "Mostly impulse buys" },
+    ],
+    leaks: [
+      "₹600/mo on 2 subscriptions you haven't opened in 30 days — cancel them.",
+      "Food delivery 18× this month — cooking 8 of those saves ~₹1,600.",
+      "Two late-payment fees of ₹300 — set autopay to avoid them.",
+    ],
+    dues: [
+      { item: "Credit card bill", due: "5th — set autopay" },
+      { item: "Electricity bill", due: "12th" },
+    ],
+    plan: [
+      "Cancel the 2 unused subscriptions today (₹600 saved).",
+      "Set a weekly food-delivery limit of ₹800.",
+      "Auto-transfer ₹2,000 to savings on salary day (pay yourself first).",
+      "Turn on autopay for bills to kill late fees.",
+    ],
+    savingEstimate: "≈ ₹2,800 / month",
+  },
+
+  krishi: {
+    _mock: true,
+    summary: "The yellow spots with dark edges most likely point to early blight on your tomato crop — treatable if you act now.",
+    diagnosis: "Early blight (Alternaria) — a common fungal disease in tomato, worsened by humidity.",
+    severity: "Medium",
+    actionPlan: [
+      { step: "Remove and destroy affected lower leaves to stop spread", when: "Today" },
+      { step: "Organic: spray neem oil (5 ml/litre) early morning, repeat in 7 days", when: "This week" },
+      { step: "Chemical (if severe): Mancozeb as per label dosage — read instructions and wear gloves", when: "If it spreads" },
+      { step: "Avoid overhead watering; water at the base to keep leaves dry", when: "Ongoing" },
+    ],
+    prevention: ["Rotate crops each season", "Space plants for airflow", "Use disease-resistant varieties next sowing"],
+    schemes: [
+      "PMFBY (Pradhan Mantri Fasal Bima Yojana) — crop insurance against loss",
+      "Soil Health Card — free soil testing for the right nutrients",
+      "Kisan Credit Card — low-interest credit for inputs",
+    ],
+    advisory: ["Check the 3-day forecast — avoid spraying before rain.", "Visit your nearest Krishi Vigyan Kendra (KVK) for a free check."],
+    disclaimer: "Krishi gives general guidance. Please confirm with your local KVK or agriculture officer before using any chemical.",
   },
 
   samay: {
