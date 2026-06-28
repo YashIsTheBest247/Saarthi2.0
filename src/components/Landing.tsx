@@ -7,7 +7,6 @@ import {
   Globe,
   Mic,
   Camera,
-  Sparkles,
   Languages as LangIcon,
   MessageSquare,
   CheckCircle2,
@@ -546,7 +545,7 @@ function AgentGraph({ f }: { f: FeatureMeta }) {
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-mist px-2 py-1">
-            <Sparkles className="h-3 w-3 flex-none" style={{ color: f.accent }} />
+            <span className="flex-none" style={{ color: f.accent }}><BrandMark className="h-3 w-3" /></span>
             <span className="text-[10px] font-medium text-graphite">reasoning · engine</span>
             <Loader2 className="ml-auto h-3 w-3 flex-none animate-spin" style={{ color: f.accent }} />
           </div>
@@ -736,27 +735,43 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           {/* left: tabs + member cards */}
           <div>
-            <div className="inline-flex flex-wrap gap-1.5 rounded-full border border-line bg-paper p-1">
-              {tabs.map((tb) => (
-                <button key={tb.id} onClick={() => setTab(tb)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition-all ${tab.id === tb.id ? "bg-ink text-linen" : "text-graphite hover:text-ink"}`}>
-                  {tb.label}
-                </button>
-              ))}
+            <div className="inline-flex flex-wrap gap-1 rounded-full border border-line bg-paper p-1">
+              {tabs.map((tb) => {
+                const on = tab.id === tb.id;
+                return (
+                  <button key={tb.id} onClick={() => setTab(tb)}
+                    className={`relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${on ? "text-linen" : "text-graphite hover:bg-mist hover:text-ink"}`}>
+                    {on && <motion.span layoutId="teamTab" className="absolute inset-0 rounded-full bg-ink" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
+                    <span className="relative z-10">{tb.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {members.map((f) => (
-                <button key={f.key} onClick={() => onOpen(f.key)}
-                  className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-soft">
-                  <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-12 w-12 flex-none" />
-                  <div className="min-w-0 flex-1">
-                    <div className="display font-bold deva">{t(f.nameKey)}</div>
-                    <div className="text-xs text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
-                  </div>
-                  <span className="arrow-btn flex-none"><ArrowUpRight className="h-4 w-4" /></span>
-                </button>
-              ))}
+            <div className="mt-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tab.id}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="grid gap-3 sm:grid-cols-2"
+                >
+                  {members.map((f, i) => (
+                    <motion.button key={f.key} onClick={() => onOpen(f.key)}
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.25 }}
+                      whileHover={{ y: -3 }}
+                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 text-left transition-shadow hover:border-faint hover:shadow-float">
+                      <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
+                      <div className="min-w-0 flex-1">
+                        <div className="display font-bold deva">{t(f.nameKey)}</div>
+                        <div className="text-xs text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
+                      </div>
+                      <span className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></span>
+                    </motion.button>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
 
@@ -839,7 +854,7 @@ function HowVisual({ i }: { i: number }) {
     return (
       <div className="flex h-32 flex-col justify-center gap-2 rounded-2xl border border-line bg-mist/50 p-3">
         <div className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 shadow-soft">
-          <Sparkles className="h-4 w-4 flex-none text-[#2D6BFF]" />
+          <span className="flex-none text-[#2D6BFF]"><BrandMark className="h-4 w-4" /></span>
           <span className="text-[11px] text-graphite">Gemini reasoning…</span>
         </div>
         <div className="flex items-center justify-between rounded-xl border border-line bg-paper px-3 py-2 shadow-soft">
@@ -907,7 +922,7 @@ function How() {
 }
 
 /* ----------------------------- Closing ----------------------------- */
-function Closing({ onOpen }: { onOpen: () => void }) {
+function Closing() {
   const { t } = useApp();
   return (
     <section className="mx-auto max-w-6xl px-5 py-20">
@@ -918,7 +933,7 @@ function Closing({ onOpen }: { onOpen: () => void }) {
           <div className="relative">
             <h2 className="display mx-auto max-w-3xl text-balance text-3xl font-bold leading-tight tracking-tight deva sm:text-5xl">{t("cta.title")}</h2>
             <p className="mx-auto mt-5 max-w-xl text-lg text-linen/60 deva">{t("cta.sub")}</p>
-            <button onClick={onOpen} className="btn mx-auto mt-8 bg-linen px-6 py-3.5 text-[15px] text-ink hover:-translate-y-0.5">
+            <button onClick={() => window.dispatchEvent(new Event("saarthi:openchat"))} className="btn mx-auto mt-8 bg-linen px-6 py-3.5 text-[15px] text-ink hover:-translate-y-0.5">
               {t("cta.btn")} <ArrowUpRight className="h-4 w-4" />
             </button>
           </div>
@@ -1018,7 +1033,7 @@ export function Landing({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
       <Capabilities />
       <TeamPanel onOpen={(k) => onOpen(k)} />
       <QuietJobs />
-      <Closing onOpen={() => onOpen()} />
+      <Closing />
       <Footer onOpen={onOpen} />
     </>
   );

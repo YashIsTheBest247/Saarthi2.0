@@ -13,6 +13,7 @@ import { SetuConsole } from "./features/console/SetuConsole";
 import { KrishiConsole } from "./features/console/KrishiConsole";
 import { KarConsole } from "./features/console/KarConsole";
 import { RaahatConsole } from "./features/console/RaahatConsole";
+import { FloatingChat } from "./components/FloatingChat";
 import { FeatureKey } from "./lib/api";
 
 type View = "home" | FeatureKey;
@@ -47,6 +48,8 @@ function Shell() {
           {view === "raahat" && <RaahatConsole key="raahat" onBack={back} />}
         </AnimatePresence>
       </main>
+
+      <FloatingChat onOpen={open} />
     </div>
   );
 }

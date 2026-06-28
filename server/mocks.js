@@ -310,6 +310,12 @@ export const mocks = {
     disclaimer: "Narayan is decision-support, not an official warning. Always follow NDMA / SDMA / local administration instructions.",
   },
 
+  route: {
+    _mock: true,
+    agent: "samajh",
+    reason: "Let's start by understanding the details — Vidya can break this down for you.",
+  },
+
   form16: {
     _mock: true,
     grossSalary: 1500000,

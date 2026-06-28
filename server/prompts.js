@@ -598,4 +598,35 @@ ${langLine(language)}`,
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, form16 };
+/* ------------------------------ ROUTER ----------------------------- */
+
+export const route = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      agent: {
+        type: Type.STRING,
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat"],
+        description: "The single best agent key for the user's problem",
+      },
+      reason: { type: Type.STRING, description: "Warm one-line reason, in the user's language" },
+    },
+    required: ["agent", "reason"],
+  },
+  system: (language) => `You are Saarthi's triage router. Read the user's problem and pick the SINGLE best specialist agent from this team:
+- kavach: scams, fraud, suspicious SMS/WhatsApp/calls/emails, OTP theft, digital-arrest, cyber-crime.
+- samajh: understanding any document — bills, notices, letters, policies, legal/医 papers, statements.
+- haq: government schemes, welfare, benefits, pensions, subsidies, eligibility.
+- sehat: health — prescriptions, medicines, cheaper generics, symptoms, what a medicine is for.
+- paisa: personal money — budgeting, spending, savings, money leaks, loans/EMIs.
+- kar: income tax — Form-16, ITR, old vs new regime, refunds, capital gains.
+- samay: tasks, deadlines, planning, scheduling, productivity, getting work done.
+- setu: complaints & citizen rights — refunds, faulty products, denied service, civic issues, grievances.
+- krishi: farming — crops, pests, plant disease, soil, agriculture schemes.
+- raahat: disasters — floods, wildfires, cyclones, heatwaves, evacuation, safe routes, relief.
+
+Pick the best match and give a short, warm one-line reason addressed to the user. ${langLine(language)}`,
+  parts: ({ problem }) => [{ text: `User's problem:\n"""\n${problem || ""}\n"""` }],
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, route, form16 };

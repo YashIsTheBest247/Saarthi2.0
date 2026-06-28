@@ -7,6 +7,7 @@ import { FEATURES, FeatureMeta } from "../lib/features";
 import { FeatureKey } from "../lib/api";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
+import { CommandPalette } from "./CommandPalette";
 
 /* ------------------------------ Mega-menu ------------------------------ */
 function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: boolean }) {
@@ -116,6 +117,20 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
   const [darkZone, setDarkZone] = useState(true); // over a dark section (hero / footer)
   const [mobile, setMobile] = useState(false);
   const [atFlagship, setAtFlagship] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const toTop = () => { onHome(); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   useEffect(() => {
     const NAV = 72; // px from top the navbar occupies
@@ -159,7 +174,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
         }`}
       >
         {/* logo */}
-        <button onClick={onHome} className={`flex items-center gap-2.5 ${dark ? "text-white" : "text-ink"}`}>
+        <button onClick={toTop} className={`flex items-center gap-2.5 ${dark ? "text-white" : "text-ink"}`}>
           <BrandMark className="h-8 w-8" />
           <span className="display text-xl font-bold tracking-tight">Saarthi</span>
         </button>
@@ -197,15 +212,16 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
               </motion.button>
             )}
           </AnimatePresence>
-          <a
-            href="#agents"
-            aria-label="Find help"
-            className={`hidden h-10 w-10 items-center justify-center rounded-full border transition-colors sm:flex ${
-              dark ? "border-white/25 text-white hover:bg-white/10" : "border-line bg-paper text-graphite hover:text-ink"
+          <button
+            onClick={() => setCmdOpen(true)}
+            aria-label={t("cmd.open")}
+            className={`hidden h-10 items-center gap-2 rounded-full border px-3 transition-colors sm:flex ${
+              dark ? "border-white/25 text-white/90 hover:bg-white/10" : "border-line bg-paper text-graphite hover:text-ink"
             }`}
           >
             <Search className="h-4 w-4" />
-          </a>
+            <span className={`hidden rounded-md px-1.5 py-0.5 text-[11px] font-semibold lg:inline ${dark ? "bg-white/15" : "bg-mist text-faint"}`}>⌘K</span>
+          </button>
           <div className="hidden sm:block">
             <LanguagePicker compact />
           </div>
@@ -257,6 +273,8 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} onOpen={onOpen} />
     </header>
   );
 }
