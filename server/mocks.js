@@ -340,6 +340,11 @@ export const mocks = {
     tex: "% Sample (mock) output — set GEMINI_API_KEY for real tailoring.\n% Your edited résumé is returned tailored to the job description here.",
   },
 
+  extract: {
+    _mock: true,
+    text: "[Sample] Add a GEMINI_API_KEY to extract the real text from your uploaded résumé PDF here.",
+  },
+
   route: {
     _mock: true,
     agent: "samajh",

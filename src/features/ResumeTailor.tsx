@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Sparkle, Download, FileCode2, ExternalLink, Save, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Sparkle, Download, FileCode2, ExternalLink, Save, Loader2, FileUp } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { callFeature } from "../lib/api";
+import { callFeature, fileToInlineData } from "../lib/api";
 import { useLocal } from "./console/kit";
 import { ListBlock, CopyBlock, MockNote } from "../components/ui";
 
@@ -94,6 +94,22 @@ export function ResumeTailor() {
   const [resumeText, setResumeText] = useState("");
   const [sBusy, setSBusy] = useState(false);
   const [sResult, setSResult] = useState<SimpleResult | null>(null);
+  const [extractBusy, setExtractBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function onResumeFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExtractBusy(true);
+    try {
+      const inline = await fileToInlineData(file);
+      const r = await callFeature<{ text: string }>("extract", { file: inline, language: lang.name });
+      if (r?.text) setResumeText(r.text);
+    } catch { /* ignore */ } finally {
+      setExtractBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   // advanced (LaTeX)
   const [tex, setTex] = useLocal("saarthi.disha.resume", PRESETS["Off-Campus"]);
@@ -180,7 +196,14 @@ export function ResumeTailor() {
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name (optional)" className="field" />
               <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Target role (optional)" className="field" />
             </div>
-            <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={6} placeholder="Paste your current résumé or background…" className="field mt-2 resize-none deva" />
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-graphite">Your current résumé</span>
+              <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={onResumeFile} className="hidden" />
+              <button onClick={() => fileRef.current?.click()} disabled={extractBusy} className="btn-ghost text-sm">
+                {extractBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Reading…</> : <><FileUp className="h-4 w-4" /> Upload PDF / image</>}
+              </button>
+            </div>
+            <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={6} placeholder="Paste your current résumé, or upload a PDF above to auto-fill…" className="field mt-1 resize-none deva" />
             <textarea value={jd} onChange={(e) => setJd(e.target.value)} rows={5} placeholder="Paste the job description (JD) here…" className="field mt-2 resize-none deva" />
             <button onClick={tailorSimple} disabled={sBusy || (!resumeText.trim() && !jd.trim())} className="btn-accent mt-3 text-[15px]" style={{ background: ACCENT }}>
               {sBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Tailoring…</> : <><Sparkle className="h-4 w-4" /> Tailor my résumé</>}

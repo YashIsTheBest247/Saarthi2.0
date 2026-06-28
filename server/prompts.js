@@ -656,6 +656,24 @@ Reply with the metadata and the complete tailored .tex. Human-readable notes in 
   ],
 };
 
+/* ------------------------------ EXTRACT ---------------------------- */
+// Pull the raw text out of an uploaded document (image or PDF) — e.g. a résumé.
+
+export const extract = {
+  schema: {
+    type: Type.OBJECT,
+    properties: { text: { type: Type.STRING, description: "The full readable text of the document, faithfully preserved" } },
+    required: ["text"],
+  },
+  system: (language) => `You extract the full readable text from an uploaded document (image or PDF) such as a résumé or CV. Return the text faithfully — preserve sections, headings, bullet points (one per line), names, dates, links and contact info. Do NOT summarise, reorder or invent anything. ${langLine(language)}`,
+  parts: ({ file }) => {
+    const parts = [];
+    if (file && file.data) parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
+    parts.push({ text: "Extract all the text from this document, preserving its structure." });
+    return parts;
+  },
+};
+
 /* ------------------------------ ROUTER ----------------------------- */
 
 export const route = {
@@ -769,4 +787,4 @@ ${langLine(language)}`,
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, route, emergency, assist, form16 };
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16 };

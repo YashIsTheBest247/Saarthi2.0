@@ -28,6 +28,7 @@ export function Samajh({ onBack, embedded }: { onBack?: () => void; embedded?: b
   const [text, setText] = useState("");
   const [image, setImage] = useState<{ mimeType: string; data: string } | null>(null);
   const [preview, setPreview] = useState<string>("");
+  const [pdfName, setPdfName] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SamajhResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,8 +38,10 @@ export function Samajh({ onBack, embedded }: { onBack?: () => void; embedded?: b
     const file = e.target.files?.[0];
     if (!file) return;
     setImage(await fileToInlineData(file));
-    setPreview(URL.createObjectURL(file));
+    if (file.type === "application/pdf") { setPdfName(file.name); setPreview(""); }
+    else { setPreview(URL.createObjectURL(file)); setPdfName(""); }
   }
+  const clearFile = () => { setImage(null); setPreview(""); setPdfName(""); if (fileRef.current) fileRef.current.value = ""; };
 
   async function run() {
     if (!text.trim() && !image) return;
@@ -57,15 +60,15 @@ export function Samajh({ onBack, embedded }: { onBack?: () => void; embedded?: b
   return (
     <FeatureShell meta={meta} onBack={onBack} embedded={embedded}>
       <div className="card p-6 sm:p-7">
-        {preview && (
+        {(preview || pdfName) && (
           <div className="relative mb-4 inline-block">
-            <img src={preview} alt="document" className="max-h-48 rounded-2xl border border-line" />
+            {preview ? (
+              <img src={preview} alt="document" className="max-h-48 rounded-2xl border border-line" />
+            ) : (
+              <span className="flex items-center gap-2 rounded-2xl border border-line bg-mist px-4 py-3 text-sm font-medium text-graphite"><FileText className="h-4 w-4" /> {pdfName}</span>
+            )}
             <button
-              onClick={() => {
-                setImage(null);
-                setPreview("");
-                if (fileRef.current) fileRef.current.value = "";
-              }}
+              onClick={clearFile}
               className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white"
             >
               <X className="h-4 w-4" />
@@ -86,7 +89,7 @@ export function Samajh({ onBack, embedded }: { onBack?: () => void; embedded?: b
             <Send className="h-4 w-4" />
             {t("common.run")}
           </button>
-          <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={onFile} className="hidden" />
           <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm">
             <ImagePlus className="h-4 w-4" />
             {t("common.upload")}

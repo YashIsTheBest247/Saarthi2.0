@@ -60,6 +60,7 @@ app.post("/api/raahat", makeHandler("raahat"));
 app.post("/api/disha", makeHandler("disha"));
 app.post("/api/resume", makeHandler("resume"));
 app.post("/api/resume/pdf", (req, res) => handleResumePdf(req, res));
+app.post("/api/extract", makeHandler("extract"));
 app.post("/api/route", makeHandler("route"));
 app.post("/api/emergency", makeHandler("emergency"));
 app.post("/api/form16", makeHandler("form16"));

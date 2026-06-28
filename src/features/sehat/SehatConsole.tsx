@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, LayoutDashboard, ScanText, Pill, Activity, ClipboardList,
-  Send, ImagePlus, X, Plus, Trash2, Stethoscope, IndianRupee, Info, HeartPulse, Calendar, Siren,
+  Send, ImagePlus, X, Plus, Trash2, Stethoscope, IndianRupee, Info, HeartPulse, Calendar, Siren, FileText,
 } from "lucide-react";
 import { useApp } from "../../app/AppContext";
 import { featureByKey } from "../../lib/features";
@@ -60,6 +60,7 @@ function Decode({ onTrack }: { onTrack: (name: string) => void }) {
   const [text, setText] = useState("");
   const [image, setImage] = useState<{ mimeType: string; data: string } | null>(null);
   const [preview, setPreview] = useState("");
+  const [pdfName, setPdfName] = useState("");
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState<any>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -67,8 +68,11 @@ function Decode({ onTrack }: { onTrack: (name: string) => void }) {
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
-    setImage(await fileToInlineData(f)); setPreview(URL.createObjectURL(f));
+    setImage(await fileToInlineData(f));
+    if (f.type === "application/pdf") { setPdfName(f.name); setPreview(""); }
+    else { setPreview(URL.createObjectURL(f)); setPdfName(""); }
   }
+  const clearFile = () => { setImage(null); setPreview(""); setPdfName(""); if (fileRef.current) fileRef.current.value = ""; };
   async function run() {
     if (!text.trim() && !image) return;
     setLoading(true); setRes(null);
@@ -86,17 +90,21 @@ function Decode({ onTrack }: { onTrack: (name: string) => void }) {
             </button>
           ))}
         </div>
-        {preview && (
+        {(preview || pdfName) && (
           <div className="relative mb-4 inline-block">
-            <img src={preview} alt="rx" className="max-h-44 rounded-2xl border border-line" />
-            <button onClick={() => { setImage(null); setPreview(""); if (fileRef.current) fileRef.current.value = ""; }} className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white"><X className="h-4 w-4" /></button>
+            {preview ? (
+              <img src={preview} alt="rx" className="max-h-44 rounded-2xl border border-line" />
+            ) : (
+              <span className="flex items-center gap-2 rounded-2xl border border-line bg-mist px-4 py-3 text-sm font-medium text-graphite"><FileText className="h-4 w-4" /> {pdfName}</span>
+            )}
+            <button onClick={clearFile} className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white"><X className="h-4 w-4" /></button>
           </div>
         )}
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={mode === "prescription" ? t("m.phRx") : t("m.phSym")} className="field resize-none deva" />
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button onClick={run} disabled={loading || (!text.trim() && !image)} className="btn-accent text-[15px] deva" style={{ background: ACCENT }}><Send className="h-4 w-4" />{t("common.run")}</button>
           {mode === "prescription" && (<>
-            <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+            <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={onFile} className="hidden" />
             <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm deva"><ImagePlus className="h-4 w-4" />{t("common.upload")}</button>
           </>)}
           {voice.supported && <VoiceButton listening={voice.listening} onClick={() => (voice.listening ? voice.stop() : voice.start(text))} speakLabel={t("common.speak")} listeningLabel={t("common.listening")} />}
