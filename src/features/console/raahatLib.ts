@@ -32,7 +32,7 @@ export function wildfireRisk(i: { temp: number; humidity: number; wind: number; 
   return clamp(t * 0.3 + (100 - i.humidity) * 0.3 + w * 0.2 + i.dryness * 0.2);
 }
 
-export type HazardType = "Flood" | "Wildfire" | "Cyclone" | "Heatwave";
+export type HazardType = "Flood" | "Wildfire" | "Cyclone" | "Heatwave" | "Earthquake";
 
 export interface Alert {
   city: string;
@@ -99,4 +99,91 @@ export const hazardColor: Record<HazardType, string> = {
   Wildfire: "#E0892E",
   Cyclone: "#7B61C9",
   Heatwave: "#C0453B",
+  Earthquake: "#8A5A2B",
 };
+
+/* ----------------------- LIVE FEEDS (keyless) ----------------------- */
+// Cities we monitor; coords reused for live weather + flood lookups.
+const CITIES = [
+  { city: "Guwahati", state: "Assam", lat: 26.14, lng: 91.74 },
+  { city: "Patna", state: "Bihar", lat: 25.59, lng: 85.14 },
+  { city: "Mumbai", state: "Maharashtra", lat: 19.08, lng: 72.88 },
+  { city: "Nainital", state: "Uttarakhand", lat: 29.38, lng: 79.46 },
+  { city: "Visakhapatnam", state: "Andhra Pradesh", lat: 17.69, lng: 83.22 },
+  { city: "Nagpur", state: "Maharashtra", lat: 21.15, lng: 79.09 },
+  { city: "Kochi", state: "Kerala", lat: 9.93, lng: 76.27 },
+  { city: "Shimla", state: "Himachal Pradesh", lat: 31.10, lng: 77.17 },
+  { city: "Chennai", state: "Tamil Nadu", lat: 13.08, lng: 80.27 },
+  { city: "Delhi", state: "Delhi", lat: 28.61, lng: 77.21 },
+];
+
+const clampN = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
+/**
+ * Live hazard alerts computed from REAL data:
+ *  - Open-Meteo forecast  → temperature, humidity, wind, 24h rainfall
+ *  - Open-Meteo flood API → river discharge (flood signal)
+ * Risk is then scored on-device with floodRisk / wildfireRisk.
+ * Open-Meteo is free + keyless + CORS-enabled, so we fetch from the browser.
+ */
+export async function fetchLiveAlerts(): Promise<Alert[]> {
+  const lat = CITIES.map((c) => c.lat).join(",");
+  const lon = CITIES.map((c) => c.lng).join(",");
+  const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation&daily=precipitation_sum&forecast_days=1&timezone=auto`;
+  const fUrl = `https://flood-api.open-meteo.com/v1/flood?latitude=${lat}&longitude=${lon}&daily=river_discharge&forecast_days=1`;
+
+  const [wRes, fRes] = await Promise.all([fetch(wUrl), fetch(fUrl).catch(() => null)]);
+  const wRaw = await wRes.json();
+  const w = Array.isArray(wRaw) ? wRaw : [wRaw];
+  let discharges: number[] = [];
+  try {
+    const fRaw = fRes ? await fRes.json() : null;
+    const f = Array.isArray(fRaw) ? fRaw : fRaw ? [fRaw] : [];
+    discharges = CITIES.map((_, i) => f[i]?.daily?.river_discharge?.[0] ?? 0);
+  } catch { /* flood feed optional */ }
+  const maxD = Math.max(1, ...discharges);
+
+  return CITIES.map((c, i) => {
+    const cur = w[i]?.current ?? {};
+    const temp = cur.temperature_2m ?? 30;
+    const hum = cur.relative_humidity_2m ?? 50;
+    const wind = cur.wind_speed_10m ?? 10;
+    const rain = w[i]?.daily?.precipitation_sum?.[0] ?? cur.precipitation ?? 0;
+    const riverLevel = clampN((discharges[i] / maxD) * 100);
+
+    const flood = floodRisk({ rainfall: rain, riverLevel, soil: hum, drainage: 50 });
+    const dryness = clampN(100 - hum - rain * 2);
+    const fire = wildfireRisk({ temp, humidity: hum, wind, dryness });
+    const heat = clampN((Math.max(0, temp - 30) / 15) * 100);
+
+    let type: HazardType = "Flood";
+    let level = flood;
+    if (fire > level) { type = "Wildfire"; level = fire; }
+    if (heat > level && temp >= 40) { type = "Heatwave"; level = heat; }
+
+    const note = `${Math.round(temp)}°C · ${Math.round(rain)}mm rain (24h) · wind ${Math.round(wind)} km/h · ${Math.round(hum)}% RH`;
+    return { city: c.city, state: c.state, lat: c.lat, lng: c.lng, type, level, note };
+  });
+}
+
+/** Live earthquakes (last 24h, M2.5+) over India — USGS GeoJSON, keyless. */
+export async function fetchEarthquakes(): Promise<Alert[]> {
+  const res = await fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson");
+  const data = await res.json();
+  const out: Alert[] = [];
+  for (const ft of data?.features ?? []) {
+    const [lng, lat] = ft.geometry?.coordinates ?? [];
+    const mag = ft.properties?.mag ?? 0;
+    if (lat == null || lng == null) continue;
+    if (lat < 6 || lat > 38 || lng < 67 || lng > 98) continue; // India region
+    out.push({
+      city: (ft.properties?.place || "Earthquake").replace(/^\d+\s*km.*?of\s*/i, ""),
+      state: "",
+      lat, lng,
+      type: "Earthquake",
+      level: clampN(mag * 12),
+      note: `M${mag} · ${ft.properties?.place || "—"}`,
+    });
+  }
+  return out;
+}

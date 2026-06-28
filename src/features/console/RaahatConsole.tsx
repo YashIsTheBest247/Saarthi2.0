@@ -9,7 +9,8 @@ import { useLocal, H, Wrap, StatTiles } from "./kit";
 import { Raahat } from "../Raahat";
 import {
   ALERTS, band, floodRisk, wildfireRisk, allocate, hazardColor,
-  type Area, type ResourcePool,
+  fetchLiveAlerts, fetchEarthquakes,
+  type Area, type ResourcePool, type Alert,
 } from "./raahatLib";
 
 const ACCENT = "#0E8FA8";
@@ -43,29 +44,41 @@ function Slider({ label, value, set, min, max, unit }: { label: string; value: n
 }
 
 /* ------------------------------- map ------------------------------- */
-function HazardMap() {
+function HazardMap({ alerts, live, updated }: { alerts: Alert[]; live: boolean; updated?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
     const map = L.map(ref.current, { scrollWheelZoom: false, zoomControl: true }).setView([22.8, 80.5], 4.4);
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap &copy; CARTO" }).addTo(map);
-    ALERTS.forEach((a) => {
-      const c = hazardColor[a.type];
-      const radius = 8 + (a.level / 100) * 22;
-      L.circleMarker([a.lat, a.lng], { radius, color: c, weight: 1.5, fillColor: c, fillOpacity: 0.35 })
-        .addTo(map)
-        .bindPopup(`<b>${a.city}, ${a.state}</b><br>${a.type} · level ${a.level}<br>${a.note}`)
-        .bindTooltip(`${a.city} · ${a.type} ${a.level}`, { direction: "top", offset: [0, -4] });
-    });
+    layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     const tid = setTimeout(() => map.invalidateSize(), 280);
-    return () => { clearTimeout(tid); map.remove(); mapRef.current = null; };
+    return () => { clearTimeout(tid); map.remove(); mapRef.current = null; layerRef.current = null; };
   }, []);
+
+  // (re)draw markers whenever the alerts change (e.g. live data arrives)
+  useEffect(() => {
+    const lg = layerRef.current;
+    if (!lg) return;
+    lg.clearLayers();
+    alerts.forEach((a) => {
+      const c = hazardColor[a.type] ?? "#16140F";
+      const radius = 8 + (a.level / 100) * 22;
+      L.circleMarker([a.lat, a.lng], { radius, color: c, weight: 1.5, fillColor: c, fillOpacity: 0.35 })
+        .addTo(lg)
+        .bindPopup(`<b>${a.city}${a.state ? ", " + a.state : ""}</b><br>${a.type} · level ${a.level}<br>${a.note}`)
+        .bindTooltip(`${a.city} · ${a.type} ${a.level}`, { direction: "top", offset: [0, -4] });
+    });
+  }, [alerts]);
+
   return (
     <Wrap>
-      <H title="Live hazard map" sub="Signal-fusion hotspots across India — weather, satellite and news feeds combined." />
-      <div className="mb-3 flex flex-wrap gap-3">
+      <H title="Live hazard map" sub="Live weather, river-discharge and earthquake feeds fused into area risk across India." />
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <LiveBadge live={live} updated={updated} />
         {Object.entries(hazardColor).map(([k, c]) => (
           <span key={k} className="inline-flex items-center gap-1.5 text-xs font-medium text-graphite">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: c }} /> {k}
@@ -79,11 +92,43 @@ function HazardMap() {
   );
 }
 
+function LiveBadge({ live, updated }: { live: boolean; updated?: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${live ? "border-[#138A72]/30 bg-[#138A72]/10 text-[#138A72]" : "border-line bg-mist text-faint"}`}>
+        <span className="relative flex h-2 w-2">
+          {live && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#138A72] opacity-70" />}
+          <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? "bg-[#138A72]" : "bg-faint"}`} />
+        </span>
+        {live ? "Live data" : "Sample data"}
+      </span>
+      {live && updated && <span className="text-[11px] text-faint">Updated {updated}</span>}
+    </span>
+  );
+}
+
 /* ----------------------------- console ----------------------------- */
 export function RaahatConsole({ onBack }: { onBack: () => void }) {
-  const sorted = [...ALERTS].sort((a, b) => b.level - a.level);
-  const severe = ALERTS.filter((a) => a.level >= 75).length;
-  const types = new Set(ALERTS.map((a) => a.type)).size;
+  // live feeds (Open-Meteo weather + flood, USGS earthquakes); fall back to samples
+  const [liveAlerts, setLiveAlerts] = useState<Alert[] | null>(null);
+  const [updatedAt, setUpdatedAt] = useState("");
+  useEffect(() => {
+    let on = true;
+    Promise.all([fetchLiveAlerts().catch(() => []), fetchEarthquakes().catch(() => [])])
+      .then(([w, q]) => {
+        if (on && (w.length || q.length)) {
+          setLiveAlerts([...w, ...q]);
+          setUpdatedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        }
+      })
+      .catch(() => {});
+    return () => { on = false; };
+  }, []);
+  const isLive = liveAlerts != null;
+  const alerts = liveAlerts ?? ALERTS;
+  const sorted = [...alerts].sort((a, b) => b.level - a.level);
+  const severe = alerts.filter((a) => a.level >= 75).length;
+  const types = new Set(alerts.map((a) => a.type)).size;
 
   // risk model state
   const [rainfall, setRainfall] = useState(180);
@@ -112,7 +157,8 @@ export function RaahatConsole({ onBack }: { onBack: () => void }) {
       id: "dashboard", label: "Dashboard", icon: LayoutDashboard,
       render: (go) => (
         <Wrap>
-          <H title="Disaster operating picture" sub="What the fused weather, satellite, news and social feeds are showing right now." />
+          <div className="mb-3"><LiveBadge live={isLive} updated={updatedAt} /></div>
+          <H title="Disaster operating picture" sub="Live weather + river-discharge + earthquake feeds, scored into area risk right now." />
           <StatTiles accent={ACCENT} tiles={[
             { v: ALERTS.length, l: "Active alerts" },
             { v: severe, l: "Severe (≥75)" },
@@ -130,7 +176,7 @@ export function RaahatConsole({ onBack }: { onBack: () => void }) {
                       <span className="mt-1 h-2.5 w-2.5 flex-none rounded-full" style={{ background: hazardColor[a.type] }} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-ink">{a.city}, {a.state}</span>
+                          <span className="font-semibold text-ink">{a.city}{a.state ? `, ${a.state}` : ""}</span>
                           <span className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white" style={{ background: b.color }}>{a.type} {a.level}</span>
                         </div>
                         <p className="mt-0.5 text-sm text-muted">{a.note}</p>
@@ -152,7 +198,7 @@ export function RaahatConsole({ onBack }: { onBack: () => void }) {
       ),
     },
     { id: "assess", label: "Assess situation", icon: LifeBuoy, render: () => <Wrap><Raahat embedded /></Wrap> },
-    { id: "map", label: "Live map", icon: MapIcon, render: () => <HazardMap /> },
+    { id: "map", label: "Live map", icon: MapIcon, render: () => <HazardMap alerts={alerts} live={isLive} updated={updatedAt} /> },
     {
       id: "risk", label: "Risk model", icon: Activity,
       render: () => (

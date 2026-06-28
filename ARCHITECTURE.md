@@ -124,7 +124,25 @@ Stateless (serverless-friendly):
 
 ---
 
-## 7. Security & resilience
+## 7. Live data feeds
+
+Keyless, public sources — so they work without extra setup and degrade gracefully:
+
+| Feed | Source | Used by |
+|------|--------|---------|
+| Weather (temp, humidity, wind, 24h rain) | Open-Meteo forecast API (CORS, browser) | Narayan risk scoring |
+| River discharge (flood signal) | Open-Meteo flood API | Narayan flood risk |
+| Earthquakes (M2.5+, last 24h) | USGS GeoJSON | Narayan hazard map |
+| Scam / fraud news | Economic Times RSS via `server/news.js` (`/api/news`) | Abhay ticker + News Watch |
+
+Risk is computed **on-device** from the live numbers (`floodRisk`/`wildfireRisk` in
+`raahatLib.ts`); the console shows a **Live / Sample** badge + "updated HH:MM". If any feed is
+unreachable it falls back to bundled sample alerts. Satellite imagery & social signals are
+simulated (no free keyless source).
+
+---
+
+## 8. Security & resilience
 
 - API key is **server-side only**; never bundled into the client.
 - `.env` is gitignored; production secrets live in the Vercel dashboard.
@@ -134,7 +152,7 @@ Stateless (serverless-friendly):
 
 ---
 
-## 8. Extending — add a new agent
+## 9. Extending — add a new agent
 
 1. `src/lib/api.ts` — add the key to `FeatureKey`.
 2. `src/lib/features.tsx` — add a `FeatureMeta` (icon, accent, photo, stats, group).
