@@ -1,6 +1,6 @@
 # सारथी · Saarthi
 
-**An all-in-one AI copilot for everyday life in India** — twelve specialist AI agents that
+**An all-in-one AI copilot for everyday life in India** — thirteen specialist AI agents that
 spot scams, decode documents, claim government benefits, save on health, make sense of
 money, file taxes, plan your work, fight unfair treatment, protect your crop, stand up
 for women's safety, write your homework, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
@@ -17,7 +17,7 @@ for women's safety, write your homework, and get you hired. By **voice or text, 
 
 ## Highlights
 
-- **12 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
+- **13 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
 - **Agentic workflows** — one ask runs a **chain of agents** (e.g. decode → draft complaint → schedule), with an AI **planner** that auto-picks the chain.
 - **Floating AI assistant** that understands your problem and routes you to the right agent.
 - **Telegram bot** with the same brain — chat, get full answers, and deep-link back into the app.
@@ -45,6 +45,7 @@ for women's safety, write your homework, and get you hired. By **voice or text, 
 | **Bhupati** | Kisan Saathi | Snap a crop photo → diagnosis, action plan, farm schemes, timely advisory. |
 | **Nirbhaya** | Women's Safety | Describe any unsafe situation (harassment, stalking, an unsafe commute, domestic or workplace abuse) → a calm risk read, ordered safety steps, the right Indian helplines (**112 · 1091 · 181**, NCW, cyber 1930), your legal rights (POSH, PWDVA, Zero-FIR, NALSA), and a tap-to-call helpline directory. |
 | **Acharya** | Study & Homework | Set a topic and a deadline → a properly structured, human-sounding essay / journal / report / speech / notes / presentation, exported as **PDF, Word (.docx) or PowerPoint (.pptx)** in **Times New Roman 12pt**, then handed to **Smriti** with an **.ics reminder** so the submission is never missed. |
+| **Prachar** | Educational Videos & Podcasts | Turn **any topic** (a concept, a how-it-works, or a **trending Economic Times** story) into a short **educational video or podcast**: writes the script + subtitles, pulls matching **Pexels** images (keyless Pollinations fallback), and narrates it in-browser — with downloadable script/`.srt`, hashtags & a shareable link. Built-in **news provider** (ranked ET feed). Works on Telegram (pick agent → send a topic → step-by-step production → link). |
 
 Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
 got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real

@@ -68,3 +68,38 @@ export async function getNews() {
   cache = { at: Date.now(), items: { items, live: filtered.length > 0 } };
   return cache.items;
 }
+
+/* ---- Trending stories (all topics) for the Prachar news-reel agent ---- */
+const HOT = ["ai", "ipo", "market", "sensex", "nifty", "rbi", "rupee", "gold", "startup", "layoff", "budget", "tax", "election", "gst", "crypto", "ev", "isro", "record", "crore", "billion"];
+let tcache = { at: 0, data: null };
+
+export async function getTrending() {
+  if (tcache.data && Date.now() - tcache.at < TTL) return tcache.data;
+  const collected = [];
+  await Promise.all(FEEDS.map(async (url) => {
+    try {
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Mozilla/5.0 Saarthi" } });
+      clearTimeout(to);
+      if (!res.ok) return;
+      for (const it of parseItems(await res.text())) collected.push({ ...it, source: "Economic Times" });
+    } catch { /* ignore */ }
+  }));
+
+  const seen = new Set();
+  const uniq = collected.filter((i) => (i.title && !seen.has(i.title) ? (seen.add(i.title), true) : false));
+  // trend score: earlier in feed (recency) + hot keywords + numbers (figures trend)
+  const scored = uniq.map((it, idx) => {
+    const t = it.title.toLowerCase();
+    let score = Math.max(0, 100 - idx * 2);
+    HOT.forEach((k) => { if (t.includes(k)) score += 18; });
+    if (/\d/.test(it.title)) score += 8;
+    if (/%|crore|billion|record|surge|crash|high|low/.test(t)) score += 10;
+    return { ...it, trend: Math.min(100, Math.round(score)) };
+  }).sort((a, b) => b.trend - a.trend).slice(0, 10);
+
+  const out = { items: scored.length ? scored : FALLBACK.map((f, i) => ({ ...f, trend: 80 - i * 5 })), live: scored.length > 0 };
+  tcache = { at: Date.now(), data: out };
+  return out;
+}

@@ -4,7 +4,7 @@ import cors from "cors";
 import { generateJSON, hasKey, modelName } from "./gemini.js";
 import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
-import { getNews } from "./news.js";
+import { getNews, getTrending } from "./news.js";
 import { getJobs } from "./jobs.js";
 import { handleTelegram } from "./telegram.js";
 import { handleResumePdf } from "./resumePdf.js";
@@ -69,6 +69,28 @@ app.post("/api/manager", makeHandler("manager"));
 app.post("/api/study", makeHandler("study"));
 app.post("/api/intake", makeHandler("intake"));
 app.post("/api/assist", makeHandler("assist"));
+app.post("/api/prachar", makeHandler("prachar"));
+
+// trending Economic Times stories (ranked) for the Prachar news-reel agent
+app.get("/api/trending", async (_req, res) => {
+  try { res.json(await getTrending()); }
+  catch (err) { res.json({ items: [], live: false, _error: String(err?.message || err) }); }
+});
+
+// stock image for a scene: Pexels (if key set) else keyless Pollinations
+app.get("/api/pexels", async (req, res) => {
+  const q = String(req.query.q || "news").slice(0, 80);
+  const key = process.env.PEXELS_API_KEY;
+  if (key) {
+    try {
+      const r = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape&size=medium`, { headers: { Authorization: key } });
+      const j = await r.json();
+      const url = j?.photos?.[0]?.src?.large2x || j?.photos?.[0]?.src?.large;
+      if (url) return res.json({ url, source: "pexels", credit: j.photos[0].photographer });
+    } catch { /* fall through */ }
+  }
+  res.json({ url: `https://image.pollinations.ai/prompt/${encodeURIComponent(q + ", cinematic editorial photo, news")}?width=1280&height=720&nologo=true&model=flux`, source: "pollinations" });
+});
 app.get("/api/weather", async (req, res) => {
   try { res.json(await getWeather(req.query.place || "")); }
   catch (err) { res.json({ summary: "Live weather unavailable.", _error: String(err?.message || err) }); }

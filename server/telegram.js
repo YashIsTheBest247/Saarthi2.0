@@ -24,6 +24,7 @@ const AGENTS = [
   { key: "raahat", name: "Nirbhaya · Women's Safety" },
   { key: "disha", name: "Disha · Careers" },
   { key: "study", name: "Acharya · Study" },
+  { key: "prachar", name: "Prachar · Edu Videos" },
 ];
 const NAME = Object.fromEntries(AGENTS.map((a) => [a.key, a.name.split(" · ")[0]]));
 
@@ -51,6 +52,7 @@ async function tg(method, body) {
   }
 }
 const send = (chat_id, text, extra = {}) => tg("sendMessage", { chat_id, text, disable_web_page_preview: true, ...extra });
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const WELCOME =
   "🙏 Namaste! I'm Saarthi — your all-in-one AI helper for everyday India.\n\nTell me what you're facing and I'll connect you to the right AI expert. Tap a quick start below, browse all agents, or just type your problem.";
@@ -92,6 +94,38 @@ async function runAssist(chatId, text, agentHint) {
   else await send(chatId, reply, { reply_markup: mainKeyboard() });
 }
 
+// Prachar: produce a news reel, showing each production step, then return the
+// in-app reel link (auto-plays). (YouTube auto-upload needs a worker — not on Vercel.)
+async function runPrachar(chatId, title) {
+  const language = isHindi(title) ? "Hindi" : "English";
+  tg("sendChatAction", { chat_id: chatId, action: "record_video" });
+  const m = await tg("sendMessage", { chat_id: chatId, text: "🎬 Prachar is on it…\n\n💭 Thinking up the script…" });
+  const mid = m?.result?.message_id;
+  const edit = (text) => (mid ? tg("editMessageText", { chat_id: chatId, message_id: mid, text, disable_web_page_preview: true }) : send(chatId, text));
+
+  let data;
+  if (!hasKey) data = { ...mocks.prachar, _mock: true };
+  else {
+    try { data = await generateJSON({ system: features.prachar.system(language), parts: features.prachar.parts({ title, mode: "video" }), schema: features.prachar.schema }); }
+    catch (err) { console.error("[telegram] prachar", err?.message || err); data = { ...mocks.prachar, _mock: true }; }
+  }
+
+  await edit("🎬 Prachar\n✅ Script ready\n🖼️ Picking images…"); await wait(800);
+  await edit("🎬 Prachar\n✅ Script\n✅ Images\n📝 Writing subtitles…"); await wait(800);
+  await edit("🎬 Prachar\n✅ Script\n✅ Images\n✅ Subtitles\n⚙️ Compiling & assembling the reel…"); await wait(900);
+
+  const link = APP_URL ? `${APP_URL}/?agent=prachar&q=${encodeURIComponent(title)}` : "";
+  const tags = (data.hashtags || []).join(" ");
+  const final =
+    `🎬 ${data.title}\n\n${data.hook}\n\n` +
+    `✅ Script · ✅ Images · ✅ Subtitles · ✅ Assembled\n\n` +
+    (tags ? tags + "\n\n" : "") +
+    (link ? `▶️ Watch & play your reel:\n${link}` : "Open the Saarthi app to watch your reel.") +
+    (data._mock ? "\n\n(sample script — add a Gemini key for a fully custom reel)" : "");
+  await edit(final);
+  await send(chatId, "Make another?", { reply_markup: mainKeyboard() });
+}
+
 /**
  * Telegram webhook. Handles /start (with quick buttons + agent menu), inline
  * button taps, "talk to a specific agent" (via reply), and free-text problems —
@@ -118,9 +152,10 @@ export async function handleTelegram(req, res) {
       } else if (data.startsWith("a:")) {
         const key = data.slice(2);
         const name = NAME[key] || "Saarthi";
-        await send(chatId, `💬 You're talking to ${name}.\nReply to this message with your problem and ${name} will help.\n#${key}`, {
-          reply_markup: { force_reply: true, input_field_placeholder: `Message ${name}…` },
-        });
+        const prompt = key === "prachar"
+          ? `🎬 You're talking to Prachar.\nReply with any topic to explain (or a trending story) and I'll produce a short educational video/podcast — showing each step.\n#prachar`
+          : `💬 You're talking to ${name}.\nReply to this message with your problem and ${name} will help.\n#${key}`;
+        await send(chatId, prompt, { reply_markup: { force_reply: true, input_field_placeholder: key === "prachar" ? "Topic to explain…" : `Message ${name}…` } });
       }
       return;
     }
@@ -149,7 +184,8 @@ export async function handleTelegram(req, res) {
     const tag = repliedTo.match(/#([a-z]+)/);
     const agentHint = tag && NAME[tag[1]] ? tag[1] : undefined; // pass the agent KEY to the model
 
-    await runAssist(chatId, text, agentHint);
+    if (agentHint === "prachar") await runPrachar(chatId, text);
+    else await runAssist(chatId, text, agentHint);
   } catch (err) {
     console.error("[telegram] handler", err?.message || err);
   } finally {

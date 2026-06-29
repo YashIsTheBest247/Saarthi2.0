@@ -1,4 +1,4 @@
-import { ShieldCheck, ScanText, Landmark, HeartPulse, Wallet, Target, Scale, Sprout, Calculator, Briefcase, GraduationCap, LucideIcon } from "lucide-react";
+import { ShieldCheck, ScanText, Landmark, HeartPulse, Wallet, Target, Scale, Sprout, Calculator, Briefcase, GraduationCap, Video, LucideIcon } from "lucide-react";
 import { FeatureKey } from "./api";
 
 export type Group = "protect" | "claim" | "automate";
@@ -180,6 +180,19 @@ export const FEATURES: FeatureMeta[] = [
       { v: "Times New Roman 12", l: "professional formatting" },
       { v: "PDF · Word · PPT", l: "export in any format" },
       { v: "set a deadline", l: "Smriti reminds you to submit" },
+    ],
+  },
+  {
+    key: "prachar",
+    icon: Video,
+    nameKey: "pr.name", tagKey: "pr.tag", descKey: "pr.desc", personaKey: "pr.persona",
+    accent: "#E14434", accentDark: "#B5301F", tint: "#FBE6E2",
+    photo: "/agents/prachar.jpg", index: "13", group: "automate", badge: "New",
+    stats: [
+      { v: "any topic", l: "explained simply" },
+      { v: "video or podcast", l: "script · visuals · subtitles" },
+      { v: "voice narration", l: "watch & listen in-browser" },
+      { v: "trending news", l: "a built-in topic source" },
     ],
   },
 ];

@@ -17,7 +17,7 @@ const en: Dict = {
   "hero.titleB": "for",
   "hero.titleC": "everyday India",
   "hero.sub":
-    "Twelve AI companions that protect you from scams, explain any document, find the schemes you deserve, save you money on health, stand up for women's safety, write your homework, and even get you hired — in your language, by voice or text.",
+    "Thirteen AI companions that protect you from scams, explain any document, find the schemes you deserve, save you money on health, stand up for women's safety, write your homework, make educational videos, and even get you hired — in your language, by voice or text.",
   "hero.cta1": "Meet the agents",
   "hero.cta2": "See how it works",
   "hero.cta3": "Chat on Telegram",
@@ -46,7 +46,7 @@ const en: Dict = {
   "team.region": "Pan-India",
   "team.title": "Helping India handle the confusing, costly and scary parts of everyday life.",
   "team.body":
-    "Twelve specialists, one Saarthi. Together they cover scams, paperwork, schemes, health, money, taxes, study, work and careers — so no one has to face the hard parts alone.",
+    "Thirteen specialists, one Saarthi. Together they cover scams, paperwork, schemes, health, money, taxes, study, news, work and careers — so no one has to face the hard parts alone.",
   "team.cta": "Meet the whole team",
 
   "cap.title": "Agent capabilities",
@@ -179,7 +179,7 @@ const en: Dict = {
   "sv.visit.symptoms": "Symptoms & questions for the doctor", "sv.visit.generate": "Build visit summary", "sv.visit.empty": "Add medicines, vitals or notes first.", "sv.visit.title2": "Your visit summary",
 
   "quiet.eyebrow": "Saarthi · your everyday companion",
-  "quiet.titleA": "Twelve quiet jobs.",
+  "quiet.titleA": "Thirteen quiet jobs.",
   "quiet.titleB": "One calm app.",
   "quiet.sub": "Saarthi quietly handles the confusing, costly and scary parts of everyday Indian life — one calm app, in your language.",
   "quiet.cta": "Meet the agents",
@@ -254,6 +254,10 @@ const en: Dict = {
   "ac.tag": "Study & Homework",
   "ac.desc": "Acharya writes your essays, journals, reports, speeches and presentations to your brief — properly structured, in a natural human voice — and exports them as a polished PDF, Word or PowerPoint file.",
   "ac.persona": "Give me the topic and the deadline. I'll write it well, format it professionally, and hand it to Smriti so you never miss the submission.",
+  "pr.name": "Prachar",
+  "pr.tag": "Educational Videos & Podcasts",
+  "pr.desc": "Prachar turns any topic — a concept to learn, a current affair, or a trending Economic Times story — into a crisp educational video or podcast: it writes the script with subtitles, pulls matching visuals, and narrates it right here.",
+  "pr.persona": "Give me any topic to explain — or pick a trending news story — and I'll turn it into a short educational video or podcast you can watch and share.",
   "ds.ph": "Tell me about yourself & your goal… e.g. 2 yrs as a sales exec in Pune, want a customer-success role; or paste a job description to tailor to",
   "ds.output": "Your draft",
   "ds.highlights": "Your strengths",
@@ -321,7 +325,7 @@ const en: Dict = {
   "how.s1.t": "Tell any agent",
   "how.s1.d": "Paste a message, snap a bill or letter, or just speak — in English or Hindi.",
   "how.s2.t": "The right specialist takes over",
-  "how.s2.d": "Twelve expert agents — Disha, Abhay, Nidhi, Acharya and more — pick up exactly what you need.",
+  "how.s2.d": "Thirteen expert agents — Disha, Abhay, Nidhi, Acharya and more — pick up exactly what you need.",
   "how.s3.t": "Real AI, verified math",
   "how.s3.d": "Gemini reads and reasons; built-in engines compute taxes, EMIs and risk scores — accurately.",
   "how.s4.t": "Act from your dashboard",
@@ -332,7 +336,7 @@ const en: Dict = {
   "cta.btn": "Start with any tool",
 
   "footer.headline": "Everyday India, made simple.",
-  "footer.tagline": "Twelve agents that read, decide and act for everyday India — in your language.",
+  "footer.tagline": "Thirteen agents that read, decide and act for everyday India — in your language.",
   "footer.agents": "Agents",
   "footer.agentsTag": "",
   "footer.explore": "Explore",
@@ -536,7 +540,7 @@ const hi: Dict = {
   "hero.titleB": "हर दिन के",
   "hero.titleC": "भारत के लिए",
   "hero.sub":
-    "बारह AI सारथि जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, सेहत पर पैसे बचाते हैं, महिला सुरक्षा में साथ देते हैं, होमवर्क लिखते हैं, और नौकरी तक दिलाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
+    "तेरह AI सारथि जो आपको ठगी से बचाते हैं, किसी भी दस्तावेज़ को समझाते हैं, आपके हक़ की योजनाएँ ढूँढते हैं, सेहत पर पैसे बचाते हैं, महिला सुरक्षा में साथ देते हैं, होमवर्क लिखते हैं, और नौकरी तक दिलाते हैं — आपकी भाषा में, बोलकर या लिखकर।",
   "hero.cta1": "एजेंट से मिलें",
   "hero.cta2": "कैसे काम करता है देखें",
   "hero.cta3": "टेलीग्राम पर बात करें",
@@ -565,7 +569,7 @@ const hi: Dict = {
   "team.region": "पूरे भारत में",
   "team.title": "रोज़मर्रा की ज़िंदगी के उलझे, महँगे और डरावने हिस्सों में भारत की मदद।",
   "team.body":
-    "बारह माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, योजनाएँ, सेहत, पैसा, टैक्स, पढ़ाई, काम और करियर संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
+    "तेरह माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, योजनाएँ, सेहत, पैसा, टैक्स, पढ़ाई, काम और करियर संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
   "team.cta": "पूरी टीम से मिलें",
 
   "cap.title": "एजेंट की काबिलियत",
@@ -773,6 +777,10 @@ const hi: Dict = {
   "ac.tag": "पढ़ाई और होमवर्क",
   "ac.desc": "आचार्य आपके निबंध, जर्नल, रिपोर्ट, भाषण और प्रेज़ेंटेशन आपकी ज़रूरत के अनुसार लिखता है — सही ढाँचे में, असली इंसानी भाषा में — और उन्हें सुंदर PDF, Word या PowerPoint फ़ाइल के रूप में देता है।",
   "ac.persona": "बस विषय और डेडलाइन बताइए। मैं अच्छा लिखूँगा, पेशेवर ढंग से फ़ॉर्मेट करूँगा, और स्मृति को सौंप दूँगा ताकि सबमिशन कभी न छूटे।",
+  "pr.name": "प्रचार",
+  "pr.tag": "शैक्षिक वीडियो और पॉडकास्ट",
+  "pr.desc": "प्रचार किसी भी विषय — कोई कॉन्सेप्ट, करंट अफेयर, या ट्रेंडिंग Economic Times खबर — को एक चुस्त शैक्षिक वीडियो या पॉडकास्ट में बदलता है: सबटाइटल के साथ स्क्रिप्ट लिखता है, मिलती-जुलती तस्वीरें लाता है, और यहीं नैरेट करता है।",
+  "pr.persona": "कोई भी विषय समझाने को दें — या ट्रेंडिंग खबर चुनें — और मैं उसे एक छोटा शैक्षिक वीडियो या पॉडकास्ट बना दूँगा जिसे आप देख और शेयर कर सकें।",
   "ds.ph": "अपने बारे में और लक्ष्य बताएँ… जैसे पुणे में 2 साल सेल्स एग्ज़ीक्यूटिव, अब कस्टमर-सक्सेस रोल चाहिए; या जॉब डिस्क्रिप्शन पेस्ट करें",
   "ds.output": "आपका ड्राफ़्ट",
   "ds.highlights": "आपकी ख़ूबियाँ",

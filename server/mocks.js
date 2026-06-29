@@ -386,6 +386,22 @@ export const mocks = {
     note: "Parsed from a sample Form-16.",
   },
 
+  prachar: {
+    _mock: true,
+    title: "Sensex Hits Record High — What's Driving the Rally?",
+    hook: "The markets just made history — here's why in 30 seconds.",
+    scenes: [
+      { narration: "The Sensex just closed at an all-time high, and everyone's asking what's fuelling this rally.", caption: "Record High", imageQuery: "stock market india", seconds: 5 },
+      { narration: "Strong company earnings and steady foreign investment are pushing Indian stocks upward.", caption: "Earnings + FII", imageQuery: "mumbai skyline finance", seconds: 5 },
+      { narration: "Cooling inflation has raised hopes that interest rates could ease soon.", caption: "Inflation cooling", imageQuery: "rbi reserve bank", seconds: 5 },
+      { narration: "Retail investors are joining in record numbers through simple SIPs every month.", caption: "Retail boom", imageQuery: "indian investor phone", seconds: 5 },
+      { narration: "But experts warn — don't chase the rally; invest steadily and stay diversified.", caption: "Stay diversified", imageQuery: "financial planning", seconds: 5 },
+      { narration: "That's your 30-second market wrap. Follow for the news that moves your money.", caption: "Follow Saarthi", imageQuery: "news studio", seconds: 4 },
+    ],
+    hashtags: ["#Sensex", "#StockMarket", "#India", "#Investing", "#Finance"],
+    description: "Your 30-second wrap of why the Sensex hit a record high — earnings, inflation and the retail boom. By Saarthi · Prachar.",
+  },
+
   intake: {
     _mock: true,
     summary: "A history homework brief — one essay to write before the deadline.",
