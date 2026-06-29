@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Workflow, Play, Loader2, Siren, CloudRain, CheckCircle2, Sparkle, Circle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Workflow, Play, Loader2, Siren, CloudRain, CheckCircle2, Sparkle, Circle, CalendarPlus } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES } from "../lib/features";
 import { FeatureKey } from "../lib/api";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { CopyBlock, ListBlock } from "../components/ui";
-import { notify } from "../lib/reminders";
+import { notify, downloadTasksICS } from "../lib/reminders";
 import { WorkflowBuilder } from "./WorkflowBuilder";
 import { Plus } from "lucide-react";
 
@@ -88,7 +88,12 @@ function StepBody({ agent, data }: { agent: string; data: any }) {
           <div className="text-xs text-faint">Open Acharya to export as PDF / Word / PPT.</div>
         </div>
       )}
-      {agent === "samay" && data.tasks?.length ? <ListBlock title="Scheduled actions" items={data.tasks.map((tk: any) => `${tk.title}${tk.deadline ? ` — ${tk.deadline}` : ""}`)} tone="good" /> : null}
+      {agent === "samay" && data.tasks?.length ? (
+        <div className="space-y-2">
+          <ListBlock title="Scheduled actions" items={data.tasks.map((tk: any) => `${tk.title}${tk.deadline ? ` — ${tk.deadline}` : ""}`)} tone="good" />
+          <button onClick={() => downloadTasksICS(data.tasks)} className="btn-ghost text-sm"><CalendarPlus className="h-4 w-4" /> Add to calendar (.ics)</button>
+        </div>
+      ) : null}
     </div>
   );
 }

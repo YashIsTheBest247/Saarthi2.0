@@ -9,7 +9,7 @@ import { FEATURES } from "../lib/features";
 import { FeatureKey, callFeature, fileToInlineData } from "../lib/api";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { CopyBlock } from "../components/ui";
-import { sendToSmriti, scheduleReminder, notify } from "../lib/reminders";
+import { sendToSmriti, scheduleReminder, notify, downloadTasksICS, parseWhen } from "../lib/reminders";
 
 const NODE_W = 168;
 const NODE_H = 56;
@@ -216,10 +216,11 @@ export function WorkflowBuilder({ onBack }: { onBack: () => void }) {
           acc[n.id] = { type: "output", format: n.format, text: lastText };
         } else if (n.type === "reminder") {
           const title = titleFrom(lastText);
-          sendToSmriti({ title, deadline: n.deadline, priority: n.priority, source: "Workflow" });
-          scheduleReminder(title, n.deadline);
-          await notify("Added to Smriti ✅", n.deadline ? `Reminder set for ${fmtWhen(n.deadline)}.` : title);
-          acc[n.id] = { type: "reminder", deadline: n.deadline, priority: n.priority, title };
+          const when = parseWhen(n.deadline).toISOString();   // always a valid date/time
+          sendToSmriti({ title, deadline: when, priority: n.priority, estimateMins: 30, source: "Workflow" });
+          scheduleReminder(title, when);
+          await notify("Saved to Smriti ✅", `Reminder set for ${fmtWhen(when)}.`);
+          acc[n.id] = { type: "reminder", deadline: when, priority: n.priority, title, text: lastText };
         }
         setResults({ ...acc });
       }
@@ -481,7 +482,10 @@ export function WorkflowBuilder({ onBack }: { onBack: () => void }) {
                 </div>
 
                 {r.type === "reminder" ? (
-                  <p className="mt-2 text-[15px] text-graphite deva">{t("wb.sentSmriti")} — <b>{r.title}</b>{r.deadline ? <> · {fmtWhen(r.deadline)}</> : ""} · {r.priority}.</p>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-[15px] text-graphite deva">{t("wb.sentSmriti")} — <b>{r.title}</b>{r.deadline ? <> · {fmtWhen(r.deadline)}</> : ""} · {r.priority}. Smriti will remind you.</p>
+                    <button onClick={() => downloadTasksICS([{ title: r.title || "Reminder", deadline: r.deadline }], "saarthi-reminder.ics")} className="btn-ghost text-sm"><CalendarPlus className="h-4 w-4" /> Add to calendar (.ics)</button>
+                  </div>
                 ) : r.type === "output" ? (
                   <div className="mt-2 space-y-3">
                     <CopyBlock text={r.text || ""} />

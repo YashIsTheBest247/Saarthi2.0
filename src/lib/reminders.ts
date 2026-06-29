@@ -83,3 +83,21 @@ export function downloadICS(items: { id?: number; title: string; deadline?: stri
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
+
+/** Best-effort parse of a human deadline ("Today, Jun 29 2026", "Friday 5pm", "by 5th").
+ *  Falls back to tomorrow 9am so the calendar event is always valid. */
+export function parseWhen(s?: string): Date {
+  if (s) {
+    const str = s.replace(/^(today|tomorrow|by|due|on|deadline)[,:\s-]+/i, "").trim();
+    let d = new Date(str);
+    if (!isNaN(d.getTime())) { if (d.getHours() === 0 && d.getMinutes() === 0) d.setHours(9, 0, 0, 0); return d; }
+    d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+  }
+  const f = new Date(); f.setDate(f.getDate() + 1); f.setHours(9, 0, 0, 0); return f;
+}
+
+/** Download an .ics for tasks whose deadlines are free-text (e.g. from an agent). */
+export function downloadTasksICS(tasks: { title: string; deadline?: string; estimateMins?: number }[], filename = "saarthi-reminders.ics") {
+  downloadICS(tasks.map((t) => ({ title: t.title, deadline: parseWhen(t.deadline).toISOString(), estimateMins: t.estimateMins })), filename);
+}

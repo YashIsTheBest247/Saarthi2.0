@@ -28,13 +28,32 @@ const isTransient = (e) => /503|overloaded|unavailable|500|deadline/i.test(Strin
 
 function parseJSON(text) {
   if (!text) throw new Error("EMPTY_RESPONSE");
+  // strip ```json … ``` fences the model sometimes adds
+  let t = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    throw new Error("BAD_JSON");
+    return JSON.parse(t);
+  } catch { /* try repairs below */ }
+  // grab the outermost {...} block
+  const start = t.indexOf("{");
+  const end = t.lastIndexOf("}");
+  if (start !== -1 && end > start) t = t.slice(start, end + 1);
+  const tryParse = (s) => { try { return JSON.parse(s); } catch { return undefined; } };
+  // remove trailing commas before } or ]
+  let fixed = t.replace(/,\s*([}\]])/g, "$1");
+  let out = tryParse(fixed);
+  if (out) return out;
+  // last resort: close any unbalanced braces/brackets (handles truncated output)
+  const opens = (fixed.match(/[{[]/g) || []).length;
+  const closes = (fixed.match(/[}\]]/g) || []).length;
+  if (opens > closes) {
+    // drop a dangling partial last element, then close
+    let patched = fixed.replace(/,\s*"[^"]*"\s*:\s*[^,{}\[\]]*$/, "");
+    patched += "]".repeat(Math.max(0, (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length));
+    patched += "}".repeat(Math.max(0, (fixed.match(/{/g) || []).length - (fixed.match(/}/g) || []).length));
+    out = tryParse(patched);
+    if (out) return out;
   }
+  throw new Error("BAD_JSON");
 }
 
 /**
@@ -56,7 +75,7 @@ export async function generateJSON({ system, parts, schema }) {
           responseMimeType: "application/json",
           responseSchema: schema,
           temperature: 0.4,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
         },
       });
       cur = idx; // this key works — keep using it for subsequent calls

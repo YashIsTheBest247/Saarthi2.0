@@ -31,6 +31,9 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [smritiBusy, setSmritiBusy] = useState(false);
   const [summary, setSummary] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [followUp, setFollowUp] = useState("");   // Smriti's clarifying question
+  const [reply, setReply] = useState("");          // user's answer to it
+  const historyRef = useRef("");                   // accumulated conversation context
 
   // responsive node layout — measure the graph area
   useEffect(() => {
@@ -60,17 +63,36 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   }
   function clearFile() { setImage(null); setPreview(""); setFileName(""); if (fileRef.current) fileRef.current.value = ""; }
 
-  async function run() {
+  // first submit — starts a fresh conversation
+  function start() {
     if (running || (!text.trim() && !image)) return;
-    setRunning(true); setDone(new Set()); setFeed([]); setActive(null); setSummary(""); setSmritiBusy(true);
+    historyRef.current = text.trim();
+    setFeed([]); setDone(new Set()); setSummary(""); setFollowUp("");
+    orchestrate();
+  }
+  // answer Smriti's clarifying question, then continue
+  function sendReply() {
+    if (running || !reply.trim()) return;
+    historyRef.current = `${historyRef.current}\n\nSmriti asked: ${followUp}\nMy answer: ${reply.trim()}`;
+    setReply(""); setFollowUp("");
+    orchestrate();
+  }
+
+  async function orchestrate() {
+    setRunning(true); setActive(null); setSmritiBusy(true);
     const today = new Date().toDateString();
     let tasks: any[] = [];
     try {
-      const intake = await callFeature<{ summary?: string; tasks?: any[] }>("intake", { text, image, today, language: lang.name });
+      const intake = await callFeature<{ summary?: string; tasks?: any[]; followUp?: string }>("intake", { text: historyRef.current, image, today, language: lang.name });
       setSummary(intake.summary || "");
       tasks = intake.tasks || [];
+      // Smriti needs a clarification before she can delegate
+      if (intake.followUp && tasks.length === 0) {
+        setFollowUp(intake.followUp); setSmritiBusy(false); setRunning(false); return;
+      }
     } catch { setRunning(false); setSmritiBusy(false); return; }
     setSmritiBusy(false);
+    setDone(new Set()); setFeed([]);
 
     for (const tk of tasks) {
       const key = (tk.suggestedAgent && tk.suggestedAgent !== "none") ? tk.suggestedAgent : "samay";
@@ -184,7 +206,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
             <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder="Upload your homework / documents or describe what you need — Smriti will route it." className="field resize-none deva" />
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button onClick={run} disabled={running || (!text.trim() && !image)} className="btn-accent text-[15px]" style={{ background: SMRITI.accent }}>
+              <button onClick={start} disabled={running || (!text.trim() && !image)} className="btn-accent text-[15px]" style={{ background: SMRITI.accent }}>
                 {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Working…</> : <><Send className="h-4 w-4" /> Delegate</>}
               </button>
               <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" />
@@ -220,6 +242,27 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
               <Sparkles className="mt-0.5 h-4 w-4 flex-none" style={{ color: SMRITI.accent }} />
               <p className="text-sm text-graphite deva">{summary}</p>
             </div>
+          )}
+
+          {/* Smriti's clarifying question → a fresh reply box */}
+          {followUp && !running && (
+            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
+              <div className="mb-2 flex items-start gap-2">
+                <AgentAvatar photo={SMRITI.photo} name={t(SMRITI.nameKey)} tint={SMRITI.tint} accent={SMRITI.accent} rounded="rounded-lg" className="h-8 w-8 flex-none" />
+                <div>
+                  <div className="text-[13px] font-semibold text-ink deva">{t(SMRITI.nameKey)} needs one detail</div>
+                  <p className="mt-0.5 text-sm text-graphite deva">{followUp}</p>
+                </div>
+              </div>
+              <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={2} autoFocus
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) sendReply(); }}
+                placeholder="Type your answer…" className="field resize-none deva" />
+              <div className="mt-2 flex justify-end">
+                <button onClick={sendReply} disabled={!reply.trim()} className="btn-accent text-sm" style={{ background: SMRITI.accent }}>
+                  <Send className="h-4 w-4" /> Send answer
+                </button>
+              </div>
+            </motion.div>
           )}
 
           {/* live control-flow feed */}
