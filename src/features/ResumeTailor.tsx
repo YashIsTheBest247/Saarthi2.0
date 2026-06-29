@@ -4,6 +4,7 @@ import { useApp } from "../app/AppContext";
 import { callFeature, fileToInlineData } from "../lib/api";
 import { useLocal } from "./console/kit";
 import { ListBlock, CopyBlock, MockNote } from "../components/ui";
+import { BrandMark } from "../components/Logo";
 
 const ACCENT = "#6D4AA7";
 
@@ -206,7 +207,7 @@ export function ResumeTailor() {
             <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={6} placeholder="Paste your current résumé, or upload a PDF above to auto-fill…" className="field mt-1 resize-none deva" />
             <textarea value={jd} onChange={(e) => setJd(e.target.value)} rows={5} placeholder="Paste the job description (JD) here…" className="field mt-2 resize-none deva" />
             <button onClick={tailorSimple} disabled={sBusy || (!resumeText.trim() && !jd.trim())} className="btn-accent mt-3 text-[15px]" style={{ background: ACCENT }}>
-              {sBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Tailoring…</> : <><Sparkle className="h-4 w-4" /> Tailor my résumé</>}
+              {sBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Tailoring…</> : <><BrandMark className="h-4 w-4" /> Tailor my résumé</>}
             </button>
           </div>
 
@@ -258,7 +259,7 @@ export function ResumeTailor() {
               </div>
               <textarea value={jd} onChange={(e) => setJd(e.target.value)} rows={11} placeholder="Paste the job description (JD) here…" className="field mt-2 resize-none deva" />
               <button onClick={tailorTex} disabled={aBusy || !tex.trim()} className="btn-accent mt-3 w-full justify-center text-[15px]" style={{ background: ACCENT }}>
-                {aBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Tailoring…</> : <><Sparkle className="h-4 w-4" /> Tailor to this JD</>}
+                {aBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> Tailoring…</> : <><BrandMark className="h-4 w-4" /> Tailor to this JD</>}
               </button>
             </div>
           </div>

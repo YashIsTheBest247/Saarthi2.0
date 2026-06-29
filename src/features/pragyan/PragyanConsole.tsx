@@ -9,6 +9,7 @@ import { H, Wrap } from "../console/kit";
 import { useApp } from "../../app/AppContext";
 import { callFeature } from "../../lib/api";
 import { Thinking, MockNote } from "../../components/ui";
+import { BrandMark } from "../../components/Logo";
 
 const ACCENT = "#E14434";
 
@@ -159,8 +160,14 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
         </div>
         <textarea value={topic} onChange={(e) => setTopic(e.target.value)} rows={2} placeholder="A topic to explain… e.g. How UPI works, photosynthesis, the new tax regime (or pick a trending story below)" className="field resize-none deva" />
         <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted"><Volume2 className="h-3.5 w-3.5" style={{ color: ACCENT }} /> Voice</span>
+          {VOICES.map((v) => (
+            <button key={v.id} onClick={() => setVoiceId(v.id)} className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${voiceId === v.id ? "border-transparent text-white" : "border-line text-graphite hover:bg-mist"}`} style={voiceId === v.id ? { background: ACCENT } : undefined}>{v.label}</button>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button onClick={() => generate()} disabled={loading || (!topic.trim() && !trending.length)} className="btn-accent text-[15px]" style={{ background: ACCENT }}>
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Producing…</> : <><Sparkles className="h-4 w-4" /> Make {mode === "video" ? "video" : "podcast"}</>}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Producing…</> : <><BrandMark className="h-4 w-4" /> Make {mode === "video" ? "video" : "podcast"}</>}
           </button>
           {trending[0] && <button onClick={() => { setTopic(trending[0].title); generate(trending[0].title); }} className="btn-ghost text-sm"><TrendingUp className="h-4 w-4" /> Use #1 trending</button>}
         </div>

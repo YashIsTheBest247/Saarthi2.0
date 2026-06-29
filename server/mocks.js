@@ -442,4 +442,122 @@ export const mocks = {
     deliverable:
       "Subject: Following up on my project query\n\nDear Professor,\n\nI hope you're well. I'm writing to follow up on the project we discussed. Could you please confirm the expected scope and the submission deadline? I want to make sure I'm aligned before I proceed.\n\nThank you for your time and guidance.\n\nWarm regards,\n[Your name]",
   },
+
+  udyam: {
+    _mock: true,
+    summary: "You can run this as a proprietorship to start — here's the fastest legal path and the cheapest credit you qualify for.",
+    steps: [
+      { title: "Register on Udyam (MSME)", detail: "Free, online with Aadhaar + PAN — gives you a Udyam certificate used for loans, subsidies and tenders." },
+      { title: "Get a PAN & open a current account", detail: "Use the Udyam certificate + address proof to open a business current account." },
+      { title: "Register for GST (if turnover crosses the limit or you sell online)", detail: "Threshold is ₹40L for goods / ₹20L for services; mandatory for e-commerce." },
+      { title: "Take the licenses your business needs", detail: "e.g. FSSAI for food, Shop & Establishment for a shop/office." },
+      { title: "Apply for collateral-free credit", detail: "PM Mudra (Shishu up to ₹50k) or CGTMSE-backed loans through your bank." },
+    ],
+    resources: [
+      { name: "Udyam Registration", type: "Registration", detail: "Free MSME registration — needed for most schemes & tenders.", link: "udyamregistration.gov.in" },
+      { name: "GST Registration", type: "Registration", detail: "Mandatory above turnover limits / for online selling.", link: "gst.gov.in" },
+      { name: "FSSAI (food businesses)", type: "License", detail: "Basic registration for small food businesses.", link: "foscos.fssai.gov.in" },
+      { name: "PM MUDRA Loan", type: "Scheme", detail: "Collateral-free loan: Shishu ≤₹50k, Kishore ≤₹5L, Tarun ≤₹10L.", link: "mudra.org.in" },
+      { name: "PMEGP", type: "Scheme", detail: "Subsidy (15–35%) on a new manufacturing/service unit.", link: "kviconline.gov.in" },
+    ],
+    rights: [
+      "MSMEs are protected by the MSMED Act — buyers must pay you within 45 days or owe interest.",
+      "Udyam registration is free — never pay an agent for it.",
+    ],
+    tips: ["Start as a proprietorship; convert to LLP/Pvt Ltd once you scale.", "Keep business and personal money in separate accounts from day one."],
+  },
+
+  khanan: {
+    _mock: true,
+    summary: "Here's the process, the right offices in Dhanbad, and the worker rights that apply — step by step.",
+    steps: [
+      { title: "Identify the mineral & area status", detail: "Check whether the area is leased/notified and which body (BCCL/CCL/private lessee) holds it." },
+      { title: "Apply to the District Mining Office (DMO), Dhanbad", detail: "For a permit/transit pass or to raise a worker/contractor grievance." },
+      { title: "Meet DGMS safety compliance", detail: "Mine plan approval, competency certificates and accident reporting under the Mines Act 1952." },
+      { title: "Obtain environmental clearances", detail: "EC and Consent to Operate from the Jharkhand State Pollution Control Board (JSPCB)." },
+      { title: "Register for worker welfare", detail: "Ensure CMPF (provident fund), wages and safety gear are in place for workers." },
+    ],
+    resources: [
+      { name: "District Mining Office, Dhanbad", type: "Authority", detail: "Permits, transit passes and local mining grievances.", link: "jharkhandminerals.gov.in" },
+      { name: "DGMS (Dhanbad HQ)", type: "Authority", detail: "Mine safety regulator — approvals, inspections, accident reports.", link: "dgms.gov.in" },
+      { name: "Environmental Clearance (EC)", type: "Clearance", detail: "Mandatory before operating; applied via PARIVESH.", link: "parivesh.nic.in" },
+      { name: "Coal Mines Provident Fund (CMPFO)", type: "Welfare", detail: "PF, pension & deposit-linked insurance for coal-mine workers.", link: "cmpfo.gov.in" },
+      { name: "Mine Worker Grievance (Form)", type: "Form", detail: "File wage/safety/compensation complaints with the DMO or labour office.", link: "[district labour office, Dhanbad]" },
+    ],
+    rights: [
+      "Coal-mine workers are entitled to CMPF provident fund, gratuity and safety equipment by law.",
+      "Every mine must report accidents to DGMS; workers can report unsafe conditions without losing their job.",
+      "Wages must meet the notified minimum wage for the coal sector.",
+    ],
+    tips: ["Keep copies of your appointment letter, wage slips and CMPF number safe.", "For an accident, get the DGMS report number — it's needed for compensation."],
+  },
+
+  khananCopilot: {
+    _mock: true,
+    answer: "You're mostly ready, but a few statutory gaps could fail a DGMS inspection. Fix the items below first — two are critical.",
+    readiness: 78,
+    riskLevel: "Medium",
+    pending: [
+      { item: "2 worker competency certificates expired", severity: "Critical", detail: "Renew before any inspection — DGMS checks these first." },
+      { item: "Dust monitoring report missing for this month", severity: "High", detail: "Upload the latest respirable-dust readings." },
+      { item: "Machinery inspection overdue by 3 days", severity: "High", detail: "Complete and log in the statutory register." },
+      { item: "Royalty return not submitted", severity: "Medium", detail: "File the monthly royalty/return with the mining department." },
+    ],
+    recommendedActions: [
+      "Renew the 2 expired worker certificates today.",
+      "Upload this month's dust & environmental monitoring report.",
+      "Complete the overdue equipment inspection and sign the register.",
+      "Submit the pending royalty return.",
+    ],
+    contacts: [
+      { name: "DGMS (Directorate General of Mines Safety)", contact: "dgms.gov.in · regional office for your area", why: "Statutory mine-safety regulator — inspections & accident reports." },
+      { name: "Emergency / Ambulance", contact: "112 · 108", why: "For any injury or accident on site." },
+      { name: "District Mining Office", contact: "your district mining office", why: "Local permits, intimations and grievances." },
+      { name: "CMPFO", contact: "cmpfo.gov.in", why: "Worker provident fund & compensation matters." },
+    ],
+    drafts: [
+      { title: "Accident report email to DGMS", body: "To: The Director of Mines Safety, [Region] Region, DGMS\nSubject: Intimation of accident at [Mine name], Lease No. [____]\n\nRespected Sir/Madam,\n\nWe report an accident that occurred on [date] at [time] at [location within mine]. Nature of accident: [brief]. Persons affected: [number / names]. Immediate action taken: [first-aid / hospital / area made safe]. The site has been preserved for inspection.\n\nA detailed report in the prescribed form follows. Kindly advise further requirements.\n\nYours faithfully,\n[Name], [Designation]\n[Mine name] · [Phone] · [Date]" },
+    ],
+  },
+
+  khananPredict: {
+    _mock: true,
+    summary: "Healthy outlook overall, but watch a permit expiry and one critical fleet repair in the next two weeks.",
+    predictions: [
+      { area: "Revenue", prediction: "Projected revenue next month: ₹1.85 Cr (+6%)", horizon: "next 30 days", confidence: "Medium", risk: "Low", action: "Lock in dispatch schedules to hold the gain." },
+      { area: "Royalty", prediction: "Expected royalty payment: ₹18.2 lakh", horizon: "this month", confidence: "High", risk: "Low", action: "Provision cash by the 7th to avoid interest." },
+      { area: "Permit expiry", prediction: "3 critical licences expire within 45 days", horizon: "45 days", confidence: "High", risk: "High", action: "Start renewals now — production can halt otherwise." },
+      { area: "Compliance risk", prediction: "82% chance of a DGMS non-compliance flag due to incomplete training records", horizon: "next inspection", confidence: "Medium", risk: "High", action: "Close the training gap this week." },
+      { area: "Cash flow", prediction: "Cash shortage likely in ~18 days from pending receivables", horizon: "18 days", confidence: "Medium", risk: "Medium", action: "Follow up on overdue buyer payments." },
+      { area: "Production", prediction: "Output expected to dip ~12% next week (monsoon + fleet downtime)", horizon: "7 days", confidence: "Medium", risk: "Medium", action: "Pre-position pumps and standby dumpers." },
+      { area: "Workforce", prediction: "Night shift will be short by ~4 workers next week", horizon: "7 days", confidence: "Medium", risk: "Medium", action: "Arrange relief crew / overtime cover." },
+    ],
+    fleet: [
+      { asset: "Dumper HD-785 #3", issue: "Brake pad wear + hydraulic service due", dueIn: "in 6 days / ~120 engine hours", severity: "Critical" },
+      { asset: "Excavator EX-1200 #1", issue: "Bucket pin & track tension service", dueIn: "in 11 days", severity: "High" },
+      { asset: "Dewatering pump P-4", issue: "Seal wear — failure risk before monsoon", dueIn: "in 9 days", severity: "High" },
+      { asset: "Conveyor CV-2", issue: "Idler bearing replacement", dueIn: "in 18 days", severity: "Medium" },
+    ],
+  },
+
+  khananNotice: {
+    _mock: true,
+    summary: "This is a DGMS show-cause notice asking why action shouldn't be taken for an overdue statutory equipment inspection. It wants a written reply with proof of compliance.",
+    severity: "Urgent",
+    deadline: "Within 15 days of the notice date",
+    explanation: [
+      "The regulator found an equipment inspection was not recorded on time.",
+      "You must explain why it was delayed and show it's now done.",
+      "Non-reply can lead to a penalty or a stop-work order.",
+    ],
+    draftReply:
+      "To,\nThe Director of Mines Safety,\n[Region] Region, DGMS\n\nSubject: Reply to Show-Cause Notice No. [____] dated [____]\n\nRespected Sir/Madam,\n\nWith reference to the above notice regarding the statutory inspection of [equipment], we respectfully submit that the inspection has since been completed on [date] and duly recorded in the statutory register (copy enclosed). The delay occurred due to [reason]. We have taken corrective steps to ensure timely inspections going forward, including [measure].\n\nWe request that the matter be treated as resolved. The supporting documents are enclosed for your kind verification.\n\nYours faithfully,\n[Name], [Designation]\n[Mine name & lease no.] · [Date]",
+    documentsNeeded: ["Completed inspection record / register page", "Equipment maintenance log", "Any photographs of compliance", "Lease & manager appointment details"],
+    steps: [
+      "Complete and record the pending inspection immediately if not already done.",
+      "Fill the bracketed details in the draft reply.",
+      "Attach the listed documents and submit before the deadline.",
+      "Keep an acknowledged copy for your records.",
+    ],
+  },
 };

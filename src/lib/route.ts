@@ -19,6 +19,8 @@ const KEYWORDS: Record<string, string[]> = {
   disha: ["job", "jobs", "resume", "résumé", "cv", "interview", "career", "hiring", "hire", "internship", "salary", "fresher", "vacancy", "naukri", "नौकरी", "रिज्यूमे", "रेज़्यूमे", "इंटरव्यू", "करियर"],
   study: ["homework", "essay", "essays", "write an essay", "journal entry", "paragraph on", "write a speech", "presentation on", "study notes", "dissertation", "thesis", "book report", "homework help", "होमवर्क", "निबंध", "लेख लिखो", "भाषण लिखो"],
   pragyan: ["news", "reel", "video", "podcast", "trending", "short video", "make a video", "make a reel", "youtube", "headlines", "news video", "shorts", "खबर", "न्यूज़", "रील", "वीडियो", "पॉडकास्ट", "ट्रेंडिंग"],
+  udyam: ["business", "startup", "msme", "udyam", "gst", "register company", "registration", "license", "licence", "fssai", "mudra", "loan for business", "pmegp", "trade license", "shop act", "entrepreneur", "व्यापार", "व्यवसाय", "स्टार्टअप", "रजिस्ट्रेशन", "जीएसटी", "लाइसेंस", "उद्यम"],
+  khanan: ["mining", "mine", "miner", "coal", "colliery", "dhanbad", "bccl", "dgms", "mining lease", "mineral", "coalfield", "cmpf", "khanan", "खनन", "खदान", "कोयला", "धनबाद", "माइनिंग", "खनिज"],
 };
 
 export function routeToAgent(text: string): FeatureKey | null {
@@ -36,4 +38,4 @@ export function routeToAgent(text: string): FeatureKey | null {
   return bestScore > 0 ? best : null;
 }
 
-export const AGENT_KEYS: FeatureKey[] = ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan"];
+export const AGENT_KEYS: FeatureKey[] = ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan", "udyam", "khanan"];

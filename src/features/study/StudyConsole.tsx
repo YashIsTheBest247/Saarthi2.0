@@ -155,7 +155,7 @@ function Composer() {
         <div className="mt-6 space-y-5">
           {/* export + handoff bar */}
           <div className="card flex flex-wrap items-center gap-2 p-4">
-            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-white" style={{ background: ACCENT }}><Sparkles className="h-4 w-4" /></span>
+            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-white" style={{ background: ACCENT }}><BrandMark className="h-4 w-4" /></span>
             <span className="text-sm font-medium text-graphite">Done — {content.wordCount ? `~${content.wordCount} words. ` : ""}Download as:</span>
             {EXPORTS.map((e) => {
               const Icon = e.icon;

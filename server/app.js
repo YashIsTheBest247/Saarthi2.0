@@ -8,6 +8,7 @@ import { getNews, getTrending } from "./news.js";
 import { getJobs } from "./jobs.js";
 import { handleTelegram } from "./telegram.js";
 import { handleResumePdf } from "./resumePdf.js";
+import { sendMail, mailEnabled, completionHtml } from "./notify.js";
 import { buildDoc, MIME, slug } from "./docgen.js";
 import { runWorkflow, runStep, planWorkflow, workflowList, getWeather } from "./workflows.js";
 
@@ -70,6 +71,34 @@ app.post("/api/study", makeHandler("study"));
 app.post("/api/intake", makeHandler("intake"));
 app.post("/api/assist", makeHandler("assist"));
 app.post("/api/pragyan", makeHandler("pragyan"));
+app.post("/api/udyam", makeHandler("udyam"));
+app.post("/api/khanan", makeHandler("khanan"));
+app.post("/api/khananCopilot", makeHandler("khananCopilot"));
+app.post("/api/khananPredict", makeHandler("khananPredict"));
+app.post("/api/khananNotice", makeHandler("khananNotice"));
+
+// Email-me-when-done. POST { to, subject?, title?, message } → real email via
+// Gmail SMTP if configured, else a demo-safe mock so the UI flow still works.
+app.get("/api/notify", (_req, res) => res.json({ enabled: mailEnabled }));
+app.post("/api/notify", async (req, res) => {
+  const { to, subject, title, message = "", ics } = req.body || {};
+  const email = String(to || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ ok: false, error: "invalid-email" });
+  if (!mailEnabled) return res.json({ ok: true, _mock: true });
+  try {
+    await sendMail({
+      to: email,
+      subject: subject || "✅ Your Saarthi task is done",
+      text: `${title ? title + "\n\n" : ""}${message}`,
+      html: completionHtml({ title: title || "Your task is done", body: message }),
+      attachments: ics ? [{ filename: "saarthi-reminder.ics", content: ics, contentType: "text/calendar" }] : undefined,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[notify]", err?.message || err);
+    res.json({ ok: false, _error: String(err?.message || err) });
+  }
+});
 
 // trending Economic Times stories (ranked) for the Pragyan news-reel agent
 app.get("/api/trending", async (_req, res) => {

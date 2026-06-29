@@ -7,6 +7,7 @@ import { FeatureKey } from "../lib/api";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { CopyBlock, ListBlock } from "../components/ui";
+import { BrandMark } from "../components/Logo";
 import { notify, downloadTasksICS } from "../lib/reminders";
 import { WorkflowBuilder } from "./WorkflowBuilder";
 import { Plus } from "lucide-react";
@@ -275,7 +276,7 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
 
             {done && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-4 text-sm font-medium text-graphite">
-                <Sparkle className="h-4 w-4" style={{ color: sel.accent }} /> {t("wf.doneA")} {steps.length} {t("wf.doneB")}
+                <span className="inline-flex h-4 w-4" style={{ color: sel.accent }}><BrandMark className="h-4 w-4" /></span> {t("wf.doneA")} {steps.length} {t("wf.doneB")}
               </motion.div>
             )}
           </div>

@@ -219,7 +219,7 @@ function ManagerTab({ tasks, setTasks, delegated, setDelegated, accent }: {
             <input type="datetime-local" value={upDeadline} onChange={(e) => setUpDeadline(e.target.value)} className="rounded-lg border border-line px-2.5 py-1.5 text-sm" />
           </label>
           <button onClick={runIntake} disabled={intaking || running || (!upText.trim() && !upFile)} className="btn-accent ml-auto text-[15px]" style={{ background: accent }}>
-            {intaking ? <><Loader2 className="h-4 w-4 animate-spin" /> Reading…</> : <><Sparkles className="h-4 w-4" /> Hand to Smriti</>}
+            {intaking ? <><Loader2 className="h-4 w-4 animate-spin" /> Reading…</> : <><BrandMark className="h-4 w-4" /> Hand to Smriti</>}
           </button>
         </div>
       </div>
@@ -234,7 +234,7 @@ function ManagerTab({ tasks, setTasks, delegated, setDelegated, accent }: {
           </p>
         </div>
         <button onClick={delegateAll} disabled={running || pending.length === 0} className="btn-accent text-[15px]" style={{ background: accent }}>
-          {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Working…</> : <><Sparkles className="h-4 w-4" /> Delegate {pending.length ? `${pending.length} task${pending.length > 1 ? "s" : ""}` : "tasks"}</>}
+          {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Working…</> : <><BrandMark className="h-4 w-4" /> Delegate {pending.length ? `${pending.length} task${pending.length > 1 ? "s" : ""}` : "tasks"}</>}
         </button>
         {tasks.some((tk) => tk.deadline) && (
           <button onClick={() => downloadICS(tasks)} className="btn-ghost text-sm"><Download className="h-4 w-4" /> Add all to calendar (.ics)</button>

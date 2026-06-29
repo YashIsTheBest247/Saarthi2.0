@@ -30,6 +30,10 @@
   input[type="time"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
   }
+  /* hide the native datalist dropdown arrow on text inputs with a `list` */
+  input[list]::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
   ::selection {
     background: rgba(45, 107, 255, 0.18);
     color: #1a1714;

@@ -221,13 +221,13 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
           <div className="hidden md:block">
             <LanguagePicker compact />
           </div>
-          <a
-            href="#agents"
+          <button
+            onClick={() => window.dispatchEvent(new Event("saarthi:orchestrator"))}
             className={`hidden md:inline-flex btn whitespace-nowrap px-4 py-2.5 text-sm ${dark ? "bg-white text-ink hover:-translate-y-0.5 shadow-soft" : "bg-ink text-linen hover:bg-graphite hover:-translate-y-0.5 shadow-soft"}`}
           >
             {t("nav.try")}
             <ArrowUpRight className="h-4 w-4 flex-none" />
-          </a>
+          </button>
           <button
             onClick={() => setMobile((m) => !m)}
             className={`flex h-10 w-10 items-center justify-center rounded-full border md:hidden ${dark ? "border-white/25 text-white" : "border-line bg-paper text-ink"}`}
@@ -271,13 +271,12 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
               ))}
 
               <div className="px-1 pt-3"><LanguagePicker /></div>
-              <a
-                href="#agents"
-                onClick={() => setMobile(false)}
+              <button
+                onClick={() => { setMobile(false); window.dispatchEvent(new Event("saarthi:orchestrator")); }}
                 className="btn mt-2 w-full justify-center bg-ink py-3 text-sm text-linen"
               >
                 {t("nav.try")} <ArrowUpRight className="h-4 w-4" />
-              </a>
+              </button>
             </div>
           </motion.div>
         )}

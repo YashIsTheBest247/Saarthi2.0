@@ -9,6 +9,8 @@ import { FEATURES } from "../lib/features";
 import { FeatureKey, callFeature, fileToInlineData } from "../lib/api";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { CopyBlock } from "../components/ui";
+import { NotifyMe } from "../components/NotifyMe";
+import { BrandMark } from "../components/Logo";
 import { sendToSmriti, scheduleReminder, notify, downloadTasksICS, parseWhen } from "../lib/reminders";
 
 const NODE_W = 168;
@@ -501,7 +503,19 @@ export function WorkflowBuilder({ onBack }: { onBack: () => void }) {
               </motion.div>
             );
           })}
-          {!running && <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-4 text-sm font-medium text-graphite deva"><Sparkles className="h-4 w-4 text-[#2D6BFF]" /> {t("wb.ranEnd")}</div>}
+          {!running && (
+            <>
+              <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-4 text-sm font-medium text-graphite deva"><BrandMark className="h-4 w-4 text-[#2D6BFF]" /> {t("wb.ranEnd")}</div>
+              <NotifyMe accent="#2D6BFF" getPayload={() => ({
+                title: "Your workflow result — Saarthi",
+                message: chainOrder(nodes, edges).filter((n) => results[n.id]).map((n) => {
+                  const f = agentMeta(n.agent);
+                  const label = n.type === "agent" ? t(f!.nameKey) : t(ULAB[n.type]);
+                  return `• ${label}:\n${results[n.id].text || ""}`;
+                }).join("\n\n"),
+              })} />
+            </>
+          )}
         </div>
       )}
     </motion.div>

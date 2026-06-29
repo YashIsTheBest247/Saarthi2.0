@@ -83,13 +83,22 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     } catch {
       /* keep local */
     }
-    setBusy(false);
-
-    if (agent) {
+    // Smriti (samay) is the general fallback: if the best fit is Smriti herself, or
+    // nothing fits, she takes control and answers directly instead of just routing.
+    if (agent && agent !== "samay") {
+      setBusy(false);
       const f = featureByKey(agent);
       add({ from: "bot", agent, reason: reason || `${t("chat.match")} ${t(f.nameKey)} — ${t(f.tagKey)}.` });
     } else {
-      add({ from: "bot", text: t("chat.unsure"), chooser: true });
+      try {
+        const a = await callFeature<{ reply: string; _mock?: boolean }>("assist", { problem: q, language: lang.name });
+        setBusy(false);
+        if (a._mock) add({ from: "bot", text: t("chat.unsure"), chooser: true });
+        else add({ from: "bot", text: a.reply });
+      } catch {
+        setBusy(false);
+        add({ from: "bot", text: t("chat.unsure"), chooser: true });
+      }
     }
   }
 

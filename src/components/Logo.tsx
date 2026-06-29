@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+
 /**
  * Saarthi brand mark — a sophisticated line-only orbital glyph: two interlocking
  * elliptical orbits crossing through a shared core. Uses `currentColor`, so it
@@ -15,3 +17,6 @@ export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
     </svg>
   );
 }
+
+/** The brand mark typed so it can be used wherever a lucide icon is expected. */
+export const LogoIcon = BrandMark as unknown as LucideIcon;

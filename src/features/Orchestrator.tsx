@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Sparkles, Crown, UserCheck } from "lucide-react";
+import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, featureByKey } from "../lib/features";
 import { callFeature, fileToInlineData, FeatureKey } from "../lib/api";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CopyBlock } from "../components/ui";
+import { NotifyMe } from "../components/NotifyMe";
+import { BrandMark } from "../components/Logo";
+import { buildICS, downloadICS, parseWhen } from "../lib/reminders";
+import { clean } from "../lib/text";
 
 const SMRITI = featureByKey("samay");
 const OTHERS = FEATURES.filter((f) => f.key !== "samay");
@@ -31,6 +35,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [smritiBusy, setSmritiBusy] = useState(false);
   const [summary, setSummary] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [dated, setDated] = useState<{ title: string; deadline: string }[]>([]); // tasks with a date → auto calendar
   const [followUp, setFollowUp] = useState("");   // Smriti's clarifying question
   const [reply, setReply] = useState("");          // user's answer to it
   const historyRef = useRef("");                   // accumulated conversation context
@@ -67,7 +72,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   function start() {
     if (running || (!text.trim() && !image)) return;
     historyRef.current = text.trim();
-    setFeed([]); setDone(new Set()); setSummary(""); setFollowUp("");
+    setFeed([]); setDone(new Set()); setSummary(""); setFollowUp(""); setDated([]);
     orchestrate();
   }
   // answer Smriti's clarifying question, then continue
@@ -93,6 +98,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     } catch { setRunning(false); setSmritiBusy(false); return; }
     setSmritiBusy(false);
     setDone(new Set()); setFeed([]);
+    const datedTasks: { title: string; deadline: string }[] = [];
 
     for (const tk of tasks) {
       const key = (tk.suggestedAgent && tk.suggestedAgent !== "none") ? tk.suggestedAgent : "samay";
@@ -101,16 +107,28 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
       setFeed((p) => [...p, { id: fid, agent: key, title: tk.title, status: "running" }]);
       // let the control-flow animation breathe
       await new Promise((r) => setTimeout(r, 650));
+
+      // agentic weather check for outdoor / weather-dependent tasks
+      let ctx = "";
+      if (tk.weatherSensitive && tk.location) {
+        try {
+          const w = await (await fetch(`/api/weather?place=${encodeURIComponent(tk.location)}`)).json();
+          if (w.summary) ctx = `Live weather for ${tk.location}${tk.deadline ? ` around ${tk.deadline}` : ""}: ${w.summary}. If conditions are hazardous, warn the user and suggest a safer time.`;
+        } catch { /* no weather */ }
+      }
+
       try {
-        const r = await callFeature<any>("manager", { task: tk.detail ? `${tk.title} — ${tk.detail}` : tk.title, today, language: lang.name });
+        const r = await callFeature<any>("manager", { task: tk.detail ? `${tk.title} — ${tk.detail}` : tk.title, deadline: tk.deadline || "", context: ctx, today, language: lang.name });
         const owner = r.canDelegate ? r.agent : "samay";
         setDone((p) => new Set(p).add(owner === "none" ? "samay" : owner));
         setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: r.canDelegate ? "done" : "skip", agentName: r.agentName, text: r.deliverable, agent: owner === "none" ? "samay" : owner } : x));
       } catch {
         setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", text: "Couldn't reach this agent — try again." } : x));
       }
+      if (tk.deadline) datedTasks.push({ title: tk.title, deadline: tk.deadline });
       setActive(null);
     }
+    setDated(datedTasks);
     setRunning(false);
   }
 
@@ -128,7 +146,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
         <span className="flex h-16 w-16 flex-none items-center justify-center rounded-2xl text-white" style={{ background: SMRITI.accent }}><Crown className="h-7 w-7" /></span>
         <div>
           <h1 className="display text-3xl font-bold deva">Saarthi Orchestrator</h1>
-          <p className="mt-1 max-w-2xl text-[15px] text-muted deva">Smriti runs the show — drop a file or describe your problem, and watch control flow to exactly the agents you need.</p>
+          <p className="mt-1 max-w-2xl text-[15px] text-muted deva">Smriti runs the show — describe anything, in any domain. She routes it to the right agents, checks live weather for outdoor work, warns about hazards, and sets a calendar reminder + email — automatically.</p>
         </div>
       </div>
 
@@ -204,7 +222,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
               </div>
             )}
 
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder="Upload your homework / documents or describe what you need — Smriti will route it." className="field resize-none deva" />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder="Tell Smriti anything — she'll route it to the right agent." className="field resize-none deva" />
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button onClick={start} disabled={running || (!text.trim() && !image)} className="btn-accent text-[15px]" style={{ background: SMRITI.accent }}>
                 {running ? <><Loader2 className="h-4 w-4 animate-spin" /> Working…</> : <><Send className="h-4 w-4" /> Delegate</>}
@@ -239,7 +257,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
           {summary && (
             <div className="card flex items-start gap-2 p-4">
-              <Sparkles className="mt-0.5 h-4 w-4 flex-none" style={{ color: SMRITI.accent }} />
+              <span className="mt-0.5 inline-flex h-4 w-4 flex-none" style={{ color: SMRITI.accent }}><BrandMark className="h-4 w-4" /></span>
               <p className="text-sm text-graphite deva">{summary}</p>
             </div>
           )}
@@ -265,8 +283,11 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
             </motion.div>
           )}
 
-          {/* live control-flow feed */}
-          <div className="space-y-3">
+          </div>
+        </div>
+
+        {/* results — full width so long answers, drafts & contacts have room */}
+        <div className="mt-5 space-y-3">
             <AnimatePresence>
               {feed.map((it) => {
                 const f = FEATURES.find((x) => x.key === (it.agent as FeatureKey));
@@ -285,24 +306,38 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
                         : <span className="rounded-full bg-[#F7EEDB] px-2 py-0.5 text-[10px] font-semibold text-[#B07A1E]">You</span>}
                     </div>
                     {it.text && it.status !== "running" && (ok
-                      ? <div className="mt-2"><CopyBlock text={it.text} /></div>
-                      : <p className="mt-2 text-sm text-graphite deva">{it.text}</p>)}
+                      ? <div className="mt-2"><CopyBlock text={clean(it.text)} /></div>
+                      : <p className="mt-2 whitespace-pre-wrap text-sm text-graphite deva">{clean(it.text)}</p>)}
                   </motion.div>
                 );
               })}
             </AnimatePresence>
 
             {!running && feed.length > 0 && (
-              <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-3 text-sm font-medium text-graphite deva">
-                <Sparkles className="h-4 w-4" style={{ color: SMRITI.accent }} /> Done — {done.size} agent{done.size === 1 ? "" : "s"} handled it.
-              </div>
+              <>
+                <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-3 text-sm font-medium text-graphite deva">
+                  <span className="inline-flex h-4 w-4" style={{ color: SMRITI.accent }}><BrandMark className="h-4 w-4" /></span> Done — {done.size} agent{done.size === 1 ? "" : "s"} handled it.
+                </div>
+                {dated.length > 0 && (
+                  <div className="card flex flex-wrap items-center gap-3 p-4">
+                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-white" style={{ background: SMRITI.accent }}><CalendarPlus className="h-4 w-4" /></span>
+                    <span className="min-w-0 flex-1 text-sm text-graphite deva">Smriti scheduled <b>{dated.length}</b> dated task{dated.length > 1 ? "s" : ""} — add {dated.length > 1 ? "them" : "it"} to your calendar.</span>
+                    <button onClick={() => downloadICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() })), "saarthi-tasks.ics")} className="btn-accent text-sm" style={{ background: SMRITI.accent }}><CalendarPlus className="h-4 w-4" /> Add to Calendar (.ics)</button>
+                  </div>
+                )}
+                <NotifyMe accent={SMRITI.accent}
+                  getPayload={() => ({
+                    title: "Your tasks are done — Smriti",
+                    message: feed.map((it) => `• ${it.title}${it.text ? "\n" + it.text : ""}`).join("\n\n") + (dated.length ? `\n\n📅 Scheduled:\n${dated.map((d) => `• ${d.title} — ${d.deadline}`).join("\n")}\n(calendar invite attached)` : ""),
+                  })}
+                  getICS={dated.length ? () => buildICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() }))) : undefined}
+                />
+              </>
             )}
             {!running && feed.length === 0 && !summary && (
               <p className="px-1 text-sm text-muted deva">Smriti will read your input, then light up the agents she hands work to and bring back their results here.</p>
             )}
-          </div>
         </div>
-      </div>
     </motion.div>
   );
 }

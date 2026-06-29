@@ -6,7 +6,7 @@ import { Type } from "@google/genai";
  * proper nouns / official scheme names / helpline numbers intact.
  */
 const langLine = (language) =>
-  `Write ALL human-readable text in ${language}. Use simple, warm, everyday words a non-expert understands — never legalese. Keep official names, scheme names, drug names, phone numbers and URLs in their original form. Numerals can stay in Latin digits.`;
+  `Write ALL human-readable text in ${language}. Use simple, warm, everyday words a non-expert understands — never legalese. Keep official names, scheme names, drug names, phone numbers and URLs in their original form. Numerals can stay in Latin digits. IMPORTANT: output PLAIN TEXT only — never use markdown: no asterisks (*), no **bold**, no headings (#), no backticks; for lists use short lines or numbers like "1." "2." "3.". Be thorough and practical — always include who to contact (real Indian helplines, offices, emails/portals) and the clear next steps.`;
 
 /* ----------------------------- KAVACH ----------------------------- */
 
@@ -690,7 +690,7 @@ export const route = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan", "udyam", "khanan"],
         description: "The single best agent key for the user's problem",
       },
       reason: { type: Type.STRING, description: "Warm one-line reason, in the user's language" },
@@ -710,6 +710,9 @@ export const route = {
 - raahat: women's safety — harassment, stalking, feeling unsafe, domestic or workplace abuse, emergencies, women's helplines & rights.
 - disha: careers & jobs — résumé, job search, interview prep, skill gaps, getting hired.
 - study: homework & study help — writing essays, journals, reports, speeches, study notes or presentations; explaining concepts.
+- pragyan: turning a topic or trending news into a short educational video or podcast.
+- udyam: starting or formalising a business/MSME/startup — registrations (Udyam, GST), licenses, and MSME loans/schemes (Mudra, PMEGP, CGTMSE).
+- khanan: the mining sector (esp. Dhanbad/Jharkhand coalfields) — mining leases/permits, forms & processes, DGMS safety, environmental clearances, and mine-worker rights/welfare.
 
 Pick the best match and give a short, warm one-line reason addressed to the user. ${langLine(language)}`,
   parts: ({ problem }) => [{ text: `User's problem:\n"""\n${problem || ""}\n"""` }],
@@ -776,7 +779,7 @@ export const assist = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan", "udyam", "khanan"],
         description: "The best agent for this problem",
       },
       agentName: { type: Type.STRING, description: "The agent's display name" },
@@ -784,7 +787,7 @@ export const assist = {
     },
     required: ["agent", "reply"],
   },
-  system: (language) => `You are Saarthi, an all-in-one AI helper for everyday India, answering on Telegram. Your specialists: Abhay (scams/fraud), Vidya (documents/bills/notices), Haq (govt schemes/welfare), Asha (health/medicines), Nidhi (money/budget/loans), Lekh (income tax), Smriti (tasks/planning), Adhrit (complaints/consumer rights), Bhupati (farming), Nirbhaya (women's safety), Disha (careers/jobs/résumé/interviews), Acharya (homework/study help — essays, reports, study notes).
+  system: (language) => `You are Saarthi, an all-in-one AI helper for everyday India, answering on Telegram. Your specialists: Abhay (scams/fraud), Vidya (documents/bills/notices), Haq (govt schemes/welfare), Asha (health/medicines), Nidhi (money/budget/loans), Lekh (income tax), Smriti (tasks/planning), Adhrit (complaints/consumer rights), Bhupati (farming), Nirbhaya (women's safety), Disha (careers/jobs/résumé/interviews), Acharya (homework/study help — essays, reports, study notes), Pragyan (educational videos/podcasts), Udyam (starting/formalising a business — registrations, licenses, MSME loans & schemes), Khanan (mining sector, esp. Dhanbad/Jharkhand coalfields — leases, forms & processes, DGMS safety, clearances, mine-worker rights).
 
 For the user's message: pick the single best agent (return its key in 'agent' and display name in 'agentName'), then write a COMPLETE, practical, safe answer to their problem as that specialist would — concise enough for a chat (aim under 1200 characters), using short lines or a small numbered list, and include the most relevant Indian helpline(s) when useful (e.g. 1930 & cybercrime.gov.in for fraud, 112 emergency, 1078 NDMA, 1915 consumer, 14416 Tele-MANAS). Be warm and clear. Do not use markdown headers; plain text with simple line breaks only.
 
@@ -807,10 +810,10 @@ export const manager = {
       canDelegate: { type: Type.BOOLEAN, description: "True if a specialist agent can meaningfully complete this task without the user" },
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "none"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "udyam", "khanan", "none"],
         description: "The specialist who should own it (never 'samay' — that's the manager). 'none' if it's inherently personal/physical.",
       },
-      agentName: { type: Type.STRING, description: "Display name of the agent (Abhay, Vidya, Haq, Asha, Nidhi, Lekh, Adhrit, Bhupati, Nirbhaya, Disha, Acharya) or 'You'" },
+      agentName: { type: Type.STRING, description: "Display name of the agent (Abhay, Vidya, Haq, Asha, Nidhi, Lekh, Adhrit, Bhupati, Nirbhaya, Disha, Acharya, Udyam, Khanan) or 'You'" },
       status: { type: Type.STRING, enum: ["Completed", "Needs you"] },
       reason: { type: Type.STRING, description: "One short line: why this agent / why it needs the user" },
       deliverable: { type: Type.STRING, description: "If canDelegate: the FINISHED work as that agent (the actual draft/plan/answer/analysis, ready to use). Else: a one-line tip on how to do it." },
@@ -829,10 +832,14 @@ export const manager = {
 - Nirbhaya (raahat): women's safety — harassment, stalking, abuse, emergencies, helplines & rights.
 - Disha (disha): careers — résumé, job search, interview prep.
 - Acharya (study): homework & study writing — essays, journals, reports, speeches, study notes, presentations, explaining concepts.
+- Udyam (udyam): starting/formalising a business — registrations (Udyam/GST), licenses, and MSME loans/schemes (Mudra, PMEGP, CGTMSE).
+- Khanan (khanan): the mining sector (esp. Dhanbad/Jharkhand coalfields) — leases/permits, forms & processes, DGMS safety, environmental clearances, mine-worker rights & welfare.
 
 Given ONE of the user's tasks, decide if a specialist can complete it AUTONOMOUSLY (without the user) — e.g. draft an email/complaint/application, write an essay/journal/report/homework (Acharya), write a study or work plan, analyse spends, find schemes, decode a document, prep interview answers, give farming advice, or give women's-safety guidance with immediate steps, helplines & rights (Nirbhaya). A safety, scam, money, document, scheme or writing matter can always be delegated — the specialist gives real, usable help even in an emergency, so do NOT mark these "needs you". If YES: set canDelegate=true, choose the best agent + agentName, status="Completed", and in 'deliverable' PRODUCE the actual finished work as that agent (a ready-to-send draft, a concrete plan, a clear analysis — usable as-is, not a description of what you'd do). Keep it under ~1400 characters.
 
 If the task is inherently personal or physical and no agent can do it for them (pay rent, buy a gift, attend a meeting, exercise, call a relative), set canDelegate=false, agent="none", agentName="You", status="Needs you", and put a one-line practical tip in 'deliverable'.
+
+WEATHER & SAFETY: If the extra context includes a live weather report and the activity is outdoor/weather-dependent, factor it into the deliverable — and if conditions look hazardous (storm, heavy rain, lightning, extreme heat), clearly WARN the user at the top of the deliverable and suggest a safer time or precautions.
 
 ${langLine(language)}`,
   parts: ({ task, deadline, context, today }) => [
@@ -930,13 +937,16 @@ export const intake = {
             detail: { type: Type.STRING, description: "Key instructions/specifics from the document the agent needs to do it well" },
             priority: { type: Type.STRING, enum: ["High", "Medium", "Low"] },
             estimateMins: { type: Type.NUMBER, description: "Rough minutes of work" },
+            deadline: { type: Type.STRING, description: "Exact date (or date-time) this task is due/scheduled, as ISO — e.g. '2026-07-02' or '2026-07-02T09:00'. Convert phrases like 'July 2nd', 'next Friday', 'by the 5th' using today's date. Empty string if there is no date." },
+            weatherSensitive: { type: Type.BOOLEAN, description: "True if it is an outdoor / weather-dependent activity (mining, drilling/boring, farming, construction, travel, an outdoor event, etc.)" },
+            location: { type: Type.STRING, description: "Place to check weather for, if relevant/known (e.g. 'Dhanbad'). Empty otherwise." },
             suggestedAgent: {
               type: Type.STRING,
-              enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "none"],
-              description: "Best specialist: 'study' for homework/essays, 'setu' for letters/complaints, etc. 'none' if only the user can do it.",
+              enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "udyam", "khanan", "none"],
+              description: "Best specialist: 'study' for homework/essays, 'setu' for letters/complaints, 'udyam' for starting/registering a business, 'khanan' for mining-sector forms/processes, etc. 'none' if only the user can do it.",
             },
           },
-          required: ["title", "priority"],
+          required: ["title", "priority", "deadline", "weatherSensitive", "location"],
         },
       },
     },
@@ -944,7 +954,9 @@ export const intake = {
   },
   system: (language) => `You are Smriti, the user's AI chief-of-staff. The user has uploaded a document or photo (often homework, a worksheet, a syllabus, an assignment brief, a notice or a bill) and may add a note with a deadline. Read everything carefully (including text in the image) and extract a clean, prioritised list of concrete tasks to get it done.
 
-For each task: write a specific, self-contained title; capture the important instructions/specifics in 'detail' (topic, word count, format, questions to answer, sections required) so a specialist can complete it without seeing the original; set an honest priority and a rough time estimate; and suggest the best specialist to own it — use 'study' (Acharya) for essays/journals/reports/homework writing, 'setu' (Adhrit) for letters/complaints, 'kar' for tax, 'paisa' for money, 'haq' for schemes, 'sehat' for health, 'krishi' for farming, 'kavach' for scams/fraud, 'raahat' (Nirbhaya) for women's safety — harassment, stalking, feeling unsafe, abuse or an emergency (she gives safety steps, helplines & rights), and 'none' only for things that are purely physical and no agent can help with. Keep it focused — split a big assignment into the few real tasks, not dozens.
+For each task: write a specific, self-contained title; capture the important instructions/specifics in 'detail' (topic, word count, format, questions to answer, sections required) so a specialist can complete it without seeing the original; set an honest priority and a rough time estimate; and suggest the best specialist to own it — use 'study' (Acharya) for essays/journals/reports/homework writing, 'setu' (Adhrit) for letters/complaints, 'kar' for tax, 'paisa' for money, 'haq' for schemes, 'sehat' for health, 'krishi' for farming, 'kavach' for scams/fraud, 'udyam' for starting/registering a business (registrations, licenses, MSME loans/schemes), 'khanan' for mining-sector forms/processes (leases, DGMS safety, clearances, mine-worker rights), 'raahat' (Nirbhaya) for women's safety — harassment, stalking, feeling unsafe, abuse or an emergency (she gives safety steps, helplines & rights), and 'none' only for things that are purely physical and no agent can help with. Keep it focused — split a big assignment into the few real tasks, not dozens.
+
+SCHEDULING: For each task also extract a precise 'deadline' (ISO date/time) whenever the user gives or implies a date — convert "July 2nd", "next Friday", "by the 5th" to a real date using today's date. Set 'weatherSensitive' = true for outdoor / weather-dependent work (mining, drilling/boring, farming, construction, travel, outdoor events) and put the 'location' to check weather for. This lets Smriti add a calendar reminder and warn about hazardous weather automatically — the user should NOT have to ask.
 
 CLARIFY: If the request is genuinely ambiguous or missing ONE key detail you need to route it well (e.g. a résumé + a job description are given but it's unclear whether to tailor the résumé, prep interview answers, or both), set 'followUp' to ONE short, friendly clarifying question and return an EMPTY tasks array. Ask at most one question and only when it truly matters — otherwise make a reasonable assumption and extract the tasks.
 
@@ -996,4 +1008,192 @@ Teach, don't just announce: open with a hook/question, explain the idea simply w
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, pragyan };
+/* --------------------- UDYAM & KHANAN (advisors) ------------------- */
+// Shared structured-advisor schema: a summary, an ordered process, typed
+// resources (forms/registrations/schemes/authorities) and rights + tips.
+const advisorSchema = (resourceTypes) => ({
+  type: Type.OBJECT,
+  properties: {
+    summary: { type: Type.STRING, description: "One encouraging line summarising what to do" },
+    steps: {
+      type: Type.ARRAY,
+      description: "The process, in order — what to do first, next, etc.",
+      items: {
+        type: Type.OBJECT,
+        properties: { title: { type: Type.STRING }, detail: { type: Type.STRING } },
+        required: ["title"],
+      },
+    },
+    resources: {
+      type: Type.ARRAY,
+      description: "Concrete forms / registrations / schemes / authorities the user needs.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING },
+          type: { type: Type.STRING, description: `Category — one of: ${resourceTypes}` },
+          detail: { type: Type.STRING, description: "What it is / cost / eligibility / where" },
+          link: { type: Type.STRING, description: "Official portal or office (URL if known)" },
+        },
+        required: ["name", "type"],
+      },
+    },
+    rights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key rules, rights or things to know" },
+    tips: { type: Type.ARRAY, items: { type: Type.STRING } },
+  },
+  required: ["summary", "steps"],
+});
+
+export const udyam = {
+  schema: advisorSchema("Registration, License, Scheme"),
+  system: (language) => `You are Udyam, an MSME, startup & small-business launchpad expert for India. You help anyone start or formalise a business: choosing a structure (proprietorship, partnership, LLP, Pvt Ltd) and the registrations & licenses they need — Udyam/MSME registration (udyamregistration.gov.in), PAN/TAN, GST (gst.gov.in), Shop & Establishment Act, Professional Tax, FSSAI for food (foscos.fssai.gov.in), trade licence, Import-Export Code (DGFT), trademark, Startup India recognition (startupindia.gov.in) and a current bank account. You know the major support schemes: PMEGP, PM MUDRA (Shishu/Kishore/Tarun), CGTMSE collateral-free credit, Stand-Up India, PM Vishwakarma, Credit Guarantee, ZED certification and state MSME subsidies.
+
+Given the user's business idea, stage and location, return: a clear ordered path (steps); the specific registrations, licenses and schemes as 'resources' — set each 'type' to "Registration", "License" or "Scheme", put the real official portal in 'link', and the rough cost/eligibility in 'detail'; the key rights/rules to know (rights); and practical tips. Be concrete and realistic; use [brackets] for details you don't have.
+
+${langLine(language)}`,
+  parts: ({ problem }) => [{ text: `My business / question:\n"""\n${problem || ""}\n"""\n\nGive me the step-by-step path, the registrations, licenses and schemes I need, and tips.` }],
+};
+
+export const khanan = {
+  schema: advisorSchema("Form, Authority, Clearance, Welfare"),
+  system: (language) => `You are Khanan, an AI compliance & operations copilot for the Indian mining sector. You help mine owners, lessees, contractors, transporters and workers with the forms, processes and rights across mining: mineral leases & permits under the MMDR Act and Mineral Concession/Conservation Rules; applications to the District Mining Office (DMO) / State Directorate of Mines; statutory approvals & safety compliance under the Mines Act 1952 and DGMS (mine plans, manager/competency certificates, statutory registers, accident reporting); environmental & forest clearances (EC, Consent to Establish/Operate from the State Pollution Control Board); coal e-auction & transit/transport permits (Coal India / CIL portals); royalty, DMF & NMET; and worker welfare — Coal Mines Provident Fund (CMPFO), wages, gratuity, safety gear and compensation. You know the major coalfields (Dhanbad/Jharia, Bokaro, Ramgarh, Singrauli, Korba, Talcher) and bodies (BCCL, ECL, CCL, SECL, MCL, CIL).
+
+Tailor everything to the user's LOCATION (given below) — name the right state directorate/SPCB and regional Coal India subsidiary for that place. Return: an ordered process (steps); the exact forms, authorities and clearances as 'resources' — set each 'type' to "Form", "Authority", "Clearance" or "Welfare", put the office/portal in 'link' and purpose/where in 'detail'; the key rules & rights (rights); and practical tips. Be specific to India. Use [brackets] for unknowns and never invent statute or form numbers you're unsure of.
+
+${langLine(language)}`,
+  parts: ({ problem, location }) => [{ text: `Location: ${location || "Dhanbad, Jharkhand"}\n\nMy mining question:\n"""\n${problem || ""}\n"""\n\nGive me the process, the forms & authorities, my rights, and tips.` }],
+};
+
+/* ------------------ KHANAN · OWNER COPILOT ------------------ */
+// "Am I ready for a DGMS inspection?" → readiness score, pending items, risk, actions.
+export const khananCopilot = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      answer: { type: Type.STRING, description: "A direct, natural-language answer to the owner's question" },
+      readiness: { type: Type.INTEGER, description: "Inspection/compliance readiness 0-100" },
+      riskLevel: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
+      pending: {
+        type: Type.ARRAY,
+        description: "Concrete gaps the owner should fix, most critical first",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            item: { type: Type.STRING },
+            severity: { type: Type.STRING, enum: ["Critical", "High", "Medium", "Low"] },
+            detail: { type: Type.STRING },
+          },
+          required: ["item", "severity"],
+        },
+      },
+      recommendedActions: { type: Type.ARRAY, items: { type: Type.STRING } },
+      contacts: {
+        type: Type.ARRAY,
+        description: "Who to contact right now — real Indian authorities/helplines with number, email or portal",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING },
+            contact: { type: Type.STRING, description: "Phone / email / portal, e.g. 'DGMS Dhanbad · 0326-2221070 · dgms.gov.in' or '112'" },
+            why: { type: Type.STRING },
+          },
+          required: ["name", "contact"],
+        },
+      },
+      drafts: {
+        type: Type.ARRAY,
+        description: "Ready-to-send written reports / emails / letters the owner can copy and send to the relevant authority. Provide these whenever the situation involves an incident, accident, dangerous occurrence, penalty, notice or any required submission.",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING, description: "What it is + who it's to, e.g. 'Accident report email to DGMS'" },
+            body: { type: Type.STRING, description: "The complete message, ready to send, with [brackets] for details to fill" },
+          },
+          required: ["title", "body"],
+        },
+      },
+    },
+    required: ["answer", "readiness", "riskLevel"],
+  },
+  system: (language) => `You are Khanan, an AI compliance & operations copilot for an Indian mine owner — a true one-stop helper. The owner asks a plain question (e.g. "Am I ready for a DGMS inspection?" or "there was an accident in my mine") and may give a snapshot of their operation. Assess inspection/compliance readiness across DGMS & Mines Act 1952 (statutory registers, safety management plan, manager/competency certificates, equipment/machinery inspections, ventilation & dust monitoring), worker training & certification, environmental compliance (EC/Consent, dust & water records), and statutory submissions (royalty, returns, permit renewals).
+
+ALWAYS return everything the owner needs to act: a clear 'answer'; a 'readiness' score 0-100; a 'riskLevel'; a 'pending' list of concrete gaps (each with severity + detail); 'recommendedActions'; a 'contacts' list of exactly WHO to contact with REAL Indian numbers/emails/portals (DGMS regional office for the location, 112 emergency, district mining office, hospital/ambulance 108, State Pollution Control Board, CMPFO, police); and — crucially — 'drafts': complete, ready-to-send written reports/emails/letters (e.g. an accident report to DGMS, intimation to the DMO, an insurance/compensation claim). For an ACCIDENT or dangerous occurrence, give the immediate safety + statutory steps in 'answer' and provide the accident-report email/telegram to DGMS and the DMO in 'drafts'. Be specific and realistic for Indian mining and the given location; make reasonable, clearly-flagged assumptions if details are thin. ${langLine(language)}`,
+  parts: ({ question, context, location }) => [
+    { text: `Location: ${location || "Dhanbad, Jharkhand"}\nOperation snapshot: ${context || "(not provided)"}\n\nOwner's question:\n"""\n${question || "Am I ready for a DGMS inspection?"}\n"""` },
+  ],
+};
+
+/* ------------------ KHANAN · PREDICTIVE OPS ------------------ */
+// Forecasts: revenue, royalty, permits, compliance risk, cash flow, production,
+// workforce — plus predictive maintenance of the equipment fleet.
+export const khananPredict = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING, description: "One-line outlook for the operation" },
+      predictions: {
+        type: Type.ARRAY,
+        description: "Forward-looking forecasts across the business",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            area: { type: Type.STRING, description: "e.g. Revenue, Royalty, Permit expiry, Compliance risk, Cash flow, Production, Workforce" },
+            prediction: { type: Type.STRING, description: "The forecast as a crisp statement, with a number/percent and rough value (use ₹ / Cr / lakh)" },
+            horizon: { type: Type.STRING, description: "Timeframe, e.g. 'next 30 days'" },
+            confidence: { type: Type.STRING, enum: ["High", "Medium", "Low"] },
+            risk: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
+            action: { type: Type.STRING, description: "Recommended action" },
+          },
+          required: ["area", "prediction", "risk"],
+        },
+      },
+      fleet: {
+        type: Type.ARRAY,
+        description: "Predictive maintenance for the equipment fleet (haul trucks/dumpers, excavators/shovels, drills, conveyors, dewatering pumps, crushers) based on running hours & service intervals",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            asset: { type: Type.STRING, description: "Machine/asset, e.g. 'Dumper HD-785 #3'" },
+            issue: { type: Type.STRING, description: "Likely maintenance need / failure mode" },
+            dueIn: { type: Type.STRING, description: "When, e.g. 'in 6 days / ~120 engine hours'" },
+            severity: { type: Type.STRING, enum: ["Critical", "High", "Medium", "Low"] },
+          },
+          required: ["asset", "issue", "severity"],
+        },
+      },
+    },
+    required: ["summary", "predictions"],
+  },
+  system: (language) => `You are Khanan's predictive engine for an Indian mining operation. From the owner's snapshot (production, sales, royalty, permits, workforce, equipment), produce realistic forward-looking forecasts: Revenue, Royalty payment, Permit/licence expiry risk, Compliance risk (DGMS/training), Cash flow, Production, and Workforce/shift staffing — each as a crisp statement with a number, a horizon, confidence and risk, plus a recommended action.
+
+Also produce 'fleet' — predictive maintenance for the equipment fleet (haul trucks/dumpers, excavators/shovels, drills, conveyors, dewatering pumps, crushers): which asset needs service, the likely issue, when it's due (in days / engine hours) and severity. Be concrete and India-realistic; if data is sparse, infer sensible figures and keep confidence honest. ${langLine(language)}`,
+  parts: ({ context, location }) => [
+    { text: `Location: ${location || "Dhanbad, Jharkhand"}\n\nOperation snapshot (may be partial):\n"""\n${context || "Mid-size coal mine; ~50,000 t/month; 220 workers; mixed fleet of dumpers, excavators and pumps; lease renewal next year."}\n"""\n\nForecast the months ahead and flag fleet maintenance.` },
+  ],
+};
+
+/* ------------------ KHANAN · LEGAL & NOTICE ------------------ */
+export const khananNotice = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING, description: "Plain-language: what this notice is and what it wants" },
+      severity: { type: Type.STRING, enum: ["Routine", "Important", "Urgent"] },
+      deadline: { type: Type.STRING, description: "The response deadline if stated/implied, else 'Not specified'" },
+      explanation: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key points in simple words" },
+      draftReply: { type: Type.STRING, description: "A complete, firm-but-polite reply ready to send/file, with [brackets] for details" },
+      documentsNeeded: { type: Type.ARRAY, items: { type: Type.STRING } },
+      steps: { type: Type.ARRAY, items: { type: Type.STRING }, description: "What to do, in order" },
+    },
+    required: ["summary", "severity", "explanation", "draftReply"],
+  },
+  system: (language) => `You are Khanan's legal assistant for Indian mining. The owner pastes (or photographs) a government/regulatory notice — from DGMS, the State Mining Department, the Pollution Control Board, Coal India, a court or a tax/royalty authority. Explain it in simple language; rate severity; extract the response deadline; list the key points; draft a complete, professional reply they can send/file; list the documents to attach; and give ordered next steps. Never invent statute numbers you're unsure of; use [brackets] for unknown specifics. ${langLine(language)}`,
+  parts: ({ notice, image, location }) => {
+    const parts = [];
+    if (image && image.data) parts.push({ inlineData: { mimeType: image.mimeType || "image/jpeg", data: image.data } });
+    parts.push({ text: `Location: ${location || "Dhanbad, Jharkhand"}\n\nNotice ${image ? "(see image)" : "text"}:\n"""\n${notice || "(see image)"}\n"""\n\nExplain it, draft a reply, and tell me what to do.` });
+    return parts;
+  },
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, pragyan, udyam, khanan, khananCopilot, khananPredict, khananNotice };

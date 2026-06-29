@@ -16,6 +16,8 @@ import { RaahatConsole } from "./features/console/RaahatConsole";
 import { DishaConsole } from "./features/console/DishaConsole";
 import { StudyConsole } from "./features/study/StudyConsole";
 import { PragyanConsole } from "./features/pragyan/PragyanConsole";
+import { UdyamConsole } from "./features/console/UdyamConsole";
+import { KhananConsole } from "./features/khanan/KhananConsole";
 import { WorkflowsView } from "./features/WorkflowsView";
 import { Orchestrator } from "./features/Orchestrator";
 import { FloatingChat } from "./components/FloatingChat";
@@ -39,7 +41,7 @@ function Shell() {
     const p = new URLSearchParams(window.location.search);
     const a = p.get("agent");
     const q = p.get("q");
-    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha", "study", "pragyan"];
+    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha", "study", "pragyan", "udyam", "khanan"];
     if (a && valid.includes(a)) {
       setView(a as FeatureKey);
       if (a === "pragyan" && q) setPragyan({ title: q, auto: true }); // auto-make the reel
@@ -65,6 +67,18 @@ function Shell() {
     const h = () => { if (view === "home") homeScroll.current = window.scrollY; setView("orchestrator"); };
     window.addEventListener("saarthi:orchestrator", h);
     return () => window.removeEventListener("saarthi:orchestrator", h);
+  }, [view]);
+
+  // let one agent hand off to another (e.g. Khanan → Haq / Adhrit / Lekh / Smriti)
+  useEffect(() => {
+    const h = (e: Event) => {
+      const k = (e as CustomEvent).detail?.agent as FeatureKey | undefined;
+      if (!k) return;
+      if (view === "home") homeScroll.current = window.scrollY;
+      setView(k);
+    };
+    window.addEventListener("saarthi:open", h);
+    return () => window.removeEventListener("saarthi:open", h);
   }, [view]);
 
   const open = (k?: FeatureKey) => {
@@ -106,6 +120,8 @@ function Shell() {
           {view === "disha" && <DishaConsole key={`disha-${L}`} onBack={back} />}
           {view === "study" && <StudyConsole key={`study-${L}`} onBack={back} />}
           {view === "pragyan" && <PragyanConsole key={`pragyan-${L}`} onBack={back} initialTitle={pragyan.title} autoplay={pragyan.auto} />}
+          {view === "udyam" && <UdyamConsole key={`udyam-${L}`} onBack={back} />}
+          {view === "khanan" && <KhananConsole key={`khanan-${L}`} onBack={back} />}
           {view === "workflows" && <WorkflowsView key={`workflows-${L}`} onBack={back} initialId={wfInitial} initialBuild={wfBuild} />}
           {view === "orchestrator" && <Orchestrator key={`orchestrator-${L}`} onBack={back} />}
         </AnimatePresence>

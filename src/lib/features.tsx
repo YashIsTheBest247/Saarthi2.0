@@ -1,4 +1,4 @@
-import { ShieldCheck, ScanText, Landmark, HeartPulse, Wallet, Target, Scale, Sprout, Calculator, Briefcase, GraduationCap, Video, LucideIcon } from "lucide-react";
+import { ShieldCheck, ScanText, Landmark, HeartPulse, Wallet, Target, Scale, Sprout, Calculator, Briefcase, GraduationCap, Video, Building2, Mountain, LucideIcon } from "lucide-react";
 import { FeatureKey } from "./api";
 
 export type Group = "protect" | "claim" | "automate";
@@ -193,6 +193,32 @@ export const FEATURES: FeatureMeta[] = [
       { v: "video or podcast", l: "script · visuals · subtitles" },
       { v: "voice narration", l: "watch & listen in-browser" },
       { v: "trending news", l: "a built-in topic source" },
+    ],
+  },
+  {
+    key: "udyam",
+    icon: Building2,
+    nameKey: "ud.name", tagKey: "ud.tag", descKey: "ud.desc", personaKey: "ud.persona",
+    accent: "#0E7490", accentDark: "#0A5566", tint: "#DDF0F4",
+    photo: "/agents/udyam.jpg", index: "14", group: "automate",
+    stats: [
+      { v: "Udyam + GST", l: "registrations, step by step" },
+      { v: "licenses", l: "exactly what your trade needs" },
+      { v: "Mudra · PMEGP", l: "collateral-free credit & subsidy" },
+      { v: "idea → launch", l: "a clear path to formalise" },
+    ],
+  },
+  {
+    key: "khanan",
+    icon: Mountain,
+    nameKey: "kn.name", tagKey: "kn.tag", descKey: "kn.desc", personaKey: "kn.persona",
+    accent: "#B45309", accentDark: "#8A3F07", tint: "#F7ECD9",
+    photo: "/agents/khanan.jpg", index: "15", group: "automate",
+    stats: [
+      { v: "leases & permits", l: "forms and the right office" },
+      { v: "DGMS safety", l: "compliance, made simple" },
+      { v: "clearances", l: "EC · JSPCB consent" },
+      { v: "worker rights", l: "CMPF · wages · compensation" },
     ],
   },
 ];

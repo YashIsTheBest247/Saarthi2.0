@@ -30,6 +30,8 @@ export const EMERGENCY: Record<string, { domain: string; preset: string }> = {
   krishi: { domain: "farming & crop loss", preset: "My crop is suddenly dying and I've suffered loss. What do I do now and what can I claim?" },
   raahat: { domain: "women's safety", preset: "Someone is following me right now and I feel unsafe — what should I do this moment?" },
   disha: { domain: "jobs & careers", preset: "I was suddenly laid off / fired and I'm panicking about money and what to do next." },
+  udyam: { domain: "business & MSME", preset: "My business got a GST/compliance notice and I don't know how to respond or what penalty I'm facing." },
+  khanan: { domain: "the mining sector (Dhanbad)", preset: "There's been an accident at the coal mine and a worker is injured — what must we do right now and who do we report to?" },
 };
 
 function contactHref(c: string): string | null {
