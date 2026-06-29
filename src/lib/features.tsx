@@ -183,11 +183,11 @@ export const FEATURES: FeatureMeta[] = [
     ],
   },
   {
-    key: "prachar",
+    key: "pragyan",
     icon: Video,
     nameKey: "pr.name", tagKey: "pr.tag", descKey: "pr.desc", personaKey: "pr.persona",
     accent: "#E14434", accentDark: "#B5301F", tint: "#FBE6E2",
-    photo: "/agents/prachar.jpg", index: "13", group: "automate", badge: "New",
+    photo: "/agents/pragyan.jpg", index: "13", group: "automate", badge: "New",
     stats: [
       { v: "any topic", l: "explained simply" },
       { v: "video or podcast", l: "script · visuals · subtitles" },

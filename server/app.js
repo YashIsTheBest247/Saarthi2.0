@@ -69,9 +69,9 @@ app.post("/api/manager", makeHandler("manager"));
 app.post("/api/study", makeHandler("study"));
 app.post("/api/intake", makeHandler("intake"));
 app.post("/api/assist", makeHandler("assist"));
-app.post("/api/prachar", makeHandler("prachar"));
+app.post("/api/pragyan", makeHandler("pragyan"));
 
-// trending Economic Times stories (ranked) for the Prachar news-reel agent
+// trending Economic Times stories (ranked) for the Pragyan news-reel agent
 app.get("/api/trending", async (_req, res) => {
   try { res.json(await getTrending()); }
   catch (err) { res.json({ items: [], live: false, _error: String(err?.message || err) }); }

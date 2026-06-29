@@ -690,7 +690,7 @@ export const route = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "prachar"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan"],
         description: "The single best agent key for the user's problem",
       },
       reason: { type: Type.STRING, description: "Warm one-line reason, in the user's language" },
@@ -776,7 +776,7 @@ export const assist = {
     properties: {
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "prachar"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "samay", "setu", "krishi", "raahat", "disha", "study", "pragyan"],
         description: "The best agent for this problem",
       },
       agentName: { type: Type.STRING, description: "The agent's display name" },
@@ -957,11 +957,11 @@ GUARDRAIL: If the message is NOT a genuine everyday task — e.g. it is sexual, 
   },
 };
 
-/* ------------------------------ PRACHAR ---------------------------- */
+/* ------------------------------ PRAGYAN ---------------------------- */
 // News-reel producer: turns a topic / trending headline into a ~30s short
 // video (or podcast) script — scene-by-scene narration, captions, image queries.
 
-export const prachar = {
+export const pragyan = {
   schema: {
     type: Type.OBJECT,
     properties: {
@@ -986,7 +986,7 @@ export const prachar = {
     },
     required: ["title", "hook", "scenes", "hashtags", "description"],
   },
-  system: (language) => `You are Prachar, an educational video & podcast creator for India. From any topic — a concept to learn, a how-it-works explainer, a current affair, or a trending Economic Times headline — write a clear, engaging ~40-second educational script (the requested format is given below).
+  system: (language) => `You are Pragyan, an educational video & podcast creator for India. From any topic — a concept to learn, a how-it-works explainer, a current affair, or a trending Economic Times headline — write a clear, engaging ~40-second educational script (the requested format is given below).
 
 Teach, don't just announce: open with a hook/question, explain the idea simply with a concrete example or two, and end with a memorable takeaway. Rules: 6-7 scenes; each scene = ONE spoken narration sentence (clear, friendly, India-context, 12-22 words), a very short on-screen caption (<=6 words), a 2-4 word stock-photo search query, and ~6 seconds. Total spoken length ~95-115 words. Be accurate; for news topics stay factual and neutral, never sensationalise. Add 5 hashtags and a 1-2 line description. ${langLine(language)}`,
   parts: ({ title, headlines, mode }) => [
@@ -996,4 +996,4 @@ Teach, don't just announce: open with a hook/question, explain the idea simply w
   ],
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, prachar };
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, pragyan };

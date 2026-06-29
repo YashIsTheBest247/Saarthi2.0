@@ -104,9 +104,16 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
 
         <motion.p
           initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.12 }}
-          className="mt-5 max-w-lg text-pretty text-base leading-relaxed text-white/65 deva sm:text-lg"
+          className="mt-5 max-w-lg text-pretty text-base leading-relaxed text-white/70 deva sm:text-lg"
         >
           {t("hero.sub")}
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }}
+          className="mt-3 text-sm font-semibold uppercase tracking-[0.14em] text-white/55 deva sm:text-[15px]"
+        >
+          {t("hero.subB")}
         </motion.p>
 
         <motion.div

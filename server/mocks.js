@@ -386,7 +386,7 @@ export const mocks = {
     note: "Parsed from a sample Form-16.",
   },
 
-  prachar: {
+  pragyan: {
     _mock: true,
     title: "Sensex Hits Record High — What's Driving the Rally?",
     hook: "The markets just made history — here's why in 30 seconds.",
@@ -399,7 +399,7 @@ export const mocks = {
       { narration: "That's your 30-second market wrap. Follow for the news that moves your money.", caption: "Follow Saarthi", imageQuery: "news studio", seconds: 4 },
     ],
     hashtags: ["#Sensex", "#StockMarket", "#India", "#Investing", "#Finance"],
-    description: "Your 30-second wrap of why the Sensex hit a record high — earnings, inflation and the retail boom. By Saarthi · Prachar.",
+    description: "Your 30-second wrap of why the Sensex hit a record high — earnings, inflation and the retail boom. By Saarthi · Pragyan.",
   },
 
   intake: {

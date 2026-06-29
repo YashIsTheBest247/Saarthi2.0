@@ -15,7 +15,7 @@ import { KarConsole } from "./features/console/KarConsole";
 import { RaahatConsole } from "./features/console/RaahatConsole";
 import { DishaConsole } from "./features/console/DishaConsole";
 import { StudyConsole } from "./features/study/StudyConsole";
-import { PracharConsole } from "./features/prachar/PracharConsole";
+import { PragyanConsole } from "./features/pragyan/PragyanConsole";
 import { WorkflowsView } from "./features/WorkflowsView";
 import { Orchestrator } from "./features/Orchestrator";
 import { FloatingChat } from "./components/FloatingChat";
@@ -31,7 +31,7 @@ function Shell() {
   const wantRestore = useRef(false); // restore it when returning via Back
   const [wfInitial, setWfInitial] = useState<string | undefined>(undefined); // preselected workflow id
   const [wfBuild, setWfBuild] = useState(false); // open straight into the builder canvas
-  const [prachar, setPrachar] = useState<{ title?: string; auto?: boolean }>({}); // deep-link reel seed
+  const [pragyan, setPragyan] = useState<{ title?: string; auto?: boolean }>({}); // deep-link reel seed
 
   // deep links (e.g. from the Telegram bot): ?agent=kavach opens that console,
   // ?q=... opens the chat pre-filled. URL is cleaned afterwards.
@@ -39,10 +39,10 @@ function Shell() {
     const p = new URLSearchParams(window.location.search);
     const a = p.get("agent");
     const q = p.get("q");
-    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha", "study", "prachar"];
+    const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha", "study", "pragyan"];
     if (a && valid.includes(a)) {
       setView(a as FeatureKey);
-      if (a === "prachar" && q) setPrachar({ title: q, auto: true }); // auto-make the reel
+      if (a === "pragyan" && q) setPragyan({ title: q, auto: true }); // auto-make the reel
     } else if (q) window.dispatchEvent(new CustomEvent("saarthi:openchat", { detail: { q } }));
     if (a || q) window.history.replaceState({}, "", window.location.pathname);
   }, []);
@@ -105,7 +105,7 @@ function Shell() {
           {view === "raahat" && <RaahatConsole key={`raahat-${L}`} onBack={back} />}
           {view === "disha" && <DishaConsole key={`disha-${L}`} onBack={back} />}
           {view === "study" && <StudyConsole key={`study-${L}`} onBack={back} />}
-          {view === "prachar" && <PracharConsole key={`prachar-${L}`} onBack={back} initialTitle={prachar.title} autoplay={prachar.auto} />}
+          {view === "pragyan" && <PragyanConsole key={`pragyan-${L}`} onBack={back} initialTitle={pragyan.title} autoplay={pragyan.auto} />}
           {view === "workflows" && <WorkflowsView key={`workflows-${L}`} onBack={back} initialId={wfInitial} initialBuild={wfBuild} />}
           {view === "orchestrator" && <Orchestrator key={`orchestrator-${L}`} onBack={back} />}
         </AnimatePresence>

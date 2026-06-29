@@ -64,8 +64,8 @@ export function StatusBadge({ live, label }: { live: boolean; label: string }) {
 export function Thinking({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 text-graphite">
-      <span className="relative inline-flex h-5 w-5 animate-pulse text-[#2D6BFF]">
-        <BrandMark className="h-5 w-5" />
+      <span className="flex h-7 w-7 flex-none animate-pulse items-center justify-center rounded-lg bg-ink text-white">
+        <BrandMark className="h-4 w-4" />
       </span>
       <span className="text-sm font-medium">{label}</span>
       <span className="flex gap-1">

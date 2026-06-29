@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Megaphone, Siren, Sparkles, Play, Pause, RotateCcw, Loader2, TrendingUp, Film, Mic, Download, Copy, Hash,
+  Megaphone, Siren, Sparkles, Play, Pause, RotateCcw, Loader2, TrendingUp, Film, Mic, Download, Copy, Hash, Volume2,
 } from "lucide-react";
 import { AgentConsole, ConsoleModule } from "../console/AgentConsole";
 import { Emergency } from "../Emergency";
@@ -16,12 +16,25 @@ interface Scene { narration: string; caption: string; imageQuery: string; second
 interface Reel { title: string; hook: string; scenes: Scene[]; hashtags?: string[]; description?: string; _mock?: boolean }
 interface Trend { title: string; link?: string; trend?: number; source?: string }
 
-export function PracharConsole({ onBack, initialTitle, autoplay }: { onBack: () => void; initialTitle?: string; autoplay?: boolean }) {
+// Narration voices — each maps to a voice-pick strategy + pitch/rate so it works
+// across whatever voices the browser/OS actually provides.
+type VoiceGender = "any" | "female" | "male";
+interface VoiceProfile { id: string; label: string; gender: VoiceGender; pitch: number; rate: number }
+const VOICES: VoiceProfile[] = [
+  { id: "natural", label: "Natural", gender: "any", pitch: 1, rate: 1.02 },
+  { id: "female", label: "Female", gender: "female", pitch: 1.12, rate: 1.0 },
+  { id: "male", label: "Male", gender: "male", pitch: 0.92, rate: 0.97 },
+  { id: "cheerful", label: "Cheerful", gender: "female", pitch: 1.32, rate: 1.08 },
+];
+const FEMALE_RE = /female|woman|girl|aditi|heera|swara|kalpana|lekha|veena|raveena|samantha|victoria|zira|susan|fiona|tessa|neerja|asha|google\s*(uk|us)?\s*english\s*female/i;
+const MALE_RE = /\bmale|\bman\b|ravi|hemant|rishi|prabhat|madhur|david|mark|alex|daniel|george|google\s*(uk|us)?\s*english\s*male|microsoft\s*(david|mark)/i;
+
+export function PragyanConsole({ onBack, initialTitle, autoplay }: { onBack: () => void; initialTitle?: string; autoplay?: boolean }) {
   const modules: ConsoleModule[] = [
     { id: "studio", label: "Studio", icon: Film, render: () => <Studio initialTitle={initialTitle} autoplay={autoplay} /> },
-    { id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="prachar" /> },
+    { id: "sos", label: "Already affected?", icon: Siren, render: () => <Emergency agentKey="pragyan" /> },
   ];
-  return <AgentConsole agentKey="prachar" platform="Educational Videos & Podcasts" badge={Megaphone} modules={modules} onBack={onBack} />;
+  return <AgentConsole agentKey="pragyan" platform="Educational Videos & Podcasts" badge={Megaphone} modules={modules} onBack={onBack} />;
 }
 
 function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: boolean }) {
@@ -37,10 +50,15 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
   // playback
   const [playing, setPlaying] = useState(false);
   const [scene, setScene] = useState(0);
+  const [voiceId, setVoiceId] = useState("natural");
   const stopRef = useRef(false);
+  const voiceIdRef = useRef(voiceId);
+  voiceIdRef.current = voiceId;
 
   useEffect(() => {
     fetch("/api/trending").then((r) => r.json()).then((d) => { setTrending(d.items || []); setTrendLive(!!d.live); }).catch(() => {});
+    // warm up the speech voice list (Chrome loads it asynchronously)
+    try { window.speechSynthesis?.getVoices?.(); window.speechSynthesis?.addEventListener?.("voiceschanged", () => {}); } catch { /* noop */ }
     return () => { stopRef.current = true; try { window.speechSynthesis?.cancel(); } catch { /* noop */ } };
   }, []);
 
@@ -51,7 +69,7 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
     setLoading(true); setReel(null); setImages({}); setScene(0);
     try {
       const headlines = trending.slice(0, 6).map((x, i) => `${i + 1}. ${x.title}`).join("\n");
-      const r = await callFeature<Reel>("prachar", { title: tt || trending[0]?.title, headlines, mode, language: lang.name });
+      const r = await callFeature<Reel>("pragyan", { title: tt || trending[0]?.title, headlines, mode, language: lang.name });
       setReel(r);
       // fetch a stock image per scene (Pexels → Pollinations fallback, server-side)
       (r.scenes || []).forEach(async (s, i) => {
@@ -66,10 +84,20 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
   // auto-generate from a deep link (Telegram "watch the reel")
   useEffect(() => { if (initialTitle && autoplay) generate(initialTitle); /* eslint-disable-next-line */ }, []);
 
-  function pickVoice(): SpeechSynthesisVoice | undefined {
+  function pickVoice(gender: VoiceGender): SpeechSynthesisVoice | undefined {
     const want = lang.speech || (lang.iso === "hi" ? "hi-IN" : "en-IN");
+    const base = want.split("-")[0];
     const vs = window.speechSynthesis?.getVoices?.() || [];
-    return vs.find((v) => v.lang === want) || vs.find((v) => v.lang?.startsWith(want.split("-")[0])) || vs.find((v) => v.lang?.startsWith("en"));
+    // prefer exact locale, then same language, then any English — so it always speaks
+    const pool = [
+      ...vs.filter((v) => v.lang === want),
+      ...vs.filter((v) => v.lang?.startsWith(base) && v.lang !== want),
+      ...vs.filter((v) => v.lang?.startsWith("en") && !v.lang?.startsWith(base)),
+    ];
+    const list = pool.length ? pool : vs;
+    if (gender === "female") return list.find((v) => FEMALE_RE.test(v.name)) || list.find((v) => !MALE_RE.test(v.name)) || list[0];
+    if (gender === "male") return list.find((v) => MALE_RE.test(v.name)) || list[0];
+    return list[0];
   }
 
   function stopSpeech() { stopRef.current = true; try { window.speechSynthesis?.cancel(); } catch { /* noop */ } setPlaying(false); }
@@ -77,14 +105,15 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
   function playFrom(start: number) {
     if (!reel?.scenes?.length || !("speechSynthesis" in window)) return;
     stopRef.current = false; setPlaying(true);
-    const voice = pickVoice();
+    const profile = VOICES.find((v) => v.id === voiceIdRef.current) || VOICES[0];
+    const voice = pickVoice(profile.gender);
     const speak = (i: number) => {
       if (stopRef.current || i >= reel.scenes.length) { setPlaying(false); return; }
       setScene(i);
       const u = new SpeechSynthesisUtterance(reel.scenes[i].narration);
       u.lang = lang.speech || (lang.iso === "hi" ? "hi-IN" : "en-IN");
       if (voice) u.voice = voice;
-      u.rate = 1.02; u.pitch = 1;
+      u.rate = profile.rate; u.pitch = profile.pitch;
       u.onend = () => { if (!stopRef.current) speak(i + 1); };
       u.onerror = () => { if (!stopRef.current) setTimeout(() => speak(i + 1), 600); };
       try { window.speechSynthesis.speak(u); } catch { /* noop */ }
@@ -117,7 +146,7 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
 
   return (
     <Wrap>
-      <H title="Educational video & podcast studio" sub="Give any topic to explain — or pick a trending news story — and Prachar scripts a short educational video or podcast, finds visuals, and narrates it right here." />
+      <H title="Educational video & podcast studio" sub="Give any topic to explain — or pick a trending news story — and Pragyan scripts a short educational video or podcast, finds visuals, and narrates it right here." />
 
       {/* composer */}
       <div className="card p-5">
@@ -180,6 +209,19 @@ function Studio({ initialTitle, autoplay }: { initialTitle?: string; autoplay?: 
             <div className="flex flex-wrap items-center gap-2 p-4">
               <button onClick={togglePlay} className="btn-accent text-sm" style={{ background: ACCENT }}>{playing ? <><Pause className="h-4 w-4" /> Pause</> : <><Play className="h-4 w-4" /> Play</>}</button>
               <button onClick={restart} className="btn-ghost text-sm"><RotateCcw className="h-4 w-4" /> Restart</button>
+              <div className="flex items-center gap-1.5 rounded-full border border-line bg-paper p-1">
+                <Volume2 className="ml-1.5 h-3.5 w-3.5 flex-none text-faint" />
+                {VOICES.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => { setVoiceId(v.id); if (playing) { stopSpeech(); setTimeout(() => playFrom(scene), 120); } }}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${voiceId === v.id ? "text-white" : "text-graphite hover:bg-mist"}`}
+                    style={voiceId === v.id ? { background: ACCENT } : undefined}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
               <span className="ml-auto text-xs text-faint">Scene {Math.min(scene + 1, reel.scenes.length)} / {reel.scenes.length}</span>
             </div>
           </div>

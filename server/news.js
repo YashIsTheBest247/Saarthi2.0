@@ -69,7 +69,7 @@ export async function getNews() {
   return cache.items;
 }
 
-/* ---- Trending stories (all topics) for the Prachar news-reel agent ---- */
+/* ---- Trending stories (all topics) for the Pragyan news-reel agent ---- */
 const HOT = ["ai", "ipo", "market", "sensex", "nifty", "rbi", "rupee", "gold", "startup", "layoff", "budget", "tax", "election", "gst", "crypto", "ev", "isro", "record", "crore", "billion"];
 let tcache = { at: 0, data: null };
 
