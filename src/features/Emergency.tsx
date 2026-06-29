@@ -4,6 +4,7 @@ import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
 import { callFeature, FeatureKey } from "../lib/api";
 import { Thinking, ListBlock, CopyBlock, MockNote } from "../components/ui";
+import { SosAlert } from "../components/SosAlert";
 
 interface EResult {
   headline: string;
@@ -85,6 +86,9 @@ export function Emergency({ agentKey }: { agentKey: FeatureKey; embedded?: boole
         <button onClick={run} disabled={loading || !text.trim()} className="btn-accent mt-4 text-[15px]" style={{ background: "#C0453B" }}>
           <Siren className="h-4 w-4" /> {t("sos.run")}
         </button>
+
+        {/* one-tap alert to a personal emergency contact */}
+        <div className="mt-4"><SosAlert situation={text} domain={cfg.domain} /></div>
       </div>
 
       {loading && <div className="card mt-6 p-8"><Thinking label={t("common.running")} /></div>}

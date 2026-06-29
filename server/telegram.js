@@ -1,6 +1,13 @@
 import { generateJSON, hasKey } from "./gemini.js";
 import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
+import { sendSMS } from "./sms.js";
+
+// Per-chat emergency contact + a pending "shall I text?" alert.
+// (In-memory: fine within a warm instance; a cold start clears it — re-set with /sos.)
+const emergencyNum = new Map(); // chatId -> "+91…"
+const pendingSos = new Map();   // chatId -> { num, message }
+const SOS_RE = /\b(accident|emergency|injured|injury|bleeding|unconscious|collapse|trapped|fire|drowning|attack|assault|harass(?:ing|ed|ment)?|stalk(?:ing|er)?|following me|unsafe|molest|kidnap|abduct|suicide|fainted|heart attack|stroke|snake ?bite|electrocut|gas leak|landslide|flood|save me|help me)\b|दुर्घटना|आपातकाल|घायल|बचाओ|आग लग|हादसा|पीछा कर|छेड़|असुरक्षित/i;
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 // Strip any accidental /api/... path (people often paste the webhook URL here) so
@@ -94,6 +101,19 @@ async function runAssist(chatId, text, agentHint) {
 
   if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
   else await send(chatId, reply, { reply_markup: mainKeyboard() });
+
+  // Emergency: offer to text the user's saved contact (ask once).
+  if (SOS_RE.test(text)) {
+    const num = emergencyNum.get(String(chatId));
+    if (num) {
+      pendingSos.set(String(chatId), { num, message: `EMERGENCY (via Saarthi): "${text.slice(0, 280)}". Please reach me now — or call 112.` });
+      await send(chatId, `⚠️ This sounds urgent. Shall I text your emergency contact (${num}) now?`, {
+        reply_markup: { inline_keyboard: [[{ text: "✅ Yes, text them", callback_data: "sos:yes" }, { text: "No", callback_data: "sos:no" }]] },
+      });
+    } else {
+      await send(chatId, "⚠️ This sounds urgent. Tip: save an emergency contact with  /sos +91XXXXXXXXXX  and I'll offer to text them in emergencies. If you're in danger, call 112 now.");
+    }
+  }
 }
 
 // Pragyan: produce a news reel, showing each production step, then return the
@@ -145,7 +165,17 @@ export async function handleTelegram(req, res) {
       await tg("answerCallbackQuery", { callback_query_id: cq.id });
       if (!chatId) return;
 
-      if (data === "start") {
+      if (data === "sos:yes") {
+        const p = pendingSos.get(String(chatId));
+        if (!p) { await send(chatId, "No pending alert to send."); return; }
+        pendingSos.delete(String(chatId));
+        await send(chatId, `📨 Texting ${p.num}…`);
+        const r = await sendSMS({ to: p.num, message: p.message });
+        await send(chatId, r.ok ? `✅ SMS sent to ${p.num} via ${r.provider}. Stay safe.` : `❌ Couldn't send the SMS (${r.error}). Please call ${p.num} directly, or dial 112.`);
+      } else if (data === "sos:no") {
+        pendingSos.delete(String(chatId));
+        await send(chatId, "Okay — I won't text anyone. If you're in danger, call 112.");
+      } else if (data === "start") {
         await send(chatId, WELCOME, { reply_markup: mainKeyboard() });
       } else if (data === "menu") {
         await send(chatId, "Pick an expert to talk to:", { reply_markup: agentsKeyboard() });
@@ -174,6 +204,22 @@ export async function handleTelegram(req, res) {
     }
     if (text === "/agents") {
       await send(chatId, "Pick an expert to talk to:", { reply_markup: agentsKeyboard() });
+      return;
+    }
+    // set / view / clear the emergency contact that the bot can SMS
+    if (text === "/sos" || text.startsWith("/sos ")) {
+      const arg = text.slice(4).trim();
+      if (arg.toLowerCase() === "clear") {
+        emergencyNum.delete(String(chatId));
+        await send(chatId, "🆗 Emergency contact removed.");
+      } else if (arg.replace(/\D/g, "").length >= 10) {
+        const num = arg.replace(/[^\d+]/g, "");
+        emergencyNum.set(String(chatId), num);
+        await send(chatId, `✅ Emergency contact saved: ${num}\nIn an emergency I'll ask before texting them. Change it with /sos +91… or remove with /sos clear.`);
+      } else {
+        const cur = emergencyNum.get(String(chatId));
+        await send(chatId, `🆘 Emergency contact${cur ? `: ${cur}` : " is not set"}.\nSet it with:  /sos +91XXXXXXXXXX\nThen, in any emergency, I'll offer to text them for you.`);
+      }
       return;
     }
     if (!text) {

@@ -3,6 +3,7 @@ import { Mic, Square, Check, AlertTriangle, ArrowRight, Copy } from "lucide-reac
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useApp } from "../app/AppContext";
 import { BrandMark } from "./Logo";
+import { linkify } from "../lib/linkify";
 
 /* ---------- Motion reveal ---------- */
 export function Reveal({
@@ -132,7 +133,7 @@ export function ListBlock({
         {items.map((it, i) => (
           <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-graphite">
             <Icon className="mt-0.5 h-4 w-4 flex-none" style={{ color }} />
-            <span>{it}</span>
+            <span>{linkify(it)}</span>
           </li>
         ))}
       </ul>
@@ -169,7 +170,7 @@ export function CopyBlock({ text }: { text: string }) {
         {copied ? t("common.copied") : t("common.copy")}
       </button>
       <pre className="deva max-h-[28rem] overflow-auto whitespace-pre-wrap p-5 pr-24 font-sans text-[15px] leading-relaxed text-graphite">
-        {text}
+        {linkify(text)}
       </pre>
     </div>
   );

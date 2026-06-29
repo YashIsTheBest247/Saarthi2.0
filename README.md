@@ -29,7 +29,8 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 - **Agentic Smriti** — one free-text ask is **decomposed** into the right chain (e.g. *check weather → crop plan → government schemes → reminder*), runs each specialist, and **does more than asked**.
 - **Email + calendar reminders** — "Email me when it's done" sends a real email (Gmail SMTP) with a **calendar `.ics` attached**; dated tasks become reminders automatically.
 - **Notepad** — an always-on scratchpad (bottom-left) to jot, paste & copy answers, saved per-device.
-- **Demo-safe**: realistic mock fallbacks so a live demo never breaks, even with no API key.
+- **Emergency SOS** — set a private emergency contact (saved only in your browser) and alert them in one tap via **SMS / WhatsApp / Call** with your **live location**; the **Telegram bot can text them too** (after a "shall I text them?" confirm). Every helpline number is **tap-to-call**.
+- **Demo-safe**: realistic mock fallbacks so a live demo never breaks; when Gemini quota is hit it **rotates keys** and clearly shows a *"fallback initiated"* notice.
 
 ---
 
@@ -85,7 +86,11 @@ helplines), a ready script, and what the agent will do for you.
   classifies it (Gemini router + an instant offline keyword fallback) and offers **"Talk to
   {agent}"**. Supports voice input.
 - **Helplines** — the navbar phone button opens a searchable modal of 22 official Indian
-  helplines (1930, 112, 1098, 1078, 1915, 14416 Tele-MANAS, …), tap-to-call.
+  helplines (1930, 112, 1098, 1078, 1915, 14416 Tele-MANAS, …), tap-to-call. Phone numbers inside
+  **any agent's answer** are also turned into tappable `tel:` links (and URLs into links).
+- **Emergency SOS contact** — in Smriti's results and every agent's *"Already affected?"* tab you can
+  save a **private** emergency contact (browser-only `localStorage`) and alert them in one tap via
+  **SMS / WhatsApp / Call**, with your **live location** attached if you allow it.
 - **Deep links** — `?agent=kavach` opens that console, `?q=…` opens the chat pre-filled
   (used by the Telegram bot to hand off into the web app).
 - **Live data feeds (keyless)** — the **Weather** workflow source & the *Kisan cycle* chain pull
@@ -108,6 +113,9 @@ The same agents, in Telegram (`server/telegram.js`):
 - **Free text** → auto-routes to the best agent and replies with a complete answer
   (English/Hindi auto-detected), plus an **"Open in app"** deep link.
 - **Pick an agent** (`/agents` or the menu) → reply to talk **directly** to that specialist.
+- **Emergency SMS** — set a contact with **`/sos +91…`**; when a message looks urgent the bot asks
+  *"Shall I text your emergency contact?"* and, on **Yes**, sends a real SMS (with the situation) via
+  a free provider — **Fast2SMS** (set `FAST2SMS_KEY`) or a **TextBelt** free fallback.
 - Powered by one Gemini `assist` call that routes **and** writes the full answer; falls back to
   mock replies if no key is set.
 
@@ -179,6 +187,8 @@ npm start            # runs the local API server (server/index.js)
 | `SMTP_HOST` / `SMTP_PORT` | for email | e.g. `smtp.gmail.com` / `587` |
 | `SMTP_USERNAME` / `SMTP_PASSWORD` | for email | Gmail address + **App Password** (2-Step Verification) |
 | `SMTP_FROM_EMAIL` | for email | the "from" address (usually same as username) |
+| `FAST2SMS_KEY` | for SMS | Fast2SMS auth key so the Telegram bot can text an emergency contact (India) |
+| `TEXTBELT_KEY` | optional | paid TextBelt key; without it a free shared key (~1 SMS/day) is used |
 
 ---
 
@@ -191,8 +201,8 @@ Vercel serverless function (`api/index.js`, routed via `vercel.json`).
 1. Push the repo to GitHub and **Import Project** on Vercel (auto-detects **Vite**).
 2. Add **Environment Variables** (Settings → Environment Variables): `GEMINI_API_KEY`
    (optionally `GEMINI_MODEL`, `GEMINI_API_KEY_2/3…`, `PEXELS_API_KEY`), `TELEGRAM_BOT_TOKEN` &
-   `APP_URL` for the bot, and `SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM_EMAIL`
-   for "email me when it's done".
+   `APP_URL` for the bot, `SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM_EMAIL`
+   for "email me when it's done", and `FAST2SMS_KEY` for the bot's emergency SMS.
 3. **Deploy.** The site is live; agents / chat / helplines all work via `/api/*`.
 
 ### 2. Telegram bot

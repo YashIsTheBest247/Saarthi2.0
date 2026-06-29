@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain } from "lucide-react";
+import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain, AlertTriangle } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, featureByKey } from "../lib/features";
 import { callFeature, fileToInlineData, FeatureKey } from "../lib/api";
@@ -11,6 +11,8 @@ import { NotifyMe } from "../components/NotifyMe";
 import { BrandMark } from "../components/Logo";
 import { buildICS, downloadICS, parseWhen } from "../lib/reminders";
 import { clean } from "../lib/text";
+import { linkify } from "../lib/linkify";
+import { SosAlert, SOS_RE } from "../components/SosAlert";
 
 const SMRITI = featureByKey("samay");
 const OTHERS = FEATURES.filter((f) => f.key !== "samay");
@@ -37,6 +39,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [summary, setSummary] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [dated, setDated] = useState<{ title: string; deadline: string }[]>([]); // tasks with a date → auto calendar
+  const [fellBack, setFellBack] = useState(false); // true if Gemini quota hit → mock fallback shown
   const [followUp, setFollowUp] = useState("");   // Smriti's clarifying question
   const [reply, setReply] = useState("");          // user's answer to it
   const historyRef = useRef("");                   // accumulated conversation context
@@ -81,7 +84,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   function start() {
     if (running || (!text.trim() && !image)) return;
     historyRef.current = text.trim();
-    setFeed([]); setDone(new Set()); setSummary(""); setFollowUp(""); setDated([]);
+    setFeed([]); setDone(new Set()); setSummary(""); setFollowUp(""); setDated([]); setFellBack(false);
     orchestrate();
   }
   // answer Smriti's clarifying question, then continue
@@ -98,6 +101,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     let tasks: any[] = [];
     try {
       const intake = await callFeature<{ summary?: string; tasks?: any[]; followUp?: string }>("intake", { text: historyRef.current, image, today, language: lang.name });
+      if (intake._mock) setFellBack(true);
       setSummary(intake.summary || "");
       tasks = intake.tasks || [];
       // Smriti needs a clarification before she can delegate
@@ -137,6 +141,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
       const ctx = tk.weatherSensitive ? weatherCtx : "";
       try {
         const r = await callFeature<any>("manager", { task: tk.detail ? `${tk.title} — ${tk.detail}` : tk.title, deadline: tk.deadline || "", context: ctx, today, language: lang.name });
+        if (r._mock) setFellBack(true);
         const owner = r.canDelegate ? r.agent : "samay";
         setDone((p) => new Set(p).add(owner === "none" ? "samay" : owner));
         setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: r.canDelegate ? "done" : "skip", agentName: r.agentName, text: r.deliverable, agent: owner === "none" ? "samay" : owner } : x));
@@ -306,6 +311,15 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
         {/* results — full width so long answers, drafts & contacts have room */}
         <div ref={resultsRef} className="mt-5 space-y-3 scroll-mt-24">
+            {fellBack && (
+              <div className="flex items-start gap-2 rounded-2xl border border-amber2/40 bg-amber2/10 px-4 py-3 text-sm font-medium text-amber2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+                <span className="deva">AI quota reached — <b>fallback initiated</b>. Showing sample results. Add or rotate a Gemini key (GEMINI_API_KEY_2/3…) for live answers.</span>
+              </div>
+            )}
+            {!running && feed.length > 0 && (SOS_RE.test(historyRef.current) || feed.some((it) => ["raahat", "sehat", "kavach"].includes(it.agent))) && (
+              <SosAlert situation={historyRef.current} domain="this emergency" />
+            )}
             {!running && feed.length > 0 && (
               <div className="card p-5">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink deva">
@@ -346,7 +360,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
                     </div>
                     {it.text && it.status !== "running" && (ok
                       ? <div className="mt-2"><CopyBlock text={clean(it.text)} /></div>
-                      : <p className="mt-2 whitespace-pre-wrap text-sm text-graphite deva">{clean(it.text)}</p>)}
+                      : <p className="mt-2 whitespace-pre-wrap text-sm text-graphite deva">{linkify(clean(it.text))}</p>)}
                   </motion.div>
                 );
               })}

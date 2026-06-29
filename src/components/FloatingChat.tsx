@@ -8,6 +8,7 @@ import { routeToAgent, AGENT_KEYS } from "../lib/route";
 import { useVoice } from "../hooks/useVoice";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
+import { linkify } from "../lib/linkify";
 
 interface Msg {
   id: number;
@@ -141,7 +142,7 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
                   <div key={m.id} className="flex gap-2">
                     <div className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-ink text-white"><BrandMark className="h-4 w-4" /></div>
                     <div className="min-w-0 max-w-[85%] space-y-2">
-                      {m.text && <div className="rounded-2xl rounded-tl-md border border-line bg-paper px-3.5 py-2 text-sm text-graphite deva">{m.text}</div>}
+                      {m.text && <div className="whitespace-pre-wrap rounded-2xl rounded-tl-md border border-line bg-paper px-3.5 py-2 text-sm text-graphite deva">{linkify(m.text)}</div>}
                       {m.agent && <AgentSuggestion agent={m.agent} reason={m.reason} onOpen={onOpen} close={() => setOpen(false)} />}
                       {m.chooser && (
                         <div className="grid grid-cols-2 gap-1.5">

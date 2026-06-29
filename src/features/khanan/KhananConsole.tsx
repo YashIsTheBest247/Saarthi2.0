@@ -16,6 +16,7 @@ import { Thinking, ListBlock, CopyBlock, MockNote } from "../../components/ui";
 import { NotifyMe } from "../../components/NotifyMe";
 import { downloadICS, sendToSmriti } from "../../lib/reminders";
 import { clean } from "../../lib/text";
+import { linkify } from "../../lib/linkify";
 
 // Khanan hands off to the rest of the team.
 const openAgent = (agent: FeatureKey) => window.dispatchEvent(new CustomEvent("saarthi:open", { detail: { agent } }));
@@ -141,7 +142,7 @@ function Copilot() {
               <span className="rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background: RISK[r.riskLevel] }}>Risk: {r.riskLevel}</span>
             </div>
             <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-mist"><div className="h-full rounded-full transition-all" style={{ width: `${r.readiness}%`, background: readyColor(r.readiness) }} /></div>
-            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-graphite deva">{clean(r.answer)}</p>
+            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-graphite deva">{linkify(clean(r.answer))}</p>
           </div>
 
           {r.pending?.length ? (
@@ -167,7 +168,7 @@ function Copilot() {
                 {r.contacts.map((c, i) => (
                   <div key={i} className="rounded-2xl border border-line bg-mist/40 p-3.5">
                     <div className="font-semibold text-ink deva">{c.name}</div>
-                    <div className="mt-0.5 text-sm font-medium deva" style={{ color: ACCENT }}>{c.contact}</div>
+                    <div className="mt-0.5 text-sm font-medium deva" style={{ color: ACCENT }}>{linkify(c.contact)}</div>
                     {c.why && <div className="mt-0.5 text-xs text-muted deva">{clean(c.why)}</div>}
                   </div>
                 ))}
