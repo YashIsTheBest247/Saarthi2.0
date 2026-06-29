@@ -1,9 +1,10 @@
 # सारथी · Saarthi
 
-**An all-in-one AI copilot for everyday life in India** — thirteen specialist AI agents that
+**An all-in-one AI copilot for everyday life in India** — fifteen specialist AI agents that
 spot scams, decode documents, claim government benefits, save on health, make sense of
 money, file taxes, plan your work, fight unfair treatment, protect your crop, stand up
-for women's safety, write your homework, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
+for women's safety, write your homework, make educational videos, launch a business, run a
+compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
 > Hackathon track: *Challenge 3 — Improve Everyday Life with AI.*
 > Real AI (Google **Gemini 2.5 Flash**), premium responsive UI, deterministic on-device
@@ -17,7 +18,7 @@ for women's safety, write your homework, and get you hired. By **voice or text, 
 
 ## Highlights
 
-- **13 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
+- **15 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
 - **Agentic workflows** — one ask runs a **chain of agents** (e.g. decode → draft complaint → schedule), with an AI **planner** that auto-picks the chain.
 - **Floating AI assistant** that understands your problem and routes you to the right agent.
 - **Telegram bot** with the same brain — chat, get full answers, and deep-link back into the app.

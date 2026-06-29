@@ -47,7 +47,7 @@ const en: Dict = {
   "team.region": "Pan-India",
   "team.title": "Helping India handle the confusing, costly and scary parts of everyday life.",
   "team.body":
-    "Thirteen specialists, one Saarthi. Together they cover scams, paperwork, schemes, health, money, taxes, study, news, work and careers — so no one has to face the hard parts alone.",
+    "Fifteen specialists, one Saarthi. Together they cover scams, paperwork, schemes, health, money, taxes, study, news, work, careers, business and mining — so no one has to face the hard parts alone.",
   "team.cta": "Meet the whole team",
 
   "cap.title": "Agent capabilities",
@@ -180,7 +180,7 @@ const en: Dict = {
   "sv.visit.symptoms": "Symptoms & questions for the doctor", "sv.visit.generate": "Build visit summary", "sv.visit.empty": "Add medicines, vitals or notes first.", "sv.visit.title2": "Your visit summary",
 
   "quiet.eyebrow": "Saarthi · your everyday companion",
-  "quiet.titleA": "Thirteen quiet jobs.",
+  "quiet.titleA": "Fifteen quiet jobs.",
   "quiet.titleB": "One calm app.",
   "quiet.sub": "Saarthi quietly handles the confusing, costly and scary parts of everyday Indian life — one calm app, in your language.",
   "quiet.cta": "Meet the agents",
@@ -351,7 +351,7 @@ const en: Dict = {
   "how.s1.t": "Tell any agent",
   "how.s1.d": "Paste a message, snap a bill or letter, or just speak — in English or Hindi.",
   "how.s2.t": "The right specialist takes over",
-  "how.s2.d": "Thirteen expert agents — Disha, Abhay, Nidhi, Acharya and more — pick up exactly what you need.",
+  "how.s2.d": "Fifteen expert agents — Disha, Abhay, Nidhi, Khanan and more — pick up exactly what you need.",
   "how.s3.t": "Real AI, verified math",
   "how.s3.d": "Gemini reads and reasons; built-in engines compute taxes, EMIs and risk scores — accurately.",
   "how.s4.t": "Act from your dashboard",
@@ -362,7 +362,7 @@ const en: Dict = {
   "cta.btn": "Start with any tool",
 
   "footer.headline": "Everyday India, made simple.",
-  "footer.tagline": "Thirteen agents that read, decide and act for everyday India — in your language.",
+  "footer.tagline": "Fifteen agents that read, decide and act for everyday India — in your language.",
   "footer.agents": "Agents",
   "footer.agentsTag": "",
   "footer.explore": "Explore",
@@ -596,7 +596,7 @@ const hi: Dict = {
   "team.region": "पूरे भारत में",
   "team.title": "रोज़मर्रा की ज़िंदगी के उलझे, महँगे और डरावने हिस्सों में भारत की मदद।",
   "team.body":
-    "तेरह माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, योजनाएँ, सेहत, पैसा, टैक्स, पढ़ाई, काम और करियर संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
+    "पंद्रह माहिर, एक सारथी। मिलकर ये ठगी, कागज़ी कार्रवाई, योजनाएँ, सेहत, पैसा, टैक्स, पढ़ाई, काम, करियर, बिज़नेस और खनन संभालते हैं — ताकि किसी को मुश्किल अकेले न झेलनी पड़े।",
   "team.cta": "पूरी टीम से मिलें",
 
   "cap.title": "एजेंट की काबिलियत",
@@ -729,7 +729,7 @@ const hi: Dict = {
   "sv.visit.symptoms": "लक्षण और डॉक्टर के लिए सवाल", "sv.visit.generate": "विज़िट समरी बनाएँ", "sv.visit.empty": "पहले दवाइयाँ, वाइटल्स या नोट्स जोड़ें।", "sv.visit.title2": "आपकी विज़िट समरी",
 
   "quiet.eyebrow": "सारथी · आपका रोज़मर्रा का सारथि",
-  "quiet.titleA": "ग्यारह शांत काम।",
+  "quiet.titleA": "पंद्रह शांत काम।",
   "quiet.titleB": "एक शांत ऐप।",
   "quiet.sub": "सारथी चुपचाप रोज़मर्रा की भारतीय ज़िंदगी के उलझे, महँगे और डरावने हिस्सों को संभालता है — एक शांत ऐप में, आपकी भाषा में।",
   "quiet.cta": "एजेंट से मिलें",
@@ -900,7 +900,7 @@ const hi: Dict = {
   "how.s1.t": "किसी भी एजेंट को बताएँ",
   "how.s1.d": "मैसेज चिपकाएँ, बिल या चिट्ठी की फ़ोटो लें, या बस बोलें — हिंदी या अंग्रेज़ी में।",
   "how.s2.t": "सही विशेषज्ञ संभाल लेता है",
-  "how.s2.d": "ग्यारह एक्सपर्ट एजेंट — दिशा, अभय, निधि, आशा और भी — ठीक वही काम संभालते हैं जो आपको चाहिए।",
+  "how.s2.d": "पंद्रह एक्सपर्ट एजेंट — दिशा, अभय, निधि, खनन और भी — ठीक वही काम संभालते हैं जो आपको चाहिए।",
   "how.s3.t": "असली AI, पक्का हिसाब",
   "how.s3.d": "Gemini पढ़ता और सोचता है; अंदर के इंजन टैक्स, EMI और जोखिम सही-सही जोड़ते हैं।",
   "how.s4.t": "अपने डैशबोर्ड से कदम उठाएँ",
@@ -911,7 +911,7 @@ const hi: Dict = {
   "cta.btn": "किसी भी टूल से शुरू करें",
 
   "footer.headline": "रोज़ का भारत, आसान बनाया।",
-  "footer.tagline": "नौ AI एजेंट जो आपकी भाषा में पढ़ते, तय करते और काम करते हैं — रोज़ के भारत के लिए।",
+  "footer.tagline": "पंद्रह AI एजेंट जो आपकी भाषा में पढ़ते, तय करते और काम करते हैं — रोज़ के भारत के लिए।",
   "footer.agents": "एजेंट",
   "footer.agentsTag": "हर मुश्किल के लिए एक माहिर।",
   "footer.explore": "एक्सप्लोर",

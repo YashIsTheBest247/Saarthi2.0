@@ -5,8 +5,10 @@ import { Type } from "@google/genai";
  * Every feature is instructed to respond in that language while keeping
  * proper nouns / official scheme names / helpline numbers intact.
  */
-const langLine = (language) =>
-  `Write ALL human-readable text in ${language}. Use simple, warm, everyday words a non-expert understands — never legalese. Keep official names, scheme names, drug names, phone numbers and URLs in their original form. Numerals can stay in Latin digits. IMPORTANT: output PLAIN TEXT only — never use markdown: no asterisks (*), no **bold**, no headings (#), no backticks; for lists use short lines or numbers like "1." "2." "3.". Be thorough and practical — always include who to contact (real Indian helplines, offices, emails/portals) and the clear next steps.`;
+const langLine = (language) => {
+  const today = new Date().toDateString();
+  return `Write ALL human-readable text in ${language}. Use simple, warm, everyday words a non-expert understands — never legalese. Keep official names, scheme names, drug names, phone numbers and URLs in their original form. Numerals can stay in Latin digits. Today's date is ${today} — use it to fill in dates on any letters, reports or drafts. IMPORTANT: output PLAIN TEXT only — never use markdown: no asterisks (*), no **bold**, no headings (#), no backticks; for lists use short lines or numbers like "1." "2." "3.". Be thorough, practical and COMPLETE: always name the specific authorities to contact with their real contacts (Indian helplines, offices, emails/portals) and the clear next steps; when the situation needs action — especially anything urgent or an emergency — write complete, ready-to-send drafts/letters/emails/applications, filled in as far as you can (real date, named authority, the user's stated details). Minimise [brackets]; use them only for details you genuinely cannot infer.`;
+};
 
 /* ----------------------------- KAVACH ----------------------------- */
 
@@ -1118,9 +1120,12 @@ export const khananCopilot = {
   system: (language) => `You are Khanan, an AI compliance & operations copilot for an Indian mine owner — a true one-stop helper. The owner asks a plain question (e.g. "Am I ready for a DGMS inspection?" or "there was an accident in my mine") and may give a snapshot of their operation. Assess inspection/compliance readiness across DGMS & Mines Act 1952 (statutory registers, safety management plan, manager/competency certificates, equipment/machinery inspections, ventilation & dust monitoring), worker training & certification, environmental compliance (EC/Consent, dust & water records), and statutory submissions (royalty, returns, permit renewals).
 
 ALWAYS return everything the owner needs to act: a clear 'answer'; a 'readiness' score 0-100; a 'riskLevel'; a 'pending' list of concrete gaps (each with severity + detail); 'recommendedActions'; a 'contacts' list of exactly WHO to contact with REAL Indian numbers/emails/portals (DGMS regional office for the location, 112 emergency, district mining office, hospital/ambulance 108, State Pollution Control Board, CMPFO, police); and — crucially — 'drafts': complete, ready-to-send written reports/emails/letters (e.g. an accident report to DGMS, intimation to the DMO, an insurance/compensation claim). For an ACCIDENT or dangerous occurrence, give the immediate safety + statutory steps in 'answer' and provide the accident-report email/telegram to DGMS and the DMO in 'drafts'. Be specific and realistic for Indian mining and the given location; make reasonable, clearly-flagged assumptions if details are thin. ${langLine(language)}`,
-  parts: ({ question, context, location }) => [
-    { text: `Location: ${location || "Dhanbad, Jharkhand"}\nOperation snapshot: ${context || "(not provided)"}\n\nOwner's question:\n"""\n${question || "Am I ready for a DGMS inspection?"}\n"""` },
-  ],
+  parts: ({ question, context, location, image }) => {
+    const parts = [];
+    if (image && image.data) parts.push({ inlineData: { mimeType: image.mimeType || "image/jpeg", data: image.data } });
+    parts.push({ text: `Location: ${location || "Dhanbad, Jharkhand"}\nOperation snapshot: ${context || "(not provided)"}${image ? "\n(An image is attached — read it for extra context, e.g. a register, site photo or notice.)" : ""}\n\nOwner's question:\n"""\n${question || "Am I ready for a DGMS inspection?"}\n"""` });
+    return parts;
+  },
 };
 
 /* ------------------ KHANAN · PREDICTIVE OPS ------------------ */

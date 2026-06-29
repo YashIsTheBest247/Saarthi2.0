@@ -58,7 +58,7 @@ function SmritiButton({ tasks }: { tasks: { title: string; deadline?: string }[]
 
 const ACCENT = "#B45309";
 const ACCENT_DARK = "#8A3F07";
-const LOC_KEY = "saarthi.khanan.location";
+const LOC_KEY = "saarthi.khanan.loc";
 const DEFAULT_LOC = "Dhanbad, Jharkhand";
 const COALFIELDS = ["Dhanbad, Jharkhand", "Jharia, Jharkhand", "Bokaro, Jharkhand", "Ramgarh, Jharkhand", "Singrauli, Madhya Pradesh", "Korba, Chhattisgarh", "Talcher, Odisha", "Raniganj, West Bengal"];
 
@@ -67,7 +67,7 @@ const RISK: Record<string, string> = { High: "#B91C1C", Medium: "#C2641F", Low: 
 const readyColor = (n: number) => (n >= 80 ? "#2E6F52" : n >= 60 ? "#C2641F" : "#B91C1C");
 
 /* ------------------------- Location selector ------------------------- */
-function useLocation() { return useLocal<string>(LOC_KEY, DEFAULT_LOC); }
+function useLocation() { return useLocal<string>(LOC_KEY, ""); }
 function LocationBar({ loc, setLoc }: { loc: string; setLoc: (s: string) => void }) {
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-mist/40 p-3">
@@ -81,7 +81,7 @@ function LocationBar({ loc, setLoc }: { loc: string; setLoc: (s: string) => void
         className="field min-w-[12rem] flex-1 !rounded-xl !bg-paper !py-2 text-sm"
       />
       <datalist id="khanan-coalfields">{COALFIELDS.map((c) => <option key={c} value={c} />)}</datalist>
-      {loc !== DEFAULT_LOC && <button onClick={() => setLoc(DEFAULT_LOC)} className="text-xs font-medium text-faint hover:text-ink">reset</button>}
+      {loc && <button onClick={() => setLoc("")} className="text-xs font-medium text-faint hover:text-ink">clear</button>}
     </div>
   );
 }
@@ -91,15 +91,18 @@ interface CopilotResult { answer: string; readiness: number; riskLevel: "Low" | 
 function Copilot() {
   const { lang } = useApp();
   const [loc, setLoc] = useLocation();
-  const [question, setQuestion] = useState("Am I ready for a DGMS inspection?");
+  const [question, setQuestion] = useState("");
   const [context, setContext] = useState("");
+  const [image, setImage] = useState<{ mimeType: string; data: string } | null>(null);
+  const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [r, setR] = useState<CopilotResult | null>(null);
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) { const f = e.target.files?.[0]; if (!f) return; setImage(await fileToInlineData(f)); setFileName(f.name); }
 
   async function run() {
-    if (!question.trim()) return;
+    if (!question.trim() && !image) return;
     setLoading(true); setR(null);
-    try { setR(await callFeature<CopilotResult>("khananCopilot", { question, context, location: loc, language: lang.name })); }
+    try { setR(await callFeature<CopilotResult>("khananCopilot", { question, context, location: loc, image, language: lang.name })); }
     catch { /* mock */ } finally { setLoading(false); }
   }
 
@@ -108,11 +111,21 @@ function Copilot() {
       <H title="AI Mine-Owner Copilot" sub="Ask in plain words — “Am I ready for a DGMS inspection?” — and get a readiness score, what's pending, and exactly what to fix." />
       <LocationBar loc={loc} setLoc={setLoc} />
       <div className="card p-5">
-        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Ask anything… e.g. Am I ready for a DGMS inspection?" className="field resize-none deva" />
+        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Am I ready for a DGMS inspection?" className="field resize-none deva" />
         <textarea value={context} onChange={(e) => setContext(e.target.value)} rows={2} placeholder="Optional: a snapshot of your mine (production, workers, permits, what's done / pending)…" className="field mt-3 resize-none deva" />
-        <button onClick={run} disabled={loading || !question.trim()} className="btn-accent mt-3 text-[15px]" style={{ background: ACCENT }}>
-          {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Assessing…</> : <><BrandMark className="h-4 w-4" /> Ask Khanan</>}
-        </button>
+        {image && (
+          <div className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-line bg-mist px-3 py-2">
+            <FileText className="h-4 w-4" style={{ color: ACCENT }} />
+            <span className="max-w-[14rem] truncate text-sm text-graphite deva">{fileName}</span>
+            <button onClick={() => { setImage(null); setFileName(""); }}><X className="h-4 w-4 text-faint" /></button>
+          </div>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button onClick={run} disabled={loading || (!question.trim() && !image)} className="btn-accent text-[15px]" style={{ background: ACCENT }}>
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Assessing…</> : <><BrandMark className="h-4 w-4" /> Ask Khanan</>}
+          </button>
+          <label className="btn-ghost cursor-pointer text-sm"><ImagePlus className="h-4 w-4" /> Add photo / PDF <input type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" /></label>
+        </div>
       </div>
 
       {loading && <div className="card mt-5 p-8"><Thinking label="Reading your operation & DGMS rules…" /></div>}

@@ -21,6 +21,7 @@ interface FeedItem { id: number; agent: string; title: string; status: "running"
 export function Orchestrator({ onBack }: { onBack: () => void }) {
   const { t, lang } = useApp();
   const graphRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const idc = useRef(1);
 
@@ -47,6 +48,14 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     ro.observe(el); setSize({ w: el.clientWidth, h: el.clientHeight });
     return () => ro.disconnect();
   }, []);
+
+  // when the answer is ready, scroll the page down to it
+  useEffect(() => {
+    if (!running && feed.length > 0) {
+      const id = window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 140);
+      return () => window.clearTimeout(id);
+    }
+  }, [running, feed.length]);
 
   // node positions: Smriti up top-centre, agents fanned out in two arcs below
   const W = size.w, H = size.h;
@@ -287,7 +296,27 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* results — full width so long answers, drafts & contacts have room */}
-        <div className="mt-5 space-y-3">
+        <div ref={resultsRef} className="mt-5 space-y-3 scroll-mt-24">
+            {!running && feed.length > 0 && (
+              <div className="card p-5">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink deva">
+                  <CalendarPlus className="h-4 w-4" style={{ color: SMRITI.accent }} /> Get a reminder &amp; email
+                </div>
+                {dated.length > 0 && (
+                  <div className="mb-3 flex flex-wrap items-center gap-3 rounded-2xl bg-mist/50 p-3">
+                    <span className="min-w-0 flex-1 text-sm text-graphite deva">Smriti scheduled <b>{dated.length}</b> dated task{dated.length > 1 ? "s" : ""} — add {dated.length > 1 ? "them" : "it"} to your calendar.</span>
+                    <button onClick={() => downloadICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() })), "saarthi-tasks.ics")} className="btn-accent text-sm" style={{ background: SMRITI.accent }}><CalendarPlus className="h-4 w-4" /> Add to Calendar (.ics)</button>
+                  </div>
+                )}
+                <NotifyMe accent={SMRITI.accent}
+                  getPayload={() => ({
+                    title: "Your tasks are done — Smriti",
+                    message: feed.map((it) => `• ${it.title}${it.text ? "\n" + clean(it.text) : ""}`).join("\n\n") + (dated.length ? `\n\n📅 Scheduled:\n${dated.map((d) => `• ${d.title} — ${d.deadline}`).join("\n")}\n(calendar invite attached)` : ""),
+                  })}
+                  getICS={dated.length ? () => buildICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() }))) : undefined}
+                />
+              </div>
+            )}
             <AnimatePresence>
               {feed.map((it) => {
                 const f = FEATURES.find((x) => x.key === (it.agent as FeatureKey));
@@ -314,25 +343,9 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
             </AnimatePresence>
 
             {!running && feed.length > 0 && (
-              <>
-                <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-3 text-sm font-medium text-graphite deva">
-                  <span className="inline-flex h-4 w-4" style={{ color: SMRITI.accent }}><BrandMark className="h-4 w-4" /></span> Done — {done.size} agent{done.size === 1 ? "" : "s"} handled it.
-                </div>
-                {dated.length > 0 && (
-                  <div className="card flex flex-wrap items-center gap-3 p-4">
-                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-white" style={{ background: SMRITI.accent }}><CalendarPlus className="h-4 w-4" /></span>
-                    <span className="min-w-0 flex-1 text-sm text-graphite deva">Smriti scheduled <b>{dated.length}</b> dated task{dated.length > 1 ? "s" : ""} — add {dated.length > 1 ? "them" : "it"} to your calendar.</span>
-                    <button onClick={() => downloadICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() })), "saarthi-tasks.ics")} className="btn-accent text-sm" style={{ background: SMRITI.accent }}><CalendarPlus className="h-4 w-4" /> Add to Calendar (.ics)</button>
-                  </div>
-                )}
-                <NotifyMe accent={SMRITI.accent}
-                  getPayload={() => ({
-                    title: "Your tasks are done — Smriti",
-                    message: feed.map((it) => `• ${it.title}${it.text ? "\n" + it.text : ""}`).join("\n\n") + (dated.length ? `\n\n📅 Scheduled:\n${dated.map((d) => `• ${d.title} — ${d.deadline}`).join("\n")}\n(calendar invite attached)` : ""),
-                  })}
-                  getICS={dated.length ? () => buildICS(dated.map((d) => ({ title: d.title, deadline: parseWhen(d.deadline).toISOString() }))) : undefined}
-                />
-              </>
+              <div className="flex items-center justify-center gap-2 rounded-2xl bg-mist py-3 text-sm font-medium text-graphite deva">
+                <span className="inline-flex h-4 w-4" style={{ color: SMRITI.accent }}><BrandMark className="h-4 w-4" /></span> Done — {done.size} agent{done.size === 1 ? "" : "s"} handled it.
+              </div>
             )}
             {!running && feed.length === 0 && !summary && (
               <p className="px-1 text-sm text-muted deva">Smriti will read your input, then light up the agents she hands work to and bring back their results here.</p>
