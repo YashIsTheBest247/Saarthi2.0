@@ -7,6 +7,7 @@ import { callFeature, fileToInlineData } from "../../lib/api";
 import { FeatureShell } from "../../components/FeatureShell";
 import { Thinking, ListBlock, ResultCard, MockNote } from "../../components/ui";
 import { computeTax, compareRegimes, inr, TaxResult, Comparison } from "./taxEngine";
+import { extractPdfText, parseForm16Text } from "../../lib/form16";
 
 const ACCENT = "#A06A1F";
 
@@ -38,6 +39,24 @@ export function Kar({ onBack, embedded }: { onBack?: () => void; embedded?: bool
     setParsing(true);
     setParsed(false);
     try {
+      // 1) Keyless path — read a text-based PDF entirely on-device (works with no API key/quota).
+      if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+        try {
+          const d = parseForm16Text(await extractPdfText(file));
+          if (d.grossSalary) {
+            setF((p) => ({
+              ...p,
+              salary: String(d.grossSalary),
+              tds: d.tds ? String(d.tds) : p.tds,
+              other: d.otherIncome ? String(d.otherIncome) : p.other,
+              deductions: d.deductions ? String(d.deductions) : p.deductions,
+            }));
+            setParsed(true);
+            return; // done — no AI call needed
+          }
+        } catch { /* not a text PDF → fall back to AI below */ }
+      }
+      // 2) Fallback — AI vision (for images / scanned PDFs). Needs a Gemini key.
       const inline = await fileToInlineData(file);
       const d = await callFeature<{ grossSalary?: number; tds?: number; otherIncome?: number; deductions?: number }>("form16", { file: inline, language: lang.name });
       setF((p) => ({
