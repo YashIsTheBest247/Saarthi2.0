@@ -3,7 +3,9 @@ import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const APP_URL = (process.env.APP_URL || "").replace(/\/$/, "");
+// Strip any accidental /api/... path (people often paste the webhook URL here) so
+// deep links open the app root, not the webhook.
+const APP_URL = (process.env.APP_URL || "").replace(/\/api\/.*$/i, "").replace(/\/$/, "");
 const API = (m) => `https://api.telegram.org/bot${TOKEN}/${m}`;
 
 const isHindi = (s) => /[ऀ-ॿ]/.test(s || "");
@@ -39,11 +41,13 @@ const agentsKeyboard = () => {
 };
 
 async function tg(method, body) {
-  if (!TOKEN) return;
+  if (!TOKEN) return null;
   try {
-    await fetch(API(method), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch(API(method), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    return await res.json();
   } catch (err) {
     console.error(`[telegram] ${method}`, err?.message || err);
+    return null;
   }
 }
 const send = (chat_id, text, extra = {}) => tg("sendMessage", { chat_id, text, disable_web_page_preview: true, ...extra });
@@ -53,9 +57,15 @@ const WELCOME =
 
 async function runAssist(chatId, text, agentHint) {
   const language = isHindi(text) ? "Hindi" : "English";
+
+  // show "typing…" + a Thinking placeholder we'll edit into the answer
+  tg("sendChatAction", { chat_id: chatId, action: "typing" });
+  const thinking = await tg("sendMessage", { chat_id: chatId, text: "💭 Thinking…" });
+  const mid = thinking?.result?.message_id;
+
   let data;
   if (!hasKey) {
-    data = { ...mocks.assist };
+    data = { ...mocks.assist, _mock: true };
   } else {
     try {
       data = await generateJSON({
@@ -65,15 +75,21 @@ async function runAssist(chatId, text, agentHint) {
       });
     } catch (err) {
       console.error("[telegram] assist", err?.message || err);
-      data = { ...mocks.assist };
+      data = { ...mocks.assist, _mock: true };
     }
   }
-  const name = data.agentName || NAME[data.agent] || "Saarthi";
-  let reply = `${data.reply}\n\n— ${name}`;
-  if (APP_URL && data.agent) {
-    reply += `\n\nOpen ${name} in the app: ${APP_URL}/?agent=${encodeURIComponent(data.agent)}&q=${encodeURIComponent(text)}`;
-  }
-  await send(chatId, reply, { reply_markup: mainKeyboard() });
+
+  const agent = agentHint || data.agent;
+  const name = data.agentName || NAME[agent] || "Saarthi";
+  // never show the generic scam-mock text for an unrelated question
+  const body = data._mock
+    ? `I can help with this as ${name}. The AI service is busy right now — tap "Open in the app" below for the full step-by-step answer. 👇`
+    : data.reply;
+  let reply = `${body}\n\n— ${name}`;
+  if (APP_URL && agent) reply += `\n\nOpen ${name} in the app: ${APP_URL}/?agent=${encodeURIComponent(agent)}&q=${encodeURIComponent(text)}`;
+
+  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
+  else await send(chatId, reply, { reply_markup: mainKeyboard() });
 }
 
 /**
