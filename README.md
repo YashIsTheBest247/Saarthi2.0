@@ -6,7 +6,7 @@ money, file taxes, plan your work, fight unfair treatment, protect your crop, st
 for women's safety, write your homework, make educational videos, launch a business, run a
 compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
-> Hackathon track: *Challenge 3 — Improve Everyday Life with AI.*
+> Hackathon track: *Track 1 — AI Systems & Workflow Innovation Challenge.*
 > Real AI (Google **Gemini 2.5 Flash**), premium responsive UI, deterministic on-device
 > maths where correctness matters — not a generic chatbot.
 
@@ -25,7 +25,10 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 - **"Already affected?" emergency mode** on every agent — calm worst-case next steps + real helplines.
 - **Searchable helpline directory** (22 official Indian numbers, tap-to-call).
 - **Bilingual** (English / हिन्दी) — the UI *and* the AI answers flip language.
-- **Voice** input everywhere (Web Speech API).
+- **Voice** input everywhere (Web Speech API); Pragyan narrates with a **choosable voice**.
+- **Agentic Smriti** — one free-text ask is **decomposed** into the right chain (e.g. *check weather → crop plan → government schemes → reminder*), runs each specialist, and **does more than asked**.
+- **Email + calendar reminders** — "Email me when it's done" sends a real email (Gmail SMTP) with a **calendar `.ics` attached**; dated tasks become reminders automatically.
+- **Notepad** — an always-on scratchpad (bottom-left) to jot, paste & copy answers, saved per-device.
 - **Demo-safe**: realistic mock fallbacks so a live demo never breaks, even with no API key.
 
 ---
@@ -46,7 +49,9 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 | **Bhupati** | Kisan Saathi | Snap a crop photo → diagnosis, action plan, farm schemes, timely advisory. |
 | **Nirbhaya** | Women's Safety | Describe any unsafe situation (harassment, stalking, an unsafe commute, domestic or workplace abuse) → a calm risk read, ordered safety steps, the right Indian helplines (**112 · 1091 · 181**, NCW, cyber 1930), your legal rights (POSH, PWDVA, Zero-FIR, NALSA), and a tap-to-call helpline directory. |
 | **Acharya** | Study & Homework | Set a topic and a deadline → a properly structured, human-sounding essay / journal / report / speech / notes / presentation, exported as **PDF, Word (.docx) or PowerPoint (.pptx)** in **Times New Roman 12pt**, then handed to **Smriti** with an **.ics reminder** so the submission is never missed. |
-| **Pragyan** | Educational Videos & Podcasts | Turn **any topic** (a concept, a how-it-works, or a **trending Economic Times** story) into a short **educational video or podcast**: writes the script + subtitles, pulls matching **Pexels** images (keyless Pollinations fallback), and narrates it in-browser — with downloadable script/`.srt`, hashtags & a shareable link. Built-in **news provider** (ranked ET feed). Works on Telegram (pick agent → send a topic → step-by-step production → link). |
+| **Pragyan** | Educational Videos & Podcasts | Turn **any topic** (a concept, a how-it-works, or a **trending Economic Times** story) into a short **educational video or podcast**: **choose a voice (Natural / Female / Male / Cheerful)**, then it writes the script + subtitles, pulls matching **Pexels** images (keyless Pollinations fallback), and narrates it in-browser — with downloadable script/`.srt`, hashtags & a shareable link. Built-in **news provider** (ranked ET feed). Works on Telegram. |
+| **Udyam** | Business & MSME Launchpad | Turn a business idea into reality — the exact **Udyam, GST & licence** steps and the **MSME schemes & loans** (Mudra, PMEGP, CGTMSE) you qualify for, with official portals. |
+| **Khanan** | Mining Compliance & Ops Copilot | A location-aware (default **Dhanbad**) compliance + **predictive-operations** copilot for mine owners: an **Owner Copilot** ("Am I ready for a DGMS inspection?") with readiness score, gaps, **who to contact** and **ready-to-send reports/emails**; an inspection checklist; a **royalty/DMF/NMET** calculator; a **permit/licence** expiry tracker (with .ics); a **legal-notice** explainer + reply draft; **predictive forecasts + fleet maintenance**; and one-tap hand-offs to Smriti / Haq / Adhrit / Lekh. |
 
 Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
 got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real
@@ -64,10 +69,12 @@ helplines), a ready script, and what the agent will do for you.
   (Abhay → Emergency → Adhrit), *Tailor résumé → Interview → Plan* (Disha → Disha → Smriti),
   *Analyse spends → Plan savings*, *Decode Rx → Refill reminders*. An AI **planner** picks the
   right chain from a free-text problem, and finishing a chain fires a **completion reminder**.
-- **Orchestrator** (the *Start with any tool* CTA) — a **node-graph** view with **Smriti at the
-  top of the hierarchy** managing the team. Drop a file or describe a problem in the dialogue box
-  and watch **control flow live down the edges** to exactly the agents Smriti picks (each node
-  lights up, runs, returns its result) — a visual, real-time multi-agent hand-off.
+- **Orchestrator** (the *Talk to Saarthi* / *Start with any tool* CTA) — a **node-graph** view with
+  **Smriti at the top of the hierarchy** managing the team. Describe any goal in plain words and she
+  **proactively decomposes it** into the right agent-actions, **checks live weather first** for
+  outdoor work (warning on hazards), and watches **control flow live down the edges** to exactly the
+  agents she picks. When done she **auto-creates a calendar `.ics` + email reminder** for any dated
+  task — you never have to ask. If a request fits no specialist, **Smriti answers it herself**.
 - **Build your own workflow** — a **drag-and-drop canvas**: drag agents + sources (Weather,
   Photo/PDF) + outputs (PDF/Word/PPT, Reminder) onto the board, link them into a chain with rules
   (Smriti & outputs are final steps; no loops), then run it and see the result on the page.
@@ -86,7 +93,7 @@ helplines), a ready script, and what the agent will do for you.
   scam-news** via RSS; Disha's Job search pulls **real openings** from
   [Remotive](https://remotive.com) (Arbeitnow fallback). (The app falls back to sample data if a feed is unreachable.)
 - **Deterministic engines** — tax, EMI/SIP, the scam classifier, Smriti's forecasts/ICS, and
-  Narayan's risk & resource maths run **on-device** for reproducible, defensible numbers; the
+  Khanan's royalty/DMF/NMET maths run **on-device** for reproducible, defensible numbers; the
   LLM is used for understanding, extraction and language.
 - **Premium, responsive UI** — floating glass navbar (hamburger menu on phones), smooth
   page/route transitions, language cross-fade.
@@ -126,7 +133,7 @@ Telegram  ──►  /api/telegram  ──►  Gemini  ──►  reply + deep l
 
 - **Structured output** — every feature defines a strict `responseSchema`; Gemini returns
   typed JSON the UI renders directly (no fragile parsing).
-- **Multimodal** — Vidya, Asha, Lekh, Bhupati, Smriti accept a **photo/PDF** via Gemini vision.
+- **Multimodal** — Vidya, Asha, Lekh, Bhupati, Smriti, Khanan accept a **photo/PDF** via Gemini vision.
 - **One deploy** — frontend (static `dist/`) + the Express API (serverless) live on one Vercel URL.
 
 Full details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
@@ -166,8 +173,12 @@ npm start            # runs the local API server (server/index.js)
 | `GEMINI_API_KEY_2/3…` | optional | extra keys — auto-**rotated** when one hits its free-tier quota (or use `GEMINI_API_KEYS=k1,k2,k3`) |
 | `GEMINI_MODEL` | optional | defaults to `gemini-2.5-flash` |
 | `PORT` | optional | local API port (default `8787`) |
+| `PEXELS_API_KEY` | optional | nicer Pragyan stock images (keyless Pollinations fallback) |
 | `TELEGRAM_BOT_TOKEN` | for the bot | from @BotFather |
 | `APP_URL` | for the bot | deployed URL for deep links, e.g. `https://getsaarthi.vercel.app` |
+| `SMTP_HOST` / `SMTP_PORT` | for email | e.g. `smtp.gmail.com` / `587` |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | for email | Gmail address + **App Password** (2-Step Verification) |
+| `SMTP_FROM_EMAIL` | for email | the "from" address (usually same as username) |
 
 ---
 
@@ -179,7 +190,9 @@ Vercel serverless function (`api/index.js`, routed via `vercel.json`).
 ### 1. Deploy on Vercel
 1. Push the repo to GitHub and **Import Project** on Vercel (auto-detects **Vite**).
 2. Add **Environment Variables** (Settings → Environment Variables): `GEMINI_API_KEY`
-   (and optionally `GEMINI_MODEL`, plus `TELEGRAM_BOT_TOKEN` & `APP_URL` for the bot).
+   (optionally `GEMINI_MODEL`, `GEMINI_API_KEY_2/3…`, `PEXELS_API_KEY`), `TELEGRAM_BOT_TOKEN` &
+   `APP_URL` for the bot, and `SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM_EMAIL`
+   for "email me when it's done".
 3. **Deploy.** The site is live; agents / chat / helplines all work via `/api/*`.
 
 ### 2. Telegram bot
