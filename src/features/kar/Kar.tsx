@@ -39,12 +39,13 @@ export function Kar({ onBack, embedded }: { onBack?: () => void; embedded?: bool
     setParsed(false);
     try {
       const inline = await fileToInlineData(file);
-      const d = await callFeature<{ grossSalary?: number; tds?: number; otherIncome?: number }>("form16", { file: inline, language: lang.name });
+      const d = await callFeature<{ grossSalary?: number; tds?: number; otherIncome?: number; deductions?: number }>("form16", { file: inline, language: lang.name });
       setF((p) => ({
         ...p,
         salary: d.grossSalary != null ? String(d.grossSalary) : p.salary,
         tds: d.tds != null ? String(d.tds) : p.tds,
         other: d.otherIncome ? String(d.otherIncome) : p.other,
+        deductions: d.deductions ? String(d.deductions) : p.deductions,
       }));
       setParsed(true);
     } catch {

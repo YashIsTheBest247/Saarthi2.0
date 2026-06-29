@@ -536,6 +536,7 @@ export const form16 = {
       tds: { type: Type.INTEGER, description: "Total tax deducted at source (TDS), in whole rupees" },
       otherIncome: { type: Type.INTEGER, description: "Any other income reported, else 0" },
       employerNps: { type: Type.INTEGER, description: "Employer NPS contribution u/s 80CCD(2) if shown, else 0" },
+      deductions: { type: Type.INTEGER, description: "Total Chapter VI-A deductions claimed under the OLD regime (80C, 80D, 80CCD(1B), etc.) plus any exemptions like HRA/LTA shown — used only for the old-regime comparison. 0 if none shown." },
       note: { type: Type.STRING },
     },
     required: ["grossSalary", "tds"],
@@ -545,13 +546,14 @@ export const form16 = {
 - tds: total income tax deducted at source.
 - otherIncome: any other income reported (else 0).
 - employerNps: employer NPS contribution u/s 80CCD(2) if present (else 0).
+- deductions: total OLD-regime deductions/exemptions claimed — Chapter VI-A (80C, 80D, 80CCD(1B)…) plus exemptions like HRA/LTA if shown. Add them up. 0 if none.
 Be precise and conservative — if a value is not clearly present, use 0. Do not guess wildly.
 
 ${langLine(language)}`,
   parts: ({ file }) => {
     const parts = [];
     if (file && file.data) parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
-    parts.push({ text: "Extract grossSalary, tds, otherIncome and employerNps from this document." });
+    parts.push({ text: "Extract grossSalary, tds, otherIncome, employerNps and deductions from this document." });
     return parts;
   },
 };
