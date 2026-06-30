@@ -7,7 +7,7 @@ for women's safety, write your homework, make educational videos, launch a busin
 compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
 > Hackathon track: *Track 1 — AI Systems & Workflow Innovation Challenge.*
-> Real AI (Google **Gemini 2.5 Flash**), premium responsive UI, deterministic on-device
+> Real AI (Google **Gemini 2.5 Flash**)-rotatable, Groq, premium responsive UI, deterministic on-device
 > maths where correctness matters — not a generic chatbot.
 
 ### Try it live
@@ -38,7 +38,7 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 
 | Agent | Role | What it does |
 |------|------|--------------|
-| **Disha** | Career Copilot | The direct **Redrob ecosystem hook** (careers / hiring). Build a job-ready résumé, **find real live job openings** (Remotive/Arbeitnow), run mock interviews, map skill gaps — plus a **Resume Tailor** (Simple text + **Advanced LaTeX**) that rewrites your résumé to a JD and exports **PDF / .tex / Overleaf**. |
+| **Disha** | Career Copilot (Catalyst AI) | The direct **Redrob ecosystem hook**. **Catalyst AI** skill assessment: paste/upload a **JD + résumé** → extracts & matches skills (Strong/Moderate/Critical gap), runs an **adaptive SkillLens interview** (dynamic difficulty + per-answer scoring), computes a **readiness score** (skill-match 40% · assessment 40% · confidence 20%) with **radar + bar charts**, a **personalized learning plan** + **curated resources**, and a **downloadable PDF report**. Plus live job search (Remotive/Arbeitnow) &amp; a **Resume Tailor** (text + LaTeX → PDF/.tex/Overleaf). |
 | **Abhay** | Scam Shield | Forward any suspicious SMS / WhatsApp / call / email → instant fraud verdict, risk score, red flags, what to do. Crime map, fraud-network graph, voice-spoof & counterfeit checks, and a **live scam-news ticker** (RSS). |
 | **Vidya** | Document Decoder | Paste or photograph a bill, insurance, legal notice or govt letter → plain language + hidden charges flagged. |
 | **Haq** | Scheme Finder | Share a short profile → central + state schemes you likely qualify for, with how-to-apply steps. |
@@ -52,7 +52,7 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 | **Acharya** | Study & Homework | Set a topic and a deadline → a properly structured, human-sounding essay / journal / report / speech / notes / presentation, exported as **PDF, Word (.docx) or PowerPoint (.pptx)** in **Times New Roman 12pt**, then handed to **Smriti** with an **.ics reminder** so the submission is never missed. |
 | **Pragyan** | Educational Videos & Podcasts | Turn **any topic** (a concept, a how-it-works, or a **trending Economic Times** story) into a short **educational video or podcast**: **choose a voice (Natural / Female / Male / Cheerful)**, then it writes the script + subtitles, pulls matching **Pexels** images (keyless Pollinations fallback), and narrates it in-browser — with downloadable script/`.srt`, hashtags & a shareable link. Built-in **news provider** (ranked ET feed). Works on Telegram. |
 | **Udyam** | Business & MSME Launchpad | Turn a business idea into reality — the exact **Udyam, GST & licence** steps and the **MSME schemes & loans** (Mudra, PMEGP, CGTMSE) you qualify for, with official portals. |
-| **Khanan** | Mining Compliance & Ops Copilot | A location-aware (default **Dhanbad**) compliance + **predictive-operations** copilot for mine owners: an **Owner Copilot** ("Am I ready for a DGMS inspection?") with readiness score, gaps, **who to contact** and **ready-to-send reports/emails**; an inspection checklist; a **royalty/DMF/NMET** calculator; a **permit/licence** expiry tracker (with .ics); a **legal-notice** explainer + reply draft; **predictive forecasts + fleet maintenance**; and one-tap hand-offs to Smriti / Haq / Adhrit / Lekh. |
+| **Khanan** | Mining Compliance & Ops Copilot | A location-aware compliance + **predictive-operations** copilot for mine owners: an **Owner Copilot** ("Am I ready for a DGMS inspection?") with readiness score, gaps, **who to contact** and **ready-to-send reports/emails**; an inspection checklist; a **royalty/DMF/NMET** calculator; a **permit/licence** expiry tracker (with .ics); a **legal-notice** explainer + reply draft; **predictive forecasts + fleet maintenance**; and one-tap hand-offs to Smriti / Haq / Adhrit / Lekh. |
 
 Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
 got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real

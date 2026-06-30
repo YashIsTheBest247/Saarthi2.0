@@ -777,14 +777,21 @@ export const emergency = {
         description: "Exactly who to reach out to — real Indian helplines / authorities / portals",
       },
       whatToSay: { type: Type.STRING, description: "A short ready-to-use script/message the user can say or send" },
-      whatSaarthiDoes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "What this agent can do for them right now (draft the complaint, find the office, compute the figure, etc.)" },
+      whatSaarthiDoes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "One-line summary of each thing the agent is doing for them" },
+      drafts: {
+        type: Type.ARRAY,
+        description: "ACTUALLY DO the work now — the finished, ready-to-use deliverables for this situation (the real email/letter/message, a concrete starter budget/plan, a complaint, etc.). Not descriptions — the real thing, ready to send/use.",
+        items: { type: Type.OBJECT, properties: { title: { type: Type.STRING, description: "What it is + who it's for" }, body: { type: Type.STRING, description: "The complete deliverable, ready to use, filled in with [brackets] only where unavoidable" } }, required: ["title", "body"] },
+      },
       reassurance: { type: Type.STRING },
     },
     required: ["headline", "severity", "immediateSteps", "contacts"],
   },
   system: (language) => `You are Saarthi's calm, decisive emergency responder. The person is in the WORST CASE — something bad has ALREADY happened in the given area (they were scammed, got a legal/tax notice, missed a benefit, had a bad medicine reaction, can't repay a loan, were cheated by a company, lost a crop, a disaster is hitting, etc.). They are stressed; steady them and get them to safety.
 
-Do this: open with a calm, reassuring line; rate severity; give a numbered list of concrete immediate actions in the right order (mention time-sensitivity like the "golden hour" for fraud); list exactly WHO to contact with REAL India-specific helplines/authorities/portals and numbers (e.g. 1930 & cybercrime.gov.in for cyber-fraud, 112 emergency, 1078 NDMA, 14416/Tele-MANAS for mental health, 1915 consumer helpline, bank/insurer, relevant ministry); give a short ready-to-use script of what to say or send; and clearly say what the named agent can do for them right now. Be specific, practical and humane — never vague, never alarmist.
+Do this: open with a calm, reassuring line; rate severity; give a numbered list of concrete immediate actions in the right order (mention time-sensitivity like the "golden hour" for fraud); list exactly WHO to contact with REAL India-specific helplines/authorities/portals and numbers (e.g. 1930 & cybercrime.gov.in for cyber-fraud, 112 emergency, 1078 NDMA, 14416/Tele-MANAS for mental health, 1915 consumer helpline, bank/insurer, relevant ministry); give a short ready-to-use script of what to say or send. Be specific, practical and humane — never vague, never alarmist.
+
+TAKE INITIATIVE — DON'T JUST DESCRIBE, DO IT: in 'drafts', actually PRODUCE the deliverables this person needs right now, complete and ready to use — e.g. the real email/letter to the company/HR/authority, a concrete starter budget, a complaint or application, an RTI. Fill in the user's stated details and today's date; use [brackets] only where a detail truly can't be known. 'whatSaarthiDoes' should one-line-summarise what each draft is. The user should NOT have to ask — the agent acts autonomously.
 
 ${langLine(language)}`,
   parts: ({ agentName, domain, situation }) => [
@@ -1237,4 +1244,73 @@ export const khananNotice = {
   },
 };
 
-export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, pragyan, udyam, khanan, khananCopilot, khananPredict, khananNotice };
+/* ---------------- CATALYST (Disha) — skill assessment ---------------- */
+// SkillLens: extract skills from JD + resume, match/gap, per-skill levels,
+// a learning plan and curated resources.
+export const skillmatch = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.STRING, description: "One-line readiness summary" },
+      skillMatchScore: { type: Type.INTEGER, description: "Overall JD↔resume skill coverage, 0-100 (Critical skills weighted most)" },
+      skills: {
+        type: Type.ARRAY,
+        description: "6-12 most important skills from the JD, assessed against the resume",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING },
+            importance: { type: Type.STRING, enum: ["Critical", "Important", "Nice to have"] },
+            status: { type: Type.STRING, enum: ["Strong", "Moderate", "Critical gap"] },
+            candidateLevel: { type: Type.STRING, enum: ["Beginner", "Intermediate", "Advanced"] },
+            targetLevel: { type: Type.STRING, enum: ["Beginner", "Intermediate", "Advanced"] },
+            score: { type: Type.INTEGER, description: "0-100 match for this skill" },
+            feedback: { type: Type.STRING, description: "One short line" },
+          },
+          required: ["name", "importance", "status", "candidateLevel", "targetLevel", "score"],
+        },
+      },
+      strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+      gaps: {
+        type: Type.ARRAY,
+        items: { type: Type.OBJECT, properties: { skill: { type: Type.STRING }, why: { type: Type.STRING }, improve: { type: Type.STRING } }, required: ["skill", "why"] },
+      },
+      learningPlan: {
+        type: Type.ARRAY,
+        items: { type: Type.OBJECT, properties: { phase: { type: Type.STRING }, timeline: { type: Type.STRING }, focus: { type: Type.STRING }, skills: { type: Type.ARRAY, items: { type: Type.STRING } } }, required: ["phase", "focus"] },
+      },
+      resources: {
+        type: Type.ARRAY,
+        items: { type: Type.OBJECT, properties: { skill: { type: Type.STRING }, items: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { type: { type: Type.STRING, enum: ["Video", "Docs", "Practice", "Course"] }, title: { type: Type.STRING }, url: { type: Type.STRING } }, required: ["type", "title"] } } }, required: ["skill", "items"] },
+      },
+    },
+    required: ["summary", "skillMatchScore", "skills"],
+  },
+  system: (language) => `You are Catalyst AI's SkillLens — an expert, fair technical recruiter & skills assessor. Given a Job Description and a candidate Resume, extract the required skills from the JD and the candidate's evidence from the resume, then assess the 6-12 most important skills.
+
+For each skill: its importance (Critical/Important/Nice to have), how well the candidate matches (Strong / Moderate / Critical gap), their current level vs the target level the role needs (Beginner/Intermediate/Advanced), a 0-100 score, and one line of feedback. Compute 'skillMatchScore' (0-100) as the weighted coverage of required skills, weighting Critical skills most. Then give: 'strengths'; 'gaps' (critical mismatches with why + how to improve); a phased, timeline-based 'learningPlan'; and per-weak-skill 'resources' with REAL, well-known working links (official docs, YouTube channels, freeCodeCamp, Coursera/Udemy, LeetCode/HackerRank, MDN, roadmap.sh, etc.). Be specific, honest and encouraging. ${langLine(language)}`,
+  parts: ({ jd, resume }) => [{ text: `JOB DESCRIPTION:\n"""\n${jd || "(not provided)"}\n"""\n\nCANDIDATE RESUME:\n"""\n${resume || "(not provided)"}\n"""\n\nAssess the candidate against the role.` }],
+};
+
+// Adaptive conversational interview (SkillLens bot). Stateless per call — the
+// client passes the running transcript and question count.
+export const interview = {
+  schema: {
+    type: Type.OBJECT,
+    properties: {
+      evaluation: { type: Type.OBJECT, description: "Scores for the candidate's PREVIOUS answer (all 0 on the first turn)", properties: { correctness: { type: Type.NUMBER }, depth: { type: Type.NUMBER }, relevance: { type: Type.NUMBER }, note: { type: Type.STRING } }, required: ["correctness", "depth", "relevance"] },
+      nextQuestion: { type: Type.STRING, description: "The next interview question (empty if done)" },
+      skill: { type: Type.STRING, description: "Which skill this question targets" },
+      difficulty: { type: Type.STRING, enum: ["easy", "medium", "hard"] },
+      done: { type: Type.BOOLEAN, description: "True once ~5 questions have been asked" },
+      confidence: { type: Type.OBJECT, description: "Communication summary (only meaningful when done)", properties: { clarity: { type: Type.NUMBER }, structure: { type: Type.NUMBER }, consistency: { type: Type.NUMBER } }, required: ["clarity", "structure", "consistency"] },
+    },
+    required: ["nextQuestion", "difficulty", "done", "evaluation", "confidence"],
+  },
+  system: (language) => `You are SkillLens AI, an adaptive technical interviewer inside Catalyst AI. You assess a candidate on the given skills through a short, friendly conversational interview (aim for about 5 questions total).
+
+Each turn: if there is a previous answer, evaluate it — correctness, depth and relevance each from 0 to 1, plus a one-line note. Then ask the NEXT question, targeting a relevant skill (vary skills across the interview). ADAPT difficulty: if the last answer scored strongly (>0.8) make the next question harder; if it was weak (<0.4) make it easier; otherwise keep the level. Once about 5 questions have been asked (use the count given), set done=true, leave nextQuestion empty, and fill 'confidence' (clarity/structure/consistency, 0-1) summarising how they communicated. Ask one clear, practical question at a time. Never answer on the candidate's behalf. ${langLine(language)}`,
+  parts: ({ skills, history, count }) => [{ text: `Skills to assess: ${skills || "general"}\nQuestions already asked: ${count || 0}\n\nInterview so far:\n${history || "(none yet)"}\n\n${(count || 0) === 0 ? "Begin: ask the first question (evaluation all zero)." : "Evaluate the candidate's last answer, then ask the next question — or finish if ~5 are done."}` }],
+};
+
+export const features = { kavach, samajh, haq, sehat, paisa, samay, setu, krishi, kar, raahat, disha, resume, extract, route, emergency, assist, form16, manager, study, intake, pragyan, udyam, khanan, khananCopilot, khananPredict, khananNotice, skillmatch, interview };

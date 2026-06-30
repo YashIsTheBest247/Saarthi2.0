@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Siren, Phone, ExternalLink } from "lucide-react";
+import { Siren, Phone, ExternalLink, Check } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { featureByKey } from "../lib/features";
 import { callFeature, FeatureKey } from "../lib/api";
 import { Thinking, ListBlock, CopyBlock, MockNote } from "../components/ui";
 import { SosAlert } from "../components/SosAlert";
+import { ActionBar } from "../components/ActionBar";
 
 interface EResult {
   headline: string;
@@ -13,6 +14,7 @@ interface EResult {
   contacts: { name: string; contact: string; why?: string }[];
   whatToSay?: string;
   whatSaarthiDoes?: string[];
+  drafts?: { title: string; body: string }[];
   reassurance?: string;
   _mock?: boolean;
 }
@@ -154,6 +156,21 @@ export function Emergency({ agentKey }: { agentKey: FeatureKey; embedded?: boole
           {result.whatSaarthiDoes?.length ? (
             <div className="rounded-2xl p-5 deva" style={{ background: meta.tint }}>
               <ListBlock title={t("sos.does").replace("{name}", t(meta.nameKey))} items={result.whatSaarthiDoes} accent={meta.accentDark} />
+            </div>
+          ) : null}
+
+          {result.drafts?.length ? (
+            <div className="card p-6">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted deva"><Check className="h-4 w-4 text-[#2E6F52]" /> Done for you — ready to use</h3>
+              <div className="space-y-4">
+                {result.drafts.map((d, i) => (
+                  <div key={i}>
+                    <div className="mb-1.5 text-sm font-semibold text-graphite deva">{d.title}</div>
+                    <CopyBlock text={d.body} />
+                    <ActionBar title={d.title} text={d.body} accent={meta.accent} />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
 

@@ -134,6 +134,84 @@ export async function buildPptx(content, { font = "Times New Roman" } = {}) {
   return pptx.write({ outputType: "nodebuffer" });
 }
 
+/* ------------------ CATALYST visual skill report (PDF) ------------------ */
+// A designed report: header band, score cards, per-skill bars, and sections.
+export async function buildCatalystReport(data = {}) {
+  const { default: PDFDocument } = await import("pdfkit");
+  const A = "#6D4AA7", INK = "#1A1A1A", MUT = "#6b6b6b", LINE = "#e3e0da";
+  const col = (s) => (s >= 70 ? "#2E6F52" : s >= 40 ? "#C2641F" : "#B23A2E");
+  const lvl = (s) => (s >= 70 ? "Advanced" : s >= 40 ? "Intermediate" : "Beginner");
+  const sc = data.scores || {};
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: "A4", margins: { top: 50, bottom: 54, left: 50, right: 50 } });
+      const chunks = [];
+      doc.on("data", (c) => chunks.push(c));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
+      const M = 50, W = doc.page.width - M * 2, BOT = doc.page.height - 54;
+      const ensure = (h) => { if (doc.y + h > BOT) doc.addPage(); };
+      const H = (t) => { ensure(46); doc.moveDown(0.7); doc.fillColor(A).font("Helvetica-Bold").fontSize(11.5).text(String(t).toUpperCase()); doc.moveTo(M, doc.y + 2).lineTo(M + W, doc.y + 2).strokeColor(LINE).lineWidth(1).stroke(); doc.moveDown(0.45); };
+      const bullets = (arr) => { doc.font("Helvetica").fontSize(10).fillColor(INK); (arr || []).forEach((s) => { ensure(16); doc.text("• " + s, { indent: 4, lineGap: 2, paragraphGap: 3 }); }); };
+
+      // header band
+      doc.roundedRect(M, 40, W, 58, 10).fill(A);
+      doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(17).text("Catalyst AI — Skill Assessment Report", M + 16, 57, { width: W - 32 });
+      doc.fillColor("#e9e2f7").font("Helvetica").fontSize(9).text(data.subtitle || new Date().toDateString(), M + 16, 80);
+      doc.y = 116;
+
+      // score cards
+      const cards = [["Overall", sc.final], ["Skill match", sc.skillMatch], ["Assessment", sc.assessment], ["Confidence", sc.confidence]];
+      const bw = (W - 3 * 10) / 4, by = doc.y;
+      cards.forEach((b, i) => {
+        const x = M + i * (bw + 10), v = b[1] || 0;
+        doc.roundedRect(x, by, bw, 64, 8).fillAndStroke("#faf9f6", LINE);
+        doc.fillColor(MUT).font("Helvetica").fontSize(7.5).text(String(b[0]).toUpperCase(), x + 10, by + 11, { width: bw - 20 });
+        doc.fillColor(col(v)).font("Helvetica-Bold").fontSize(25).text(String(Math.round(v)), x + 10, by + 25, { width: bw - 20 });
+      });
+      doc.y = by + 64 + 10;
+      doc.fillColor(INK).font("Helvetica-Bold").fontSize(11).text(`Overall readiness: ${lvl(sc.final || 0)}`);
+      if (data.summary) { doc.moveDown(0.2); doc.fillColor(MUT).font("Helvetica").fontSize(10).text(data.summary, { lineGap: 2 }); }
+
+      // skills with bars
+      H("Skills");
+      (data.skills || []).forEach((s) => {
+        ensure(42);
+        const y0 = doc.y, v = s.score || 0;
+        doc.fillColor(INK).font("Helvetica-Bold").fontSize(10).text(s.name || "", M, y0, { width: W - 70 });
+        doc.fillColor(col(v)).font("Helvetica-Bold").fontSize(10).text(`${v}/100`, M + W - 60, y0, { width: 60, align: "right" });
+        const ly = doc.y + 2;
+        doc.roundedRect(M, ly, W, 7, 3.5).fill("#eceae5");
+        doc.roundedRect(M, ly, Math.max(4, (W * v) / 100), 7, 3.5).fill(col(v));
+        doc.fillColor(MUT).font("Helvetica").fontSize(8.5).text(`${s.status || ""} · ${s.candidateLevel || ""} -> ${s.targetLevel || ""}${s.feedback ? "  ·  " + s.feedback : ""}`, M, ly + 11, { width: W });
+        doc.moveDown(0.5);
+      });
+
+      if (data.strengths?.length) { H("Strengths"); bullets(data.strengths); }
+      if (data.gaps?.length) {
+        H("Critical gaps");
+        data.gaps.forEach((g) => { ensure(30); doc.fillColor(INK).font("Helvetica-Bold").fontSize(10).text(g.skill || ""); doc.fillColor(MUT).font("Helvetica").fontSize(9.5).text((g.why || "") + (g.improve ? "  ->  " + g.improve : ""), { lineGap: 1, paragraphGap: 5 }); });
+      }
+      if (data.learningPlan?.length) {
+        H("Personalized learning plan");
+        data.learningPlan.forEach((p, i) => { ensure(28); doc.fillColor(A).font("Helvetica-Bold").fontSize(10).text(`${i + 1}. ${p.phase || ""}${p.timeline ? "  (" + p.timeline + ")" : ""}`); doc.fillColor(MUT).font("Helvetica").fontSize(9.5).text((p.focus || "") + (p.skills?.length ? "  —  " + p.skills.join(", ") : ""), { indent: 12, paragraphGap: 5 }); });
+      }
+      if (data.resources?.length) {
+        H("Learning resources");
+        data.resources.forEach((r) => {
+          ensure(22); doc.fillColor(INK).font("Helvetica-Bold").fontSize(10).text(r.skill || "");
+          (r.items || []).forEach((it) => {
+            ensure(14); doc.fillColor(MUT).font("Helvetica").fontSize(9).text(`• ${it.type}: ${it.title}`, { indent: 8, continued: !!it.url });
+            if (it.url) doc.fillColor(A).text("  " + it.url, { link: it.url.startsWith("http") ? it.url : "https://" + it.url, underline: true });
+          });
+          doc.moveDown(0.25);
+        });
+      }
+      doc.end();
+    } catch (e) { reject(e); }
+  });
+}
+
 export async function buildDoc(format, content, opts = {}) {
   if (format === "docx") return buildDocx(content, opts);
   if (format === "pptx") return buildPptx(content, opts);

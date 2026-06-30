@@ -63,8 +63,14 @@ export function StatusBadge({ live, label }: { live: boolean; label: string }) {
 
 /* ---------- Thinking spinner ---------- */
 export function Thinking({ label }: { label: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  // when an agent starts thinking, bring the indicator into view automatically
+  useEffect(() => {
+    const id = window.setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+    return () => window.clearTimeout(id);
+  }, []);
   return (
-    <div className="flex items-center gap-3 text-graphite">
+    <div ref={ref} className="flex items-center gap-3 scroll-mt-24 text-graphite">
       <span className="inline-flex h-6 w-6 flex-none animate-pulse text-[#2D6BFF]">
         <BrandMark className="h-6 w-6" />
       </span>

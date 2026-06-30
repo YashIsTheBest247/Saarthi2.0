@@ -363,9 +363,13 @@ export const mocks = {
     ],
     whatToSay: "Namaste, I need to report an urgent issue. Here is what happened: [brief facts, date, amount, reference number]. Please register my complaint and share the complaint/reference number.",
     whatSaarthiDoes: [
-      "Draft your complaint/report so it's ready to send.",
-      "Point you to the exact office, portal or helpline for your case.",
-      "Walk you through each step and what to expect next.",
+      "Drafted your complaint/report — ready to send.",
+      "Pointed you to the exact office, portal and helpline.",
+      "Prepared a starter plan for the next 7 days.",
+    ],
+    drafts: [
+      { title: "Complaint email — ready to send", body: "To: [authority / company grievance cell]\n\nSubject: Urgent complaint — [brief issue], reference [____]\n\nRespected Sir/Madam,\n\nI am writing to report the following urgent issue: [what happened, date, amount]. I request immediate action to [freeze / refund / resolve] and a written acknowledgement with a complaint number.\n\nI am attaching the relevant evidence (screenshots / receipts).\n\nYours sincerely,\n[Your name] · [Phone] · [Date]" },
+      { title: "Your next-7-days action plan", body: "1. Today: report on the official helpline/portal and note the complaint number.\n2. Today: inform your bank/authority in writing to freeze/act.\n3. Day 2-3: gather all evidence in one folder.\n4. Day 4-7: follow up on the complaint; escalate if no response." },
     ],
     reassurance: "Acting quickly matters far more than acting perfectly. Take the first step now — Saarthi will guide the rest.",
   },
@@ -538,6 +542,45 @@ export const mocks = {
       { asset: "Dewatering pump P-4", issue: "Seal wear — failure risk before monsoon", dueIn: "in 9 days", severity: "High" },
       { asset: "Conveyor CV-2", issue: "Idler bearing replacement", dueIn: "in 18 days", severity: "Medium" },
     ],
+  },
+
+  skillmatch: {
+    _mock: true,
+    summary: "Strong fundamentals; close two critical gaps (System Design, AWS) to be fully role-ready.",
+    skillMatchScore: 72,
+    skills: [
+      { name: "React", importance: "Critical", status: "Strong", candidateLevel: "Advanced", targetLevel: "Advanced", score: 90, feedback: "Solid hooks & component design." },
+      { name: "TypeScript", importance: "Critical", status: "Moderate", candidateLevel: "Intermediate", targetLevel: "Advanced", score: 68, feedback: "Add generics & stricter typing." },
+      { name: "Node.js", importance: "Important", status: "Strong", candidateLevel: "Advanced", targetLevel: "Advanced", score: 85, feedback: "Good API experience." },
+      { name: "System Design", importance: "Critical", status: "Critical gap", candidateLevel: "Beginner", targetLevel: "Intermediate", score: 35, feedback: "Little evidence of scale/design." },
+      { name: "AWS", importance: "Important", status: "Critical gap", candidateLevel: "Beginner", targetLevel: "Intermediate", score: 30, feedback: "No cloud deployment shown." },
+      { name: "SQL", importance: "Important", status: "Moderate", candidateLevel: "Intermediate", targetLevel: "Intermediate", score: 65, feedback: "Comfortable with queries; learn indexing." },
+    ],
+    strengths: ["Frontend (React) depth", "Shipping full-stack features", "Clear project ownership"],
+    gaps: [
+      { skill: "System Design", why: "Role needs designing scalable services; resume shows only feature work.", improve: "Study load balancing, caching, DB scaling; do 5 design problems." },
+      { skill: "AWS", why: "JD requires cloud deploys; no cloud experience listed.", improve: "Deploy a project to AWS (EC2/S3/Lambda); get Cloud Practitioner basics." },
+    ],
+    learningPlan: [
+      { phase: "Phase 1 · Foundations", timeline: "Weeks 1-2", focus: "TypeScript depth + SQL indexing", skills: ["TypeScript", "SQL"] },
+      { phase: "Phase 2 · Cloud", timeline: "Weeks 3-4", focus: "Deploy to AWS, learn core services", skills: ["AWS"] },
+      { phase: "Phase 3 · Scale", timeline: "Weeks 5-6", focus: "System design fundamentals + mock designs", skills: ["System Design"] },
+    ],
+    resources: [
+      { skill: "System Design", items: [{ type: "Course", title: "System Design Primer", url: "https://github.com/donnemartin/system-design-primer" }, { type: "Video", title: "Gaurav Sen — System Design", url: "https://www.youtube.com/@gkcs" }] },
+      { skill: "AWS", items: [{ type: "Docs", title: "AWS Getting Started", url: "https://aws.amazon.com/getting-started/" }, { type: "Practice", title: "AWS Free Tier", url: "https://aws.amazon.com/free/" }] },
+      { skill: "TypeScript", items: [{ type: "Docs", title: "TypeScript Handbook", url: "https://www.typescriptlang.org/docs/" }] },
+    ],
+  },
+
+  interview: {
+    _mock: true,
+    evaluation: { correctness: 0.7, depth: 0.6, relevance: 0.8, note: "Good intuition; add a concrete example." },
+    nextQuestion: "How would you optimise a slow React list rendering thousands of rows?",
+    skill: "React",
+    difficulty: "medium",
+    done: false,
+    confidence: { clarity: 0.75, structure: 0.7, consistency: 0.72 },
   },
 
   khananNotice: {

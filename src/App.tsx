@@ -21,7 +21,6 @@ import { KhananConsole } from "./features/khanan/KhananConsole";
 import { WorkflowsView } from "./features/WorkflowsView";
 import { Orchestrator } from "./features/Orchestrator";
 import { FloatingChat } from "./components/FloatingChat";
-import { Notepad } from "./components/Notepad";
 import { FeatureKey } from "./lib/api";
 
 type View = "home" | FeatureKey | "workflows" | "orchestrator";
@@ -129,7 +128,6 @@ function Shell() {
       </main>
 
       <FloatingChat onOpen={open} />
-      <Notepad />
     </div>
   );
 }

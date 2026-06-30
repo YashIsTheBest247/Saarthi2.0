@@ -9,7 +9,7 @@ import { getJobs } from "./jobs.js";
 import { handleTelegram } from "./telegram.js";
 import { handleResumePdf } from "./resumePdf.js";
 import { sendMail, mailEnabled, completionHtml } from "./notify.js";
-import { buildDoc, MIME, slug } from "./docgen.js";
+import { buildDoc, buildCatalystReport, MIME, slug } from "./docgen.js";
 import { runWorkflow, runStep, planWorkflow, workflowList, getWeather } from "./workflows.js";
 
 /**
@@ -73,6 +73,8 @@ app.post("/api/assist", makeHandler("assist"));
 app.post("/api/pragyan", makeHandler("pragyan"));
 app.post("/api/udyam", makeHandler("udyam"));
 app.post("/api/khanan", makeHandler("khanan"));
+app.post("/api/skillmatch", makeHandler("skillmatch"));
+app.post("/api/interview", makeHandler("interview"));
 app.post("/api/khananCopilot", makeHandler("khananCopilot"));
 app.post("/api/khananPredict", makeHandler("khananPredict"));
 app.post("/api/khananNotice", makeHandler("khananNotice"));
@@ -164,6 +166,19 @@ app.post("/api/doc", async (req, res) => {
     res.send(Buffer.from(buf));
   } catch (err) {
     console.error("[doc]", err?.message || err);
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+// Visual Catalyst skill report (designed PDF — score cards, skill bars, sections).
+app.post("/api/catalyst-report", async (req, res) => {
+  try {
+    const buf = await buildCatalystReport(req.body || {});
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="Catalyst-Skill-Report.pdf"`);
+    res.send(Buffer.from(buf));
+  } catch (err) {
+    console.error("[catalyst-report]", err?.message || err);
     res.status(500).json({ error: String(err?.message || err) });
   }
 });
