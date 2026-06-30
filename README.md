@@ -185,6 +185,8 @@ npm start            # runs the local API server (server/index.js)
 | `GEMINI_API_KEY` | for live AI | Google AI Studio key (else demo/mock mode) |
 | `GEMINI_API_KEY_2/3…` | optional | extra keys — auto-**rotated** when one hits its free-tier quota (or use `GEMINI_API_KEYS=k1,k2,k3`) |
 | `GEMINI_MODEL` | optional | defaults to `gemini-2.5-flash`; set `gemini-2.5-flash-lite` for a higher free **daily** request limit |
+| `GROQ_API_KEY` | optional | **automatic fallback** when Gemini quota is exhausted (fast, generous free tier — [console.groq.com/keys](https://console.groq.com/keys)) |
+| `GROQ_MODEL` | optional | defaults to `llama-3.3-70b-versatile` |
 | `PORT` | optional | local API port (default `8787`) |
 | `PEXELS_API_KEY` | optional | nicer Pragyan stock images (keyless Pollinations fallback) |
 | `TELEGRAM_BOT_TOKEN` | for the bot | from @BotFather |

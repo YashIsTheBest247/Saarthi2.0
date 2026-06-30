@@ -16,9 +16,18 @@ const KEYS = [...new Set(
   rawKeys.map((k) => (k || "").trim()).filter((k) => k && k !== "your_key_here")
 )];
 
-export const hasKey = KEYS.length > 0;
-export const keyCount = KEYS.length;
-export const modelName = MODEL;
+// Groq — fast, generous free tier, OpenAI-compatible. Used as an automatic
+// fallback when all Gemini keys are rate-limited/exhausted (text features).
+const GROQ_KEYS = [...new Set(
+  [process.env.GROQ_API_KEY, process.env.GROQ_API_KEY_2, ...String(process.env.GROQ_API_KEYS || "").split(",")]
+    .map((k) => (k || "").trim()).filter(Boolean)
+)];
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const hasGroq = GROQ_KEYS.length > 0;
+
+export const hasKey = KEYS.length > 0 || hasGroq;
+export const keyCount = KEYS.length + GROQ_KEYS.length;
+export const modelName = KEYS.length ? MODEL : hasGroq ? `groq:${GROQ_MODEL}` : "mock";
 
 const clients = KEYS.map((apiKey) => new GoogleGenAI({ apiKey }));
 let cur = 0; // index of the key we're currently using
@@ -57,11 +66,51 @@ function parseJSON(text) {
 }
 
 /**
- * Call Gemini with structured JSON output. Rotates across all configured keys
- * when one is rate-limited/exhausted, then throws so callers fall back to mocks.
+ * Groq fallback (OpenAI-compatible). Text-only: any image parts can't be read by
+ * the text model, so we note that and proceed with the text. Schema is passed as
+ * a strong instruction since Groq has no native responseSchema.
+ */
+async function groqJSON({ system, parts, schema }) {
+  const hasImage = parts.some((p) => p?.inlineData?.data);
+  const userText = parts.map((p) => p.text || "").filter(Boolean).join("\n\n") || "(see instructions)";
+  const sys = `${system}\n\nRespond with ONLY a single valid JSON object — no markdown, no prose, no code fences. The JSON must match this schema:\n${JSON.stringify(schema).slice(0, 4000)}`
+    + (hasImage ? "\n\n(Note: an image was attached but cannot be read here — answer from the text, and say so if image detail is essential.)" : "");
+
+  let lastErr;
+  for (let i = 0; i < GROQ_KEYS.length; i++) {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_KEYS[i]}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [{ role: "system", content: sys }, { role: "user", content: userText }],
+          temperature: 0.4,
+          max_tokens: 8000,
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        const err = new Error(`groq ${res.status}: ${body.slice(0, 160)}`);
+        lastErr = err;
+        if (isQuota(err) || isTransient(err) || res.status === 429) continue; // try next groq key
+        throw err;
+      }
+      const j = await res.json();
+      return parseJSON(j.choices?.[0]?.message?.content);
+    } catch (err) { lastErr = err; }
+  }
+  throw lastErr || new Error("GROQ_FAILED");
+}
+
+/**
+ * Structured JSON. Rotates across all Gemini keys; if they're all
+ * rate-limited/exhausted (or error), automatically falls back to Groq.
+ * Throws only if every provider fails — callers then use demo mocks.
  */
 export async function generateJSON({ system, parts, schema }) {
-  if (!clients.length) throw new Error("NO_API_KEY");
+  if (!clients.length && !hasGroq) throw new Error("NO_API_KEY");
 
   let lastErr;
   for (let attempt = 0; attempt < clients.length; attempt++) {
@@ -82,13 +131,16 @@ export async function generateJSON({ system, parts, schema }) {
       return parseJSON(response.text);
     } catch (err) {
       lastErr = err;
-      // rotate to the next key only for quota / transient errors; real errors bubble up
-      if (clients.length > 1 && (isQuota(err) || isTransient(err))) {
-        if (isQuota(err)) console.warn(`[gemini] key #${idx + 1} exhausted — rotating`);
-        continue;
-      }
-      throw err;
+      if (isQuota(err)) { console.warn(`[gemini] key #${idx + 1} exhausted — rotating`); continue; }
+      if (isTransient(err)) continue;
+      break; // a real error — stop hammering Gemini, try Groq
     }
   }
-  throw lastErr || new Error("ALL_KEYS_EXHAUSTED");
+
+  // Fallback: Groq
+  if (hasGroq) {
+    try { console.warn("[gemini] falling back to Groq"); return await groqJSON({ system, parts, schema }); }
+    catch (err) { lastErr = err; console.error("[groq]", err?.message || err); }
+  }
+  throw lastErr || new Error("ALL_PROVIDERS_EXHAUSTED");
 }
