@@ -7,8 +7,8 @@ for women's safety, write your homework, make educational videos, launch a busin
 compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
 > Hackathon track: *Track 1 — AI Systems & Workflow Innovation Challenge.*
-> Real AI (Google **Gemini 2.5 Flash**)-rotatable, Groq, premium responsive UI, deterministic on-device
-> maths where correctness matters — not a generic chatbot.
+> Real AI (Google **Gemini 2.5 Flash**, key-rotating + **Groq fallback**), a premium responsive UI, and
+> deterministic on-device maths where correctness matters — agents that *act*, not a generic chatbot.
 
 ### Try it live
 - **Web app:** <https://getsaarthi.vercel.app>
@@ -28,9 +28,11 @@ compliant mine, and get you hired. By **voice or text, in English and Hindi**, o
 - **Voice** input everywhere (Web Speech API); Pragyan narrates with a **choosable voice**.
 - **Agentic Smriti** — one free-text ask is **decomposed** into the right chain (e.g. *check weather → crop plan → government schemes → reminder*), runs each specialist, and **does more than asked**.
 - **Email + calendar reminders** — "Email me when it's done" sends a real email (Gmail SMTP) with a **calendar `.ics` attached**; dated tasks become reminders automatically.
-- **Notepad** — an always-on scratchpad (bottom-left) to jot, paste & copy answers, saved per-device.
+- **Agents that *act*, not just answer** — every deliverable carries one-tap actions: **Save PDF · Email · WhatsApp · SMS · Remind me** (real email + `.ics`). It's a copilot that *does* the task, not a chatbot that describes it.
+- **Autonomous on critical triggers** — in "Already affected?" emergencies, agents **take initiative and produce the finished work themselves** (e.g. the drafted complaint email, a recovery budget/plan) under *"Done for you — ready to use"*, ready to send — no need to ask.
+- **Catalyst (Disha)** — a full skill-assessment suite: JD↔resume **skill match & gap**, an adaptive **SkillLens** interview, scores with **radar + bar charts**, a personalised learning plan, curated resources, and a **visual PDF report**.
 - **Emergency SOS** — set a private emergency contact (saved only in your browser) and alert them in one tap via **SMS / WhatsApp / Call** with your **live location**; the **Telegram bot can text them too** (after a "shall I text them?" confirm). Every helpline number is **tap-to-call**.
-- **Demo-safe**: realistic mock fallbacks so a live demo never breaks; when Gemini quota is hit it **rotates keys** and clearly shows a *"fallback initiated"* notice.
+- **Resilient AI** — rotates multiple Gemini keys, then **falls back to Groq** (Llama 3.3 70B) when quota is exhausted, then to realistic mocks so a live demo *never* breaks; a clear *"fallback initiated"* notice shows what happened.
 
 ---
 
@@ -207,7 +209,7 @@ Vercel serverless function (`api/index.js`, routed via `vercel.json`).
 ### 1. Deploy on Vercel
 1. Push the repo to GitHub and **Import Project** on Vercel (auto-detects **Vite**).
 2. Add **Environment Variables** (Settings → Environment Variables): `GEMINI_API_KEY`
-   (optionally `GEMINI_MODEL`, `GEMINI_API_KEY_2/3…`, `PEXELS_API_KEY`), `TELEGRAM_BOT_TOKEN` &
+   (optionally `GEMINI_MODEL`, `GEMINI_API_KEY_2/3…`, `GROQ_API_KEY`, `PEXELS_API_KEY`), `TELEGRAM_BOT_TOKEN` &
    `APP_URL` for the bot, `SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM_EMAIL`
    for "email me when it's done", and `FAST2SMS_KEY` for the bot's emergency SMS.
 3. **Deploy.** The site is live; agents / chat / helplines all work via `/api/*`.
@@ -247,9 +249,9 @@ server/
 src/
   App.tsx           view switching, deep links, scroll restore
   app/AppContext    language + health context, i18n helper
-  components/       Nav, Landing, FloatingChat, Notepad, SosAlert, NotifyMe,
+  components/       Nav, Landing, FloatingChat, SosAlert, NotifyMe, ActionBar,
                     Helplines, Select, Logo, AgentAvatar, LanguagePicker, ui
-  features/         per-agent tools + console/ (dashboards) + kavach/ sehat/ kar/ khanan/ pragyan/
+  features/         per-agent tools + console/ (dashboards) + disha/Catalyst + kavach/ sehat/ kar/ khanan/ pragyan/
   lib/              api client, features metadata, i18n (en/hi), route classifier,
                     linkify (tel: links), form16 (keyless PDF parse), reminders (ICS), text
   hooks/            useVoice
