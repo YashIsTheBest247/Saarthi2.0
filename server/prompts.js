@@ -841,10 +841,10 @@ export const manager = {
       canDelegate: { type: Type.BOOLEAN, description: "True if a specialist agent can meaningfully complete this task without the user" },
       agent: {
         type: Type.STRING,
-        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "udyam", "khanan", "none"],
+        enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "pragyan", "udyam", "khanan", "none"],
         description: "The specialist who should own it (never 'samay' — that's the manager). 'none' if it's inherently personal/physical.",
       },
-      agentName: { type: Type.STRING, description: "Display name of the agent (Abhay, Vidya, Haq, Asha, Nidhi, Lekh, Adhrit, Bhupati, Nirbhaya, Disha, Acharya, Udyam, Khanan) or 'You'" },
+      agentName: { type: Type.STRING, description: "Display name of the agent (Abhay, Vidya, Haq, Asha, Nidhi, Lekh, Adhrit, Bhupati, Nirbhaya, Disha, Acharya, Pragyan, Udyam, Khanan) or 'You'" },
       status: { type: Type.STRING, enum: ["Completed", "Needs you"] },
       reason: { type: Type.STRING, description: "One short line: why this agent / why it needs the user" },
       deliverable: { type: Type.STRING, description: "If canDelegate: the FINISHED work as that agent (the actual draft/plan/answer/analysis, ready to use). Else: a one-line tip on how to do it." },
@@ -863,10 +863,11 @@ export const manager = {
 - Nirbhaya (raahat): women's safety — harassment, stalking, abuse, emergencies, helplines & rights.
 - Disha (disha): careers — résumé, job search, interview prep.
 - Acharya (study): homework & study writing — essays, journals, reports, speeches, study notes, presentations, explaining concepts.
+- Pragyan (pragyan): producing an educational/explainer VIDEO or podcast on a topic — a scene-by-scene script with narration, on-screen captions and visuals. Use for "make a video / reel / explainer / podcast about X".
 - Udyam (udyam): starting/formalising a business — registrations (Udyam/GST), licenses, and MSME loans/schemes (Mudra, PMEGP, CGTMSE).
 - Khanan (khanan): the mining sector (esp. Dhanbad/Jharkhand coalfields) — leases/permits, forms & processes, DGMS safety, environmental clearances, mine-worker rights & welfare.
 
-Given ONE of the user's tasks, decide if a specialist can complete it AUTONOMOUSLY (without the user) — e.g. draft an email/complaint/application, write an essay/journal/report/homework (Acharya), write a study or work plan, analyse spends, find schemes, decode a document, prep interview answers, give farming advice, or give women's-safety guidance with immediate steps, helplines & rights (Nirbhaya). A safety, scam, money, document, scheme or writing matter can always be delegated — the specialist gives real, usable help even in an emergency, so do NOT mark these "needs you". If YES: set canDelegate=true, choose the best agent + agentName, status="Completed", and in 'deliverable' PRODUCE the actual finished work as that agent (a ready-to-send draft, a concrete plan, a clear analysis — usable as-is, not a description of what you'd do). Keep it under ~1400 characters.
+Given ONE of the user's tasks, decide if a specialist can complete it AUTONOMOUSLY (without the user) — e.g. draft an email/complaint/application, write an essay/journal/report/homework (Acharya), produce an educational/explainer video or podcast script — scene-by-scene with narration & captions (Pragyan), write a study or work plan, analyse spends, find schemes, decode a document, prep interview answers, give farming advice, or give women's-safety guidance with immediate steps, helplines & rights (Nirbhaya). A safety, scam, money, document, scheme or writing matter can always be delegated — the specialist gives real, usable help even in an emergency, so do NOT mark these "needs you". If YES: set canDelegate=true, choose the best agent + agentName, status="Completed", and in 'deliverable' PRODUCE the actual finished work as that agent (a ready-to-send draft, a concrete plan, a clear analysis — usable as-is, not a description of what you'd do). Keep it under ~1400 characters.
 
 If the task is inherently personal or physical and no agent can do it for them (pay rent, buy a gift, attend a meeting, exercise, call a relative), set canDelegate=false, agent="none", agentName="You", status="Needs you", and put a one-line practical tip in 'deliverable'.
 
@@ -973,8 +974,8 @@ export const intake = {
             location: { type: Type.STRING, description: "Place to check weather for, if relevant/known (e.g. 'Dhanbad'). Empty otherwise." },
             suggestedAgent: {
               type: Type.STRING,
-              enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "udyam", "khanan", "none"],
-              description: "Best specialist: 'study' for homework/essays, 'setu' for letters/complaints, 'udyam' for starting/registering a business, 'khanan' for mining-sector forms/processes, etc. 'none' if only the user can do it.",
+              enum: ["kavach", "samajh", "haq", "sehat", "paisa", "kar", "setu", "krishi", "raahat", "disha", "study", "pragyan", "udyam", "khanan", "none"],
+              description: "Best specialist: 'study' for homework/essays/reports, 'pragyan' for an educational/explainer VIDEO or podcast on a topic, 'setu' for letters/complaints, 'udyam' for starting/registering a business, 'khanan' for mining-sector forms/processes, etc. 'none' if only the user can do it.",
             },
           },
           required: ["title", "priority", "deadline", "weatherSensitive", "location"],
@@ -989,7 +990,8 @@ For each task: write a specific, self-contained title; capture the important ins
 - khanan — ANYTHING mining/coal: starting or running a mine or mining project, leases & permits, mine-plan & DGMS safety, environmental clearances, royalty, mine-worker matters (esp. Dhanbad/Jharkhand).
 - udyam — starting or registering a GENERAL (non-mining) business/MSME: Udyam, GST, licences, MSME loans (Mudra/PMEGP/CGTMSE).
 - setu (Adhrit) — drafting letters / emails / applications to AUTHORITIES (police, municipal, departments) either proactively or as a complaint/RTI, and consumer-rights grievances.
-- haq — government schemes, subsidies, benefits & cheap credit. kar — income tax. paisa — personal money/budget. sehat — health/medicines. krishi — farming/crops. kavach — scams/fraud. study (Acharya) — essays/reports/homework writing.
+- haq — government schemes, subsidies, benefits & cheap credit. kar — income tax. paisa — personal money/budget. sehat — health/medicines. krishi — farming/crops. kavach — scams/fraud. study (Acharya) — essays/reports/homework/study-notes writing.
+- pragyan (Pragyan) — producing an EDUCATIONAL / explainer VIDEO or podcast on a topic or concept: a scene-by-scene script with narration & captions. Use this for "make a video / reel / explainer / podcast about X".
 - raahat (Nirbhaya) — women's safety (harassment, stalking, feeling unsafe, abuse, emergency): safety steps, helplines & rights.
 - disha — ONLY the user's OWN career: résumé, job search, interview prep, skill gaps. NEVER use disha for starting a business or a project.
 - 'none' — only if it's purely physical and no agent can help. Keep it focused — split a goal into the few real tasks, not dozens.
@@ -1000,6 +1002,7 @@ BE PROACTIVE — DELIVER MORE THAN ASKED: Do not just echo the user's words as a
 - A farmer who wants to grow a crop on a date → (1) a weather-aware crop/sowing plan for that place & date [suggestedAgent 'krishi', weatherSensitive true, location set, deadline set], and (2) find government schemes, subsidies and cheap credit for the farmer [suggestedAgent 'haq'] — especially when money is tight (e.g. PM-KISAN, KCC, PMFBY).
 - Starting outdoor / mining work on a date → a weather check + the safety/process steps [khanan] + a reminder.
 - Starting a general (non-mining) business → registration steps [udyam] + matching schemes/loans [haq].
+- "Make an educational video on TOPIC and write/complete an essay on it by DATE" → (1) an educational/explainer video script on TOPIC [suggestedAgent 'pragyan', deadline set to DATE], and (2) a written essay on TOPIC [suggestedAgent 'study', deadline set to DATE]. Put the real DATE deadline on both so Smriti sets calendar reminders. Two separate tasks — do not merge the video and the essay.
 - Starting a MINING project on a date, with possible trouble from people → (1) mine setup: leases, permits, DGMS safety & compliance plan for that place & date [khanan, weatherSensitive true, location, deadline]; (2) government schemes/subsidies for the venture [haq]; (3) a letter/email to the LOCAL POLICE to pre-empt the disturbance and request protection [setu]. Smriti then schedules the dated task. Do NOT use disha here — this is not about the user's résumé/job.
 Always put the real 'deadline' on the dated task so Smriti sets a calendar reminder. Aim for 2–4 high-value tasks, ordered sensibly (info/plan first, then schemes/support), rather than one thin task.
 

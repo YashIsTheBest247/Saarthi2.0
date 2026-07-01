@@ -11,6 +11,17 @@
     />
     <title>Saarthi · आपका रोज़मर्रा का AI सारथि</title>
 
+    <!-- Apply the saved / system theme before paint to avoid a flash -->
+    <script>
+      (function () {
+        try {
+          var s = localStorage.getItem("saarthi.theme");
+          var dark = s === "dark" || (!s && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fonts: Familjen Grotesk (display), Hanken Grotesk (body), Noto Sans Devanagari (Hindi) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

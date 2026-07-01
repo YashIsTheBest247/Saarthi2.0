@@ -3,6 +3,38 @@
 @tailwind utilities;
 
 @layer base {
+  /* ---- Theme tokens (RGB channels) — flipped by the `.dark` class on <html> ---- */
+  :root {
+    --c-paper: 255 255 255;
+    --c-canvas: 255 255 255;
+    --c-linen: 251 251 250;
+    --c-mist: 244 244 245;
+    --c-panel: 245 245 246;
+    --c-ink: 22 20 15;         /* dark surfaces / buttons */
+    --c-graphite: 52 50 44;
+    --c-muted: 103 100 93;
+    --c-faint: 154 150 142;
+    --c-line: 231 230 227;
+    --c-lineSoft: 240 239 236;
+    --c-fg: 22 20 15;          /* primary text */
+    color-scheme: light;
+  }
+  .dark {
+    --c-canvas: 14 13 11;
+    --c-paper: 26 24 20;
+    --c-linen: 245 243 239;    /* stays light — used as text-on-dark & light CTAs */
+    --c-mist: 37 34 28;
+    --c-panel: 18 16 14;
+    --c-ink: 22 20 15;         /* keep dark so bg-ink surfaces stay dark */
+    --c-graphite: 203 200 193;
+    --c-muted: 160 156 147;
+    --c-faint: 122 117 108;
+    --c-line: 45 42 37;
+    --c-lineSoft: 37 34 29;
+    --c-fg: 237 235 231;       /* light primary text */
+    color-scheme: dark;
+  }
+
   * {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -12,11 +44,16 @@
     overflow-x: hidden;
   }
   body {
-    @apply bg-canvas text-ink font-sans antialiased;
+    @apply bg-canvas font-sans antialiased;
+    color: rgb(var(--c-fg));
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
   }
+  /* `ink` stays dark for surfaces, so primary text (text-ink) is remapped to the
+     theme foreground in dark mode. */
+  .dark .text-ink { color: rgb(var(--c-fg)); }
+  .dark .hover\:text-ink:hover { color: rgb(var(--c-fg)); }
   /* native controls (selects, checkboxes, radios, range, dropdown highlight) follow the app's blue */
   select, input, textarea, button {
     accent-color: #2D6BFF;
@@ -38,6 +75,12 @@
     background: rgba(45, 107, 255, 0.18);
     color: #1a1714;
   }
+  .dark ::selection {
+    background: rgba(45, 107, 255, 0.38);
+    color: #fff;
+  }
+  .dark ::-webkit-scrollbar-thumb { background: #3a352e; background-clip: content-box; }
+  .dark ::-webkit-scrollbar-thumb:hover { background: #4a453d; background-clip: content-box; }
   @keyframes dashflow { to { stroke-dashoffset: -14; } }
   .flow-line { stroke-dasharray: 4 5; animation: dashflow 0.7s linear infinite; }
   ::-webkit-scrollbar {
@@ -61,7 +104,7 @@
 
 @layer components {
   .page-bg {
-    background-color: #ffffff;
+    background-color: rgb(var(--c-canvas));
   }
 
   .glass {
@@ -69,13 +112,16 @@
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
+  .dark .glass {
+    background: rgba(18, 16, 13, 0.72);
+  }
 
   .card {
     @apply rounded-3xl bg-paper border border-line shadow-card;
   }
 
   .pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-linen px-3 py-1 text-xs font-medium text-graphite;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-mist px-3 py-1 text-xs font-medium text-graphite;
   }
 
   /* small floating member chip (Lattice style) */
@@ -92,14 +138,15 @@
   }
   /* light = bordered pill (Lattice "Contact us") */
   .btn-light {
-    @apply btn bg-paper text-ink border border-line px-5 py-3 hover:bg-linen hover:-translate-y-0.5;
+    @apply btn bg-paper text-ink border border-line px-5 py-3 hover:bg-mist hover:-translate-y-0.5;
   }
+  .dark .btn-light { color: rgb(var(--c-fg)); }
   /* warm accent action */
   .btn-accent {
     @apply btn bg-clay-500 text-white px-5 py-3 hover:bg-clay-600 hover:-translate-y-0.5 shadow-soft;
   }
   .btn-ghost {
-    @apply btn border border-line bg-paper text-graphite px-5 py-3 hover:bg-linen hover:border-faint;
+    @apply btn border border-line bg-paper text-graphite px-5 py-3 hover:bg-mist hover:border-faint;
   }
 
   .field {
@@ -107,6 +154,7 @@
            outline-none transition-all focus:border-[#2D6BFF] focus:bg-paper focus:ring-4 focus:ring-[#2D6BFF]/15;
     accent-color: #2D6BFF;
   }
+  .dark .field { color: rgb(var(--c-fg)); }
 
   .link-underline {
     @apply relative after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0
@@ -117,6 +165,7 @@
   .arrow-btn {
     @apply flex h-9 w-9 items-center justify-center rounded-full border border-line bg-paper text-ink transition-all hover:bg-ink hover:text-linen;
   }
+  .dark .arrow-btn { color: rgb(var(--c-fg)); }
 }
 
 @layer utilities {

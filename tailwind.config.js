@@ -1,20 +1,25 @@
 /** @type {import('tailwindcss').Config} */
+// Neutral tokens are driven by CSS variables (RGB channels) so the whole app can
+// flip between light and dark via a `.dark` class on <html>. See src/index.css.
+const withA = (v) => `rgb(var(${v}) / <alpha-value>)`;
+
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        paper: "#FFFFFF",
-        canvas: "#FFFFFF", // white page background
-        linen: "#FBFBFA", // near-white surface
-        mist: "#F4F4F5", // light neutral chips / inputs
-        panel: "#F5F5F6", // muted section background
-        ink: "#16140F", // near-black
-        graphite: "#34322C",
-        muted: "#67645D",
-        faint: "#9A968E",
-        line: "#E7E6E3",
-        lineSoft: "#F0EFEC",
+        paper: withA("--c-paper"),
+        canvas: withA("--c-canvas"), // page background
+        linen: withA("--c-linen"), // near-white surface; also used as text-on-dark (kept light)
+        mist: withA("--c-mist"), // neutral chips / inputs
+        panel: withA("--c-panel"), // muted section background
+        ink: withA("--c-ink"), // near-black — dark surfaces/buttons (stays dark in both themes)
+        graphite: withA("--c-graphite"),
+        muted: withA("--c-muted"),
+        faint: withA("--c-faint"),
+        line: withA("--c-line"),
+        lineSoft: withA("--c-lineSoft"),
 
         // warm terracotta accent (used sparingly)
         clay: {

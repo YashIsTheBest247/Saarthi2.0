@@ -120,7 +120,7 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
           initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.18 }}
           className="mt-7 flex flex-wrap items-center gap-3"
         >
-          <a href="#agents" className="btn group bg-white px-5 py-3 text-[15px] text-ink shadow-soft hover:-translate-y-0.5">
+          <a href="#agents" className="btn group bg-white px-5 py-3 text-[15px] text-[#16140F] shadow-soft hover:-translate-y-0.5">
             {t("hero.cta1")} <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </a>
           <a href="#how" className="btn border border-white/30 px-5 py-3 text-[15px] text-white hover:bg-white/10">
@@ -352,7 +352,7 @@ function FlagshipCard({ f, onOpen }: { f: FeatureMeta; onOpen: (k: FeatureKey) =
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button onClick={() => onOpen(f.key)} className="btn bg-white px-5 py-3 text-[15px] text-ink hover:-translate-y-0.5">
+            <button onClick={() => onOpen(f.key)} className="btn bg-white px-5 py-3 text-[15px] text-[#16140F] hover:-translate-y-0.5">
               {isKavach ? t("kflag.cta") : `${t("common.meet")} ${t(f.nameKey)}`} <ArrowUpRight className="h-4 w-4" />
             </button>
             <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/55">
@@ -748,7 +748,7 @@ function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
                     <div className="display text-xl font-bold text-linen deva">{t(f.nameKey)}</div>
                     <div className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-linen/75 deva">{t(f.personaKey)}</div>
                   </div>
-                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linen text-ink transition-transform group-hover:rotate-45">
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linen text-[#16140F] transition-transform group-hover:rotate-45">
                     <ArrowUpRight className="h-4 w-4" />
                   </span>
                 </div>
@@ -776,7 +776,7 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">
       <span id="team" className="block scroll-mt-28" />
-      <div className="overflow-hidden rounded-[2rem] border border-line bg-linen p-6 sm:p-10">
+      <div className="overflow-hidden rounded-[2rem] border border-line bg-paper p-6 sm:p-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           {/* left: tabs + member cards */}
           <div>
@@ -979,7 +979,7 @@ function Closing() {
           <div className="relative">
             <h2 className="display mx-auto max-w-3xl text-balance text-3xl font-bold leading-tight tracking-tight deva sm:text-5xl">{t("cta.title")}</h2>
             <p className="mx-auto mt-5 max-w-xl text-lg text-linen/60 deva">{t("cta.sub")}</p>
-            <button onClick={() => window.dispatchEvent(new Event("saarthi:orchestrator"))} className="btn mx-auto mt-8 bg-linen px-6 py-3.5 text-[15px] text-ink hover:-translate-y-0.5">
+            <button onClick={() => window.dispatchEvent(new Event("saarthi:orchestrator"))} className="btn mx-auto mt-8 bg-linen px-6 py-3.5 text-[15px] text-[#16140F] hover:-translate-y-0.5">
               {t("cta.btn")} <ArrowUpRight className="h-4 w-4" />
             </button>
           </div>

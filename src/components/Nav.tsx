@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ArrowUpRight, ArrowRight, Phone, Menu as MenuIcon, X } from "lucide-react";
+import { ChevronDown, ArrowUpRight, ArrowRight, Phone, Menu as MenuIcon, X, Sun, Moon } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { LanguagePicker } from "./LanguagePicker";
 import { FEATURES, FeatureMeta } from "../lib/features";
@@ -113,7 +113,7 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
 
 /* -------------------------------- Nav -------------------------------- */
 export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: FeatureKey) => void }) {
-  const { t } = useApp();
+  const { t, theme, toggleTheme } = useApp();
   const [darkZone, setDarkZone] = useState(true); // over a dark section (hero / footer)
   const [mobile, setMobile] = useState(false);
   const [atFlagship, setAtFlagship] = useState(false);
@@ -165,7 +165,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
         className={`mx-auto mt-3 grid max-w-6xl grid-cols-[1fr_auto] items-center gap-4 rounded-full border px-4 py-2.5 transition-colors duration-300 sm:mt-4 sm:px-6 md:grid-cols-[1fr_auto_1fr] ${
           dark
             ? "border-white/15 bg-white/10 backdrop-blur-md"
-            : "border-line bg-linen/90 shadow-pill backdrop-blur-xl"
+            : "border-line bg-paper/90 shadow-pill backdrop-blur-xl"
         }`}
       >
         {/* logo */}
@@ -218,12 +218,21 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
             <Phone className="h-4 w-4" />
             <span className="hidden text-sm font-medium lg:inline">{t("nav.helplines")}</span>
           </button>
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className={`hidden h-10 w-10 items-center justify-center rounded-full border transition-colors md:flex ${
+              dark ? "border-white/25 text-white hover:bg-white/10" : "border-line bg-paper text-graphite hover:text-ink"
+            }`}
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <div className="hidden md:block">
             <LanguagePicker compact />
           </div>
           <button
             onClick={() => window.dispatchEvent(new Event("saarthi:orchestrator"))}
-            className={`hidden md:inline-flex btn whitespace-nowrap px-4 py-2.5 text-sm ${dark ? "bg-white text-ink hover:-translate-y-0.5 shadow-soft" : "bg-ink text-linen hover:bg-graphite hover:-translate-y-0.5 shadow-soft"}`}
+            className={`hidden md:inline-flex btn whitespace-nowrap px-4 py-2.5 text-sm ${dark ? "bg-white text-[#16140F] hover:-translate-y-0.5 shadow-soft" : "bg-ink text-linen hover:bg-graphite hover:-translate-y-0.5 shadow-soft"}`}
           >
             {t("nav.try")}
             <ArrowUpRight className="h-4 w-4 flex-none" />
@@ -245,7 +254,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="mx-auto mt-2 max-h-[78vh] max-w-6xl overflow-y-auto rounded-3xl border border-line bg-linen shadow-float md:hidden"
+            className="mx-auto mt-2 max-h-[78vh] max-w-6xl overflow-y-auto rounded-3xl border border-line bg-paper shadow-float md:hidden"
           >
             <div className="space-y-1 p-3">
               {/* quick links */}
@@ -270,6 +279,10 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
                 </button>
               ))}
 
+              <button onClick={toggleTheme} className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-[15px] font-medium text-graphite hover:bg-mist">
+                {theme === "dark" ? <Sun className="h-4 w-4 flex-none" /> : <Moon className="h-4 w-4 flex-none" />}
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
               <div className="px-1 pt-3"><LanguagePicker /></div>
               <button
                 onClick={() => { setMobile(false); window.dispatchEvent(new Event("saarthi:orchestrator")); }}
