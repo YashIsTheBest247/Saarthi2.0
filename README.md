@@ -6,7 +6,6 @@ money, file taxes, plan your work, fight unfair treatment, protect your crop, st
 for women's safety, write your homework, make educational videos, launch a business, run a
 compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
 
-> Hackathon track: *Track 1 — AI Systems & Workflow Innovation Challenge.*
 > Real AI (Google **Gemini 2.5 Flash**, key-rotating + **Groq fallback**), a premium responsive UI, and
 > deterministic on-device maths where correctness matters — agents that *act*, not a generic chatbot.
 
