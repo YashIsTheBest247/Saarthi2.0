@@ -19,6 +19,15 @@ const SMRITI = featureByKey("samay");
 const OTHERS = VISIBLE_FEATURES.filter((f) => f.key !== "samay");
 const AV = 48; // avatar size
 
+// Retry a call once (a serverless cold start / transient blip usually succeeds on the 2nd try).
+async function retry<T>(fn: () => Promise<T>, tries = 2, delay = 800): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < tries; i++) {
+    try { return await fn(); } catch (e) { last = e; if (i < tries - 1) await new Promise((r) => setTimeout(r, delay)); }
+  }
+  throw last;
+}
+
 interface FeedItem { id: number; agent: string; title: string; status: "running" | "done" | "skip"; agentName?: string; text?: string }
 
 export function Orchestrator({ onBack }: { onBack: () => void }) {
@@ -48,7 +57,8 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [plan, setPlan] = useState<{ agent: string; task: string; why?: string }[]>([]); // the live-generated plan
   const [final, setFinal] = useState<AgentFinal | null>(null); // the synthesised deliverable
   const [employees, setEmployees] = useState<Employee[]>([]);   // AI Workforce, shown as part of Smriti's team
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const [empReady, setEmpReady] = useState(false);              // don't lay out the graph until the team is loaded (avoids a relayout flash)
+  useEffect(() => { getEmployees().then((e) => { setEmployees(e); setEmpReady(true); }); }, []);
   const historyRef = useRef("");                   // accumulated conversation context
 
   // some agents (weather, emergency, khananCopilot) map onto a visible graph node — or none
@@ -71,10 +81,11 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   }, [running, feed.length]);
 
   // Smriti's full team: the consumer specialists + the hireable AI Workforce.
-  const team = [
+  // Held empty until the workforce has loaded, so the graph lays out once (no flash).
+  const team = empReady ? [
     ...OTHERS.map((f) => ({ key: f.key as string, photo: f.photo, name: t(f.nameKey), tint: f.tint, accent: f.accent, hire: false, id: f.key as string })),
     ...employees.map((e) => ({ key: e.id, photo: e.photo, name: e.name, tint: e.accent, accent: e.accent, hire: true, id: e.id })),
-  ];
+  ] : [];
   // node positions: Smriti up top-centre, the team fanned out in rows below
   const W = size.w, H = size.h;
   const smriti = { x: W / 2, y: 46 };
@@ -130,7 +141,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
       setFeed((p) => [...p, { id: fid, agent: nk, title: step.why || step.task, status: "running" }]);
       await new Promise((r) => setTimeout(r, 520)); // let the control-flow animation breathe
       try {
-        const res = await runAgentStep({ agent: step.agent, task: step.task, context: ctx, image, today, language: lang.name });
+        const res = await retry(() => runAgentStep({ agent: step.agent, task: step.task, context: ctx, image, today, language: lang.name }));
         if (res.data?._mock) setFellBack(true);
         executed.push(res);
         ctx = ctx ? `${ctx}\n[${res.name}] ${res.summary}` : `[${res.name}] ${res.summary}`;
@@ -208,7 +219,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
       const ctx = tk.weatherSensitive ? weatherCtx : "";
       try {
-        const r = await callFeature<any>("manager", { task: tk.detail ? `${tk.title} — ${tk.detail}` : tk.title, deadline: tk.deadline || "", context: ctx, today, language: lang.name });
+        const r = await retry(() => callFeature<any>("manager", { task: tk.detail ? `${tk.title} — ${tk.detail}` : tk.title, deadline: tk.deadline || "", context: ctx, today, language: lang.name }));
         if (r._mock) setFellBack(true);
         const owner = r.canDelegate ? r.agent : "samay";
         setDone((p) => new Set(p).add(owner === "none" ? "samay" : owner));
@@ -315,6 +326,11 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
               </div>
             );
           })}
+          {!empReady && (
+            <div className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-sm text-muted deva">
+              <Loader2 className="h-4 w-4 animate-spin" style={{ color: SMRITI.accent }} /> {t("orc.assembling")}
+            </div>
+          )}
         </div>
 
         {/* ---------- dialogue box ---------- */}
