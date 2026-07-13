@@ -125,6 +125,11 @@ export async function generateJSON({ system, parts, schema }) {
           responseSchema: schema,
           temperature: 0.4,
           maxOutputTokens: 8192,
+          // gemini-2.5-flash enables "thinking" by default, which 2-3× the latency of
+          // these schema-constrained calls and risks a serverless timeout on the
+          // multi-step agentic loop. Disable it — the responseSchema already forces
+          // well-formed, on-task output, so the quality trade-off is negligible.
+          thinkingConfig: { thinkingBudget: 0 },
         },
       });
       cur = idx; // this key works — keep using it for subsequent calls

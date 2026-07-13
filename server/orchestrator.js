@@ -265,7 +265,18 @@ Rules:
     });
     if (out?.steps?.length) {
       const allow = new Set(keysFor(persona));
-      out.steps = out.steps.filter((st) => BY_KEY[st.agent] && allow.has(st.agent)).slice(0, MAX_TOTAL_STEPS);
+      let steps = out.steps.filter((st) => BY_KEY[st.agent] && allow.has(st.agent));
+      if (persona) {
+        // A hired employee is a NARROW role: cap its chain tighter than open
+        // orchestration and never run the same skill twice (the planner sometimes
+        // pads with duplicates). Each step is a few seconds of Gemini latency, so
+        // deduping keeps the run fast and well under the serverless timeout.
+        const seen = new Set();
+        steps = steps.filter((st) => !seen.has(st.agent) && seen.add(st.agent)).slice(0, 3);
+      } else {
+        steps = steps.slice(0, MAX_TOTAL_STEPS);
+      }
+      out.steps = steps;
       if (out.steps.length) return out;
     }
   } catch { /* fall through */ }
@@ -360,7 +371,12 @@ export async function runAgentic(goal, { image, today = "today", location, langu
 
   await runSteps(planned.steps);
 
-  for (let round = 0; round < MAX_REFLECT_ROUNDS; round++) {
+  // A hired AI-employee is a NARROW role: its scoped plan + steps + synthesis is the
+  // deliverable, and each Gemini call costs several seconds. Re-planning rarely adds a
+  // step for a scoped role but risks a serverless timeout, so skip reflection for
+  // personas. Smriti Prime (open-ended orchestration) still reflects/re-plans.
+  const reflectRounds = persona ? 0 : MAX_REFLECT_ROUNDS;
+  for (let round = 0; round < reflectRounds; round++) {
     const room = MAX_TOTAL_STEPS - executed.length;
     if (room <= 0) break;
     const r = await reflect(goal, executed, language, Math.min(room, 3), persona);

@@ -41,11 +41,17 @@ export interface AgentFinal extends ApiMeta {
   actions?: string[]; reminders?: { title: string; when?: string }[];
 }
 
-async function postJSON<T>(url: string, body: Record<string, unknown>): Promise<T> {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+async function postJSON<T>(url: string, body: Record<string, unknown>, headers?: Record<string, string>): Promise<T> {
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`Request failed (${res.status})`);
   return res.json();
 }
+
+/* The web app itself calls the AI-Workforce "rent" API as the built-in demo tenant.
+ * This key always exists server-side (tenancy.js BUILTIN), so the app works whether
+ * or not real tenant keys are configured via WORKFORCE_API_KEYS. Real integrators use
+ * their own key; the browser app uses this one. */
+export const WORKFORCE_DEMO_KEY = "saarthi-demo";
 
 /** Dynamically plan which agents to run for a goal (no execution yet). */
 export const planAgent = (body: { goal: string; language?: string }) => postJSON<AgentPlan>("/api/agent/plan", body);
@@ -92,11 +98,11 @@ export async function getEmployees(): Promise<Employee[]> {
 /** Assign a task to an employee (id, or "custom" with a job description). The org's integration entry-point.
  *  Optionally invoke a specific depth function via `function` (the role's duty id). */
 export const assignEmployeeTask = (id: string, body: { task: string; function?: string; today?: string; location?: string; language?: string; image?: unknown; custom?: { title: string; jd: string; skills: string[] } }) =>
-  postJSON<EmployeeRun>(`/api/employees/${id}/task`, body);
+  postJSON<EmployeeRun>(`/api/employees/${id}/task`, body, { "x-api-key": WORKFORCE_DEMO_KEY });
 
 export interface WorkforceMe { tenant: { key: string; tenant: string; plan: string; runs: number; enforced: boolean } | null; enforced: boolean; roles: number }
 export async function getWorkforceMe(): Promise<WorkforceMe | null> {
-  try { return await (await fetch("/api/workforce/me")).json(); } catch { return null; }
+  try { return await (await fetch("/api/workforce/me", { headers: { "x-api-key": WORKFORCE_DEMO_KEY } })).json(); } catch { return null; }
 }
 
 /* ─────────────── Integration connectors (server/connectors.js) ─────────────── */
