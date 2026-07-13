@@ -162,7 +162,9 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 sm:px-5">
       <div
-        className={`mx-auto mt-3 grid max-w-6xl grid-cols-[1fr_auto] items-center gap-4 rounded-full border px-4 py-2.5 transition-colors duration-300 sm:mt-4 sm:px-6 md:grid-cols-[1fr_auto_1fr] ${
+        className={`mx-auto mt-3 grid grid-cols-[1fr_auto] items-center gap-4 rounded-full border px-4 py-2.5 transition-all duration-300 sm:mt-4 sm:px-6 md:grid-cols-[1fr_auto_1fr] ${
+          atFlagship ? "max-w-7xl" : "max-w-6xl"
+        } ${
           dark
             ? "border-white/15 bg-white/10 backdrop-blur-md"
             : "border-line bg-paper/90 shadow-pill backdrop-blur-xl"
@@ -175,12 +177,12 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
         </button>
 
         {/* center nav */}
-        <nav className="hidden items-center gap-8 justify-self-center md:flex">
+        <nav className="hidden items-center gap-6 justify-self-center md:flex lg:gap-8">
           <AgentsMega onOpen={(k) => onOpen(k)} dark={dark} />
-          <button onClick={() => window.dispatchEvent(new Event("saarthi:workflows"))} className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workflows")}</button>
-          <button onClick={() => window.dispatchEvent(new Event("saarthi:workforce"))} className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workforce")}</button>
-          <a href="#how" className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.how")}</a>
-          <a href="#team" className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.features")}</a>
+          <button onClick={() => window.dispatchEvent(new Event("saarthi:workflows"))} className={`whitespace-nowrap text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workflows")}</button>
+          <button onClick={() => window.dispatchEvent(new Event("saarthi:workforce"))} className={`whitespace-nowrap text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workforce")}</button>
+          <a href="#how" className={`whitespace-nowrap text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.how")}</a>
+          <a href="#team" className={`whitespace-nowrap text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.features")}</a>
         </nav>
 
         {/* right cluster */}
