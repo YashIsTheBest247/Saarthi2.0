@@ -14,7 +14,8 @@ import { HelplinesModal } from "./Helplines";
 function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: boolean }) {
   const { t } = useApp();
   const [open, setOpen] = useState(false);
-  const [sel, setSel] = useState<FeatureMeta>(FEATURES[0]);
+  type Sel = { kind: "agent"; f: FeatureMeta } | { kind: "emp"; e: Employee };
+  const [sel, setSel] = useState<Sel>({ kind: "agent", f: FEATURES[0] });
   const [employees, setEmployees] = useState<Employee[]>([]);
   useEffect(() => { getEmployees().then(setEmployees); }, []);
   const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
@@ -56,14 +57,14 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
                 {FEATURES.map((f) => (
                   <button
                     key={f.key}
-                    onMouseEnter={() => setSel(f)}
-                    onFocus={() => setSel(f)}
+                    onMouseEnter={() => setSel({ kind: "agent", f })}
+                    onFocus={() => setSel({ kind: "agent", f })}
                     onClick={() => {
                       setOpen(false);
                       onOpen(f.key);
                     }}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors ${
-                      sel.key === f.key ? "bg-mist" : "hover:bg-mist/60"
+                      sel.kind === "agent" && sel.f.key === f.key ? "bg-mist" : "hover:bg-mist/60"
                     }`}
                   >
                     <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-9 w-9 flex-none" />
@@ -77,8 +78,13 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
                 ))}
                 <div className="mt-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t("nav.workforce")}</div>
                 {employees.map((e) => (
-                  <button key={e.id} onClick={() => { setOpen(false); hire(e.id); }}
-                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-mist/60">
+                  <button key={e.id}
+                    onMouseEnter={() => setSel({ kind: "emp", e })}
+                    onFocus={() => setSel({ kind: "emp", e })}
+                    onClick={() => { setOpen(false); hire(e.id); }}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors ${
+                      sel.kind === "emp" && sel.e.id === e.id ? "bg-mist" : "hover:bg-mist/60"
+                    }`}>
                     <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-9 w-9 flex-none" />
                     <span className="min-w-0 flex-1">
                       <span className="display block truncate text-[15px] font-bold deva">{e.name}</span>
@@ -89,35 +95,45 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
               </div>
 
               {/* right: detail */}
-              <div className="p-5">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t(sel.tagKey)}</div>
-                <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-graphite deva">{t(sel.descKey)}</p>
-
-                <div className="mt-4 rounded-2xl p-4" style={{ background: sel.tint }}>
-                  <div className="display text-sm font-bold" style={{ color: sel.accentDark }}>
-                    Expected impact, powered by AI
+              {sel.kind === "agent" ? (
+                <div className="p-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t(sel.f.tagKey)}</div>
+                  <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-graphite deva">{t(sel.f.descKey)}</p>
+                  <div className="mt-4 rounded-2xl p-4" style={{ background: sel.f.tint }}>
+                    <div className="display text-sm font-bold" style={{ color: sel.f.accentDark }}>Expected impact, powered by AI</div>
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
+                      {sel.f.stats.map((s, i) => (
+                        <div key={i}>
+                          <div className="display text-xl font-bold leading-none" style={{ color: sel.f.accent }}>{s.v}</div>
+                          <div className="mt-1 text-[11px] leading-snug text-graphite/70">{s.l}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
-                    {sel.stats.map((s, i) => (
-                      <div key={i}>
-                        <div className="display text-xl font-bold leading-none" style={{ color: sel.accent }}>{s.v}</div>
-                        <div className="mt-1 text-[11px] leading-snug text-graphite/70">{s.l}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <button onClick={() => { setOpen(false); onOpen((sel as { kind: "agent"; f: FeatureMeta }).f.key); }}
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold link-underline" style={{ color: sel.f.accent }}>
+                    {t("common.meet")} {t(sel.f.nameKey)} <ArrowRight className="h-4 w-4" />
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    onOpen(sel.key);
-                  }}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold link-underline"
-                  style={{ color: sel.accent }}
-                >
-                  {t("common.meet")} {t(sel.nameKey)} <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
+              ) : (
+                <div className="p-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: sel.e.accent }}>{sel.e.sector} · {t("team.aiEmployee")}</div>
+                  <div className="display mt-1 text-lg font-bold text-ink deva">{sel.e.title}</div>
+                  <p className="mt-1.5 line-clamp-3 max-w-sm text-[14px] leading-relaxed text-graphite deva">{sel.e.jd}</p>
+                  <div className="mt-4 rounded-2xl p-4" style={{ background: `${sel.e.accent}14` }}>
+                    <div className="display text-sm font-bold" style={{ color: sel.e.accent }}>{sel.e.functions.length} functions it performs</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {sel.e.functions.slice(0, 5).map((fn) => (
+                        <span key={fn.id} className="rounded-full bg-paper/80 px-2 py-0.5 text-[11px] font-medium text-graphite">{fn.name}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={() => { setOpen(false); hire((sel as { kind: "emp"; e: Employee }).e.id); }}
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white rounded-full px-4 py-2" style={{ background: sel.e.accent }}>
+                    {t("wfl.hireOne")} · {sel.e.name} <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
