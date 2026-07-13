@@ -963,23 +963,23 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
                   key={tab.id}
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  className="grid gap-3 sm:grid-cols-2"
+                  className="grid gap-2.5 sm:grid-cols-2"
                 >
                   {members.map((f, i) => (
                     <motion.div key={f.key}
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04, duration: 0.25 }}
                       whileHover={{ y: -3 }}
-                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 transition-shadow hover:border-faint hover:shadow-float">
-                      <button onClick={() => onOpen(f.key)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                        <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
+                      className="group flex items-center gap-2.5 rounded-2xl border border-line bg-paper p-2.5 transition-shadow hover:border-faint hover:shadow-float">
+                      <button onClick={() => onOpen(f.key)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+                        <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-9 w-9 flex-none transition-transform group-hover:scale-105" />
                         <div className="min-w-0 flex-1">
-                          <div className="display font-bold deva">{t(f.nameKey)}</div>
-                          <div className="text-xs text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
+                          <div className="display text-[15px] font-bold deva">{t(f.nameKey)}</div>
+                          <div className="text-[11px] text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
                         </div>
                       </button>
                       <button onClick={() => hireAsEmployee(f.key)} title={t("team.hireHint")}
-                        className="flex-none whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-linen transition hover:-translate-y-0.5">
+                        className="flex-none whitespace-nowrap rounded-full bg-ink px-2.5 py-1 text-[11px] font-semibold text-linen transition hover:-translate-y-0.5">
                         {t("team.hire")}
                       </button>
                       <button onClick={() => onOpen(f.key)} title={t("team.open")} className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></button>
@@ -990,16 +990,16 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (members.length + i) * 0.03, duration: 0.25 }}
                       whileHover={{ y: -3 }}
-                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 transition-shadow hover:border-faint hover:shadow-float">
-                      <button onClick={() => hire(e.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                        <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
+                      className="group flex items-center gap-2.5 rounded-2xl border border-line bg-paper p-2.5 transition-shadow hover:border-faint hover:shadow-float">
+                      <button onClick={() => hire(e.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+                        <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-9 w-9 flex-none transition-transform group-hover:scale-105" />
                         <div className="min-w-0 flex-1">
-                          <div className="display font-bold deva">{e.name}</div>
-                          <div className="text-xs text-muted deva">{e.short} · {t("team.aiEmployee")}</div>
+                          <div className="display text-[15px] font-bold deva">{e.name}</div>
+                          <div className="text-[11px] text-muted deva">{e.short} · {t("team.aiEmployee")}</div>
                         </div>
                       </button>
                       <button onClick={() => hire(e.id)} title={t("wfl.hireOne")}
-                        className="flex-none whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-linen transition hover:-translate-y-0.5">
+                        className="flex-none whitespace-nowrap rounded-full bg-ink px-2.5 py-1 text-[11px] font-semibold text-linen transition hover:-translate-y-0.5">
                         {t("team.hire")}
                       </button>
                       <button onClick={() => hire(e.id)} className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></button>
