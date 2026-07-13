@@ -178,6 +178,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
         <nav className="hidden items-center gap-8 justify-self-center md:flex">
           <AgentsMega onOpen={(k) => onOpen(k)} dark={dark} />
           <button onClick={() => window.dispatchEvent(new Event("saarthi:workflows"))} className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workflows")}</button>
+          <button onClick={() => window.dispatchEvent(new Event("saarthi:workforce"))} className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.workforce")}</button>
           <a href="#how" className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.how")}</a>
           <a href="#team" className={`text-[15px] transition-colors ${dark ? "text-white/85 hover:text-white" : "text-graphite hover:text-ink"}`}>{t("nav.features")}</a>
         </nav>
@@ -259,6 +260,7 @@ export function Nav({ onHome, onOpen }: { onHome: () => void; onOpen: (k?: Featu
             <div className="space-y-1 p-3">
               {/* quick links */}
               <button onClick={() => { setMobile(false); window.dispatchEvent(new Event("saarthi:workflows")); }} className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-[15px] font-medium text-graphite hover:bg-mist">{t("nav.workflows")}</button>
+              <button onClick={() => { setMobile(false); window.dispatchEvent(new Event("saarthi:workforce")); }} className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-[15px] font-medium text-graphite hover:bg-mist">{t("nav.workforce")}</button>
               <a href="#how" onClick={() => setMobile(false)} className="block rounded-2xl px-3 py-2.5 text-[15px] font-medium text-graphite hover:bg-mist">{t("nav.how")}</a>
               <a href="#team" onClick={() => setMobile(false)} className="block rounded-2xl px-3 py-2.5 text-[15px] font-medium text-graphite hover:bg-mist">{t("nav.features")}</a>
               <button onClick={() => { setMobile(false); setHelpOpen(true); }} className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-[15px] font-medium text-graphite hover:bg-mist">

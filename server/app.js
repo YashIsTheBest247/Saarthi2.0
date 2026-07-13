@@ -11,6 +11,10 @@ import { handleResumePdf } from "./resumePdf.js";
 import { sendMail, mailEnabled, completionHtml } from "./notify.js";
 import { buildDoc, buildCatalystReport, MIME, slug } from "./docgen.js";
 import { runWorkflow, runStep, planWorkflow, workflowList, getWeather } from "./workflows.js";
+import { runAgentic, plan as agentPlan, execAgent, synthesize as agentSynthesize, roster } from "./orchestrator.js";
+import { employeeList, runEmployee } from "./employees.js";
+import { requireKey, tenantInfo, enforce as tenancyEnforced } from "./tenancy.js";
+import { validateGSTIN, tallyInvoiceXML, ewayBillPayload, sendWhatsApp, connectorStatus } from "./connectors.js";
 
 /**
  * The Express app, with no `listen()` — so it can be used both by the local
@@ -213,6 +217,132 @@ app.post("/api/workflow/step", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: String(err?.message || err) });
   }
+});
+
+/* ───────────────────────── Autonomous agentic orchestrator ─────────────────────────
+ * A true plan→act→observe→reflect→synthesise loop that dynamically composes any
+ * sequence of specialist agents from a free-text goal (server/orchestrator.js).
+ * - GET  /api/agents          → the agent roster the planner can compose
+ * - POST /api/agent           → full autonomous run (returns the whole trace)
+ * - POST /api/agent/plan      → just the dynamic plan (for a live, animated UI)
+ * - POST /api/agent/step      → run ONE planned step live (client-driven)
+ * - POST /api/agent/synthesize→ weave executed steps into the final deliverable
+ */
+app.get("/api/agents", (_req, res) => res.json({ agents: roster() }));
+
+app.post("/api/agent", async (req, res) => {
+  try {
+    const { goal = "", text = "", image, today = "today", location, language = "English" } = req.body || {};
+    const g = String(goal || text).trim();
+    if (!g) return res.status(400).json({ error: "Missing goal." });
+    res.json(await runAgentic(g, { image, today, location, language }));
+  } catch (err) {
+    console.error("[agent]", err?.message || err);
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+app.post("/api/agent/plan", async (req, res) => {
+  try {
+    const { goal = "", text = "", language = "English" } = req.body || {};
+    const g = String(goal || text).trim();
+    if (!g) return res.status(400).json({ error: "Missing goal." });
+    const p = await agentPlan(g, language);
+    res.json({ goal: g, ...p });
+  } catch (err) {
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+app.post("/api/agent/step", async (req, res) => {
+  try {
+    const { agent, task = "", context = "", image, today = "today", location, language = "English" } = req.body || {};
+    if (!agent || !task) return res.status(400).json({ error: "Missing agent or task." });
+    const full = context ? `${task}\n\nContext from earlier steps:\n${context}` : task;
+    const out = await execAgent(agent, full, { image, today, location }, language);
+    out.task = task; // return the clean task
+    res.json(out);
+  } catch (err) {
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+app.post("/api/agent/synthesize", async (req, res) => {
+  try {
+    const { goal = "", steps = [], language = "English" } = req.body || {};
+    if (!goal || !Array.isArray(steps) || !steps.length) return res.status(400).json({ error: "Missing goal or steps." });
+    res.json(await agentSynthesize(goal, steps, language));
+  } catch (err) {
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+/* ───────────────────────── AI Workforce — rentable AI employees ─────────────────────────
+ * An organisation integrates these endpoints to "hire" an AI employee and automate a
+ * workflow. Each employee runs the persona-scoped autonomous loop (server/employees.js).
+ * - GET  /api/employees        → the hireable role catalog
+ * - POST /api/employees/:id/task {task,...}   → assign a task; returns the run + deliverable
+ *        (id can be "custom" with {custom:{title,jd,skills}} to hire ad-hoc from a JD)
+ * This is the "agent as rent" integration surface — call it from an ERP, cron, or Zapier.
+ */
+app.get("/api/employees", (_req, res) => res.json({ employees: employeeList() }));
+
+// Tenant + usage for the caller's key (Fleet dashboard). Open in demo mode.
+app.get("/api/workforce/me", (req, res) => {
+  const info = tenantInfo(req.header("x-api-key") || req.query.api_key || "");
+  res.json({ tenant: info, enforced: tenancyEnforced, roles: employeeList().length });
+});
+
+// Assign a task → runs the persona-scoped autonomous loop. API-key gated (open in demo).
+// Optionally invoke a specific depth function via `function` (the role's duty id).
+app.post("/api/employees/:id/task", requireKey, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { task = "", text = "", image, today = "today", location, language = "English", custom, function: fn } = req.body || {};
+    const t = String(task || text).trim();
+    if (!t) return res.status(400).json({ error: "Missing task." });
+    const out = await runEmployee(id, t, { image, today, location, language, custom, fn });
+    res.json({ ...out, tenant: req.tenant?.tenant });
+  } catch (err) {
+    console.error("[employee]", err?.message || err);
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+/* ───────────────────────── Integration connectors (real tools) ─────────────────────────
+ * The tools that let AI employees integrate with an org's systems and emit
+ * integration-ready artefacts (server/connectors.js). Deterministic + real.
+ */
+app.get("/api/tools", (_req, res) => res.json({ connectors: connectorStatus() }));
+
+// Validate an Indian GSTIN (on-device check-digit algorithm — exact, keyless).
+app.post("/api/tools/gstin", (req, res) => {
+  res.json(validateGSTIN((req.body || {}).gstin));
+});
+
+// Generate a Tally-import Sales voucher XML. ?download=1 streams a .xml file.
+app.post("/api/tools/tally", (req, res) => {
+  try {
+    const xml = tallyInvoiceXML(req.body || {});
+    if (String(req.query.download) === "1") {
+      res.setHeader("Content-Type", "application/xml");
+      res.setHeader("Content-Disposition", `attachment; filename="tally-voucher.xml"`);
+      return res.send(xml);
+    }
+    res.json({ xml });
+  } catch (err) { res.status(500).json({ error: String(err?.message || err) }); }
+});
+
+// Generate a NIC e-way-bill JSON payload (upload-ready shape).
+app.post("/api/tools/eway", (req, res) => {
+  try { res.json({ payload: ewayBillPayload(req.body || {}) }); }
+  catch (err) { res.status(500).json({ error: String(err?.message || err) }); }
+});
+
+// WhatsApp: send via a configured provider, else return a keyless wa.me link.
+app.post("/api/tools/whatsapp", async (req, res) => {
+  const { phone, text } = req.body || {};
+  res.json(await sendWhatsApp(phone, text));
 });
 
 app.get("/api/jobs", async (req, res) => {

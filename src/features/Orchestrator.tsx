@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain, AlertTriangle, MessageCircle, ChevronDown } from "lucide-react";
+import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain, AlertTriangle, MessageCircle, ChevronDown, Zap, Sparkles } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, featureByKey } from "../lib/features";
-import { callFeature, fileToInlineData, FeatureKey } from "../lib/api";
+import { callFeature, fileToInlineData, FeatureKey, planAgent, runAgentStep, synthesizeAgent, AgentStepResult, AgentFinal } from "../lib/api";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CopyBlock } from "../components/ui";
@@ -44,7 +44,13 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [fellBack, setFellBack] = useState(false); // true if Gemini quota hit → mock fallback shown
   const [followUp, setFollowUp] = useState("");   // Smriti's clarifying question
   const [reply, setReply] = useState("");          // user's answer to it
+  const [mode, setMode] = useState<"guided" | "auto">("auto"); // auto = fully agentic plan→act→reflect→synthesise
+  const [plan, setPlan] = useState<{ agent: string; task: string; why?: string }[]>([]); // the live-generated plan
+  const [final, setFinal] = useState<AgentFinal | null>(null); // the synthesised deliverable
   const historyRef = useRef("");                   // accumulated conversation context
+
+  // some agents (weather, emergency, khananCopilot) map onto a visible graph node — or none
+  const nodeKey = (k: string) => (k === "khananCopilot" ? "khanan" : k);
 
   // responsive node layout — measure the graph area
   useEffect(() => {
@@ -87,7 +93,56 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     if (running || (!text.trim() && !image)) return;
     historyRef.current = text.trim();
     setFeed([]); setDone(new Set()); setSummary(""); setFollowUp(""); setDated([]); setAllTasks([]); setFellBack(false);
-    orchestrate();
+    setPlan([]); setFinal(null);
+    if (mode === "auto") autonomous(); else orchestrate();
+  }
+
+  // ─── Fully autonomous run: the model PLANS the agent chain, ACTS on each step
+  // feeding results forward, then SYNTHESISES one finished deliverable. ───
+  async function autonomous() {
+    setRunning(true); setActive(null); setSmritiBusy(true);
+    const today = new Date().toDateString();
+    const goal = historyRef.current;
+    let planned;
+    try {
+      planned = await planAgent({ goal, language: lang.name });
+    } catch { setRunning(false); setSmritiBusy(false); return; }
+    setSummary(planned.understanding || "");
+    setPlan(planned.steps || []);
+    setSmritiBusy(false);
+
+    const executed: AgentStepResult[] = [];
+    let ctx = "";
+    for (const step of planned.steps || []) {
+      const nk = nodeKey(step.agent);
+      setActive(nk);
+      const fid = idc.current++;
+      setFeed((p) => [...p, { id: fid, agent: nk, title: step.why || step.task, status: "running" }]);
+      await new Promise((r) => setTimeout(r, 520)); // let the control-flow animation breathe
+      try {
+        const res = await runAgentStep({ agent: step.agent, task: step.task, context: ctx, image, today, language: lang.name });
+        if (res.data?._mock) setFellBack(true);
+        executed.push(res);
+        ctx = ctx ? `${ctx}\n[${res.name}] ${res.summary}` : `[${res.name}] ${res.summary}`;
+        setDone((p) => new Set(p).add(nk));
+        setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", agentName: res.name, text: res.summary } : x));
+      } catch {
+        setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", text: t("orc.agentUnreach") } : x));
+      }
+      setActive(null);
+    }
+
+    // synthesise the finished deliverable from every step
+    setSmritiBusy(true);
+    try {
+      const fin = await synthesizeAgent({ goal, steps: executed, language: lang.name });
+      if (fin?._mock) setFellBack(true);
+      setFinal(fin);
+      const rem = (fin.reminders || []).map((r) => ({ title: r.title, deadline: r.when || "" }));
+      setAllTasks(rem); setDated(rem.filter((r) => r.deadline));
+    } catch { /* keep the per-step results even if synthesis fails */ }
+    setSmritiBusy(false);
+    setRunning(false);
   }
   // answer Smriti's clarifying question, then continue
   function sendReply() {
@@ -182,9 +237,22 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
       <div className="mt-6 flex items-start gap-4">
         <span className="flex h-16 w-16 flex-none items-center justify-center rounded-2xl text-white" style={{ background: SMRITI.accent }}><Crown className="h-7 w-7" /></span>
-        <div>
+        <div className="min-w-0">
           <h1 className="display text-3xl font-bold deva">{t("orc.title")}</h1>
           <p className="mt-1 max-w-2xl text-[15px] text-muted deva">{t("orc.sub")}</p>
+          {/* mode: fully-autonomous (plan→act→reflect) vs guided delegation */}
+          <div className="mt-3 inline-flex rounded-xl border border-line bg-mist/50 p-1 text-sm font-semibold">
+            <button onClick={() => !running && setMode("auto")} disabled={running}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition"
+              style={mode === "auto" ? { background: SMRITI.accent, color: "#fff" } : { color: "#6b6b6b" }}>
+              <Zap className="h-3.5 w-3.5" /> {t("orc.modeAuto")}
+            </button>
+            <button onClick={() => !running && setMode("guided")} disabled={running}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition"
+              style={mode === "guided" ? { background: SMRITI.accent, color: "#fff" } : { color: "#6b6b6b" }}>
+              <UserCheck className="h-3.5 w-3.5" /> {t("orc.modeGuided")}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -326,6 +394,61 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
 
         {/* results — full width so long answers, drafts & contacts have room */}
         <div ref={resultsRef} className="mt-5 space-y-3 scroll-mt-24">
+            {/* the dynamically-composed plan (autonomous mode) */}
+            {mode === "auto" && plan.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink deva">
+                  <Sparkles className="h-4 w-4" style={{ color: SMRITI.accent }} /> {t("orc.planTitle")}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+                  {plan.map((s, i) => {
+                    const f = FEATURES.find((x) => x.key === nodeKey(s.agent));
+                    return (
+                      <span key={i} className="inline-flex items-center gap-1">
+                        {i > 0 && <span className="px-0.5 text-muted">→</span>}
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-mist/60 px-2.5 py-1 text-xs font-medium text-graphite deva">
+                          {done.has(nodeKey(s.agent)) ? <CheckCircle2 className="h-3.5 w-3.5 text-[#138A72]" />
+                            : active === nodeKey(s.agent) ? <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: f?.accent || SMRITI.accent }} />
+                            : <span className="h-1.5 w-1.5 rounded-full" style={{ background: f?.accent || SMRITI.accent }} />}
+                          {f ? t(f.nameKey) : s.agent}
+                        </span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* the finished, synthesised deliverable */}
+            {final && !running && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card p-5"
+                style={{ borderColor: `${SMRITI.accent}55`, boxShadow: `0 0 0 1px ${SMRITI.accent}22` }}>
+                <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: SMRITI.accent }}>
+                  <Zap className="h-4 w-4" /> {t("orc.doneForYou")}
+                </div>
+                <h3 className="text-lg font-bold text-ink deva">{final.headline}</h3>
+                {final.summary && <p className="mt-1 text-sm text-graphite deva">{final.summary}</p>}
+                {final.deliverable && (
+                  <div className="mt-3">
+                    <CopyBlock text={clean(final.deliverable)} />
+                    <ActionBar title={final.headline} text={clean(final.deliverable)} deadline={dated[0]?.deadline} accent={SMRITI.accent} />
+                  </div>
+                )}
+                {final.actions && final.actions.length > 0 && (
+                  <div className="mt-3">
+                    <div className="mb-1.5 text-[13px] font-semibold text-ink deva">{t("orc.nextActions")}</div>
+                    <ul className="space-y-1">
+                      {final.actions.map((a, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-graphite deva">
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none" style={{ color: SMRITI.accent }} /> <span>{linkify(a)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
             {fellBack && (
               <div className="flex items-start gap-2 rounded-2xl border border-amber2/40 bg-amber2/10 px-4 py-3 text-sm font-medium text-amber2">
                 <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />

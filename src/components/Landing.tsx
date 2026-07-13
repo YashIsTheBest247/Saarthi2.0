@@ -16,10 +16,15 @@ import {
   CheckCircle2,
   Loader2,
   Circle,
+  Users,
+  Building2,
+  KeyRound,
+  Zap,
 } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, FeatureMeta, featureByKey } from "../lib/features";
 import { FeatureKey } from "../lib/api";
+import { roleIcon } from "../lib/roleIcons";
 import { Reveal, Eyebrow } from "./ui";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
@@ -711,6 +716,71 @@ function OrchestratorIntro() {
   );
 }
 
+/* ----------------------- AI Workforce (B2B) ----------------------- */
+function WorkforceIntro() {
+  const { t } = useApp();
+  const open = (detail: { id?: string; custom?: boolean } = {}) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail }));
+  const roles = [
+    { i: "landmark", id: "finance", t: t("wfl.m1") }, { i: "scale", id: "receivables", t: t("wfl.m2") }, { i: "clipboard", id: "gem", t: t("wfl.m3") },
+    { i: "ship", id: "exports", t: t("wfl.m4") }, { i: "stamp", id: "registration", t: t("wfl.m5") }, { i: "package", id: "procurement", t: t("wfl.r1") },
+    { i: "shield", id: "compliance", t: t("wfl.r2") }, { i: "receipt", id: "accounts", t: t("wfl.r7") }, { i: "truck", id: "logistics", t: t("wfl.r3") },
+    { i: "food", id: "foodqa", t: t("wfl.r10") }, { i: "construction", id: "construction", t: t("wfl.r11") }, { i: "server", id: "itops", t: t("wfl.r12") },
+  ];
+  const steps = [
+    { n: "01", icon: Users, t: t("wfl.s1t"), d: t("wfl.s1d") },
+    { n: "02", icon: Zap, t: t("wfl.s2t"), d: t("wfl.s2d") },
+    { n: "03", icon: KeyRound, t: t("wfl.s3t"), d: t("wfl.s3d") },
+  ];
+  return (
+    <section className="relative overflow-hidden border-y border-line bg-mist/30">
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+        <Reveal className="max-w-2xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1 text-xs font-semibold uppercase tracking-wider text-graphite">
+            <Building2 className="h-3.5 w-3.5" /> {t("wfl.eyebrow")}
+          </span>
+          <h2 className="display mt-4 text-balance text-3xl font-bold tracking-tight text-ink deva sm:text-5xl">{t("wfl.title")}</h2>
+          <p className="mt-4 text-lg text-muted deva">{t("wfl.sub")}</p>
+        </Reveal>
+
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+          {/* left: the roles */}
+          <Reveal>
+            <div className="flex flex-wrap gap-2">
+              {roles.map((r) => {
+                const Icon = roleIcon(r.i);
+                return (
+                  <button key={r.t} onClick={() => open({ id: r.id })} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-graphite deva transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-soft">
+                    <Icon className="h-4 w-4 text-muted" /> {r.t}
+                  </button>
+                );
+              })}
+              <button onClick={() => open({ custom: true })} className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-line px-3 py-1.5 text-sm text-muted deva transition hover:-translate-y-0.5 hover:border-ink/30 hover:text-graphite">+ {t("wfl.custom")}</button>
+            </div>
+          </Reveal>
+
+          {/* right: how it works + CTA */}
+          <Reveal delay={0.08}>
+            <div className="space-y-5">
+              {steps.map((s) => (
+                <div key={s.n} className="flex gap-4">
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-line bg-paper"><s.icon className="h-5 w-5 text-ink" /></span>
+                  <div>
+                    <h3 className="display text-lg font-bold text-ink deva">{s.t}</h3>
+                    <p className="mt-1 text-[15px] leading-relaxed text-muted deva">{s.d}</p>
+                  </div>
+                </div>
+              ))}
+              <button onClick={() => open()} className="btn-primary mt-1 text-[15px]">
+                {t("wfl.cta")} <ArrowUpRight className="h-4 w-4" />
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------------------- Big agent photo cards ---------------------- */
 function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
@@ -1078,6 +1148,7 @@ export function Landing({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
       <Hero onOpen={onOpen} />
       <Trusted />
+      <WorkforceIntro />
       <OrchestratorIntro />
       <AgentsGrid onOpen={(k) => onOpen(k)} />
       <How />
