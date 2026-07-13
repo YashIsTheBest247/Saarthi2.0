@@ -1,131 +1,137 @@
 # सारथी · Saarthi
 
-**An all-in-one AI copilot for everyday life in India** — fifteen specialist AI agents that
-spot scams, decode documents, claim government benefits, save on health, make sense of
-money, file taxes, plan your work, fight unfair treatment, protect your crop, stand up
-for women's safety, write your homework, make educational videos, launch a business, run a
-compliant mine, and get you hired. By **voice or text, in English and Hindi**, on web **and Telegram**.
+**AI for everyday India — and a rentable AI workforce for its MSMEs.**
 
-> Real AI (Google **Gemini 2.5 Flash**, key-rotating + **Groq fallback**), a premium responsive UI, and
-> deterministic on-device maths where correctness matters — agents that *act*, not a generic chatbot.
+Saarthi is two things in one product:
+
+1. **Consumer copilot** — eight specialist AI agents that claim government schemes, decode
+   documents, save on health, plan your work, launch a business, run a compliant mine, fight
+   unfair treatment, and turn any topic into an educational video. By **voice or text, in
+   English and Hindi**, on web **and Telegram**.
+2. **AI Workforce (MSME)** — eight **autonomous, rentable "AI employees"** an organisation can
+   hire, assign a task to, and integrate via a REST API to automate real back-office workflows —
+   finance & schemes, GST & accounts, delayed-payment recovery (MSME Samadhaan), FSSAI, environment,
+   construction, electronics, and auto/EV compliance. Not chatbots — **employees that plan, use
+   their tools, and hand back finished, filing-ready work.**
+
+> Real AI (Google **Gemini 2.5 Flash**, multi-key rotation + **Groq fallback**), real integration
+> connectors (Tally XML · GSTIN validation · e-way JSON · WhatsApp), and deterministic on-device
+> maths where correctness matters — agents that *act*, not a generic chatbot.
 
 ### Try it live
 - **Web app:** <https://getsaarthi.vercel.app>
 - **Telegram bot:** [@saarthi_support_bot](https://t.me/saarthi_support_bot)
 
+> **MSME challenge submission:** see **[MSME.md](MSME.md)** for the full problem-statement mapping,
+> the AI-Workforce deep dive, business model, feasibility and demo script.
+
 ---
 
 ## Highlights
 
-- **15 specialist agents**, each with a photoreal face, its own console + dashboard, and real tools.
-- **Agentic workflows** — one ask runs a **chain of agents** (e.g. decode → draft complaint → schedule), with an AI **planner** that auto-picks the chain.
-- **Floating AI assistant** that understands your problem and routes you to the right agent.
-- **Telegram bot** with the same brain — chat, get full answers, and deep-link back into the app.
-- **"Already affected?" emergency mode** on every agent — calm worst-case next steps + real helplines.
-- **Searchable helpline directory** (22 official Indian numbers, tap-to-call).
-- **Bilingual** (English / हिन्दी) — the UI *and* the AI answers flip language.
-- **Voice** input everywhere (Web Speech API); Pragyan narrates with a **choosable voice**.
-- **Agentic Smriti** — one free-text ask is **decomposed** into the right chain (e.g. *check weather → crop plan → government schemes → reminder*), runs each specialist, and **does more than asked**.
-- **Email + calendar reminders** — "Email me when it's done" sends a real email (Gmail SMTP) with a **calendar `.ics` attached**; dated tasks become reminders automatically.
-- **Agents that *act*, not just answer** — every deliverable carries one-tap actions: **Save PDF · Email · WhatsApp · SMS · Remind me** (real email + `.ics`). It's a copilot that *does* the task, not a chatbot that describes it.
-- **Autonomous on critical triggers** — in "Already affected?" emergencies, agents **take initiative and produce the finished work themselves** (e.g. the drafted complaint email, a recovery budget/plan) under *"Done for you — ready to use"*, ready to send — no need to ask.
-- **Catalyst (Disha)** — a full skill-assessment suite: JD↔resume **skill match & gap**, an adaptive **SkillLens** interview, scores with **radar + bar charts**, a personalised learning plan, curated resources, and a **visual PDF report**.
-- **Emergency SOS** — set a private emergency contact (saved only in your browser) and alert them in one tap via **SMS / WhatsApp / Call** with your **live location**; the **Telegram bot can text them too** (after a "shall I text them?" confirm). Every helpline number is **tap-to-call**.
-- **Resilient AI** — rotates multiple Gemini keys, then **falls back to Groq** (Llama 3.3 70B) when quota is exhausted, then to realistic mocks so a live demo *never* breaks; a clear *"fallback initiated"* notice shows what happened.
+- **8 consumer agents + 8 AI-Workforce employees** — each with a photoreal face and real tools.
+- **Truly agentic** — a *plan → act → observe → reflect → synthesize* loop composes an arbitrary
+  chain of specialists at runtime and revises it; it produces the finished deliverable, not advice.
+- **Rent an AI employee** — `POST /api/employees/:id/task` with a per-tenant API key. Call it from
+  an ERP, a cron job or Zapier to automate a workflow. Usage is metered per tenant.
+- **Real integrations** — employees emit **Tally-import XML vouchers**, **NIC e-way-bill JSON**, and
+  **validate every GSTIN** (official check-digit algorithm, on-device). WhatsApp/Email/SMS dispatch.
+- **Depth functions** — every employee has 5–6 concrete duties (e.g. Accounts: GST invoice → Tally,
+  e-invoice IRN, reconciliation, GST liability, e-way) — 44 functions across the fleet.
+- **Autonomous scheduling** — dated follow-ups become one-tap **calendar (.ics)** entries.
+- **Ready-to-hand-over documents** — a project report, Samadhaan complaint, BOQ, or bid exports to
+  **PDF and Word (.docx)** in one tap.
+- **PDF & image aware** — attach a bill/invoice/notice (image or PDF); Gemini vision reads it.
+- **Bilingual** (English / हिन्दी) — UI *and* AI answers flip language. **Voice** input everywhere.
+- **Telegram bot** with the same brain — chat, hire an AI employee, send a photo/PDF to decode.
+- **Resilient AI** — rotates multiple Gemini keys, then **falls back to Groq** (Llama 3.3 70B) when
+  quota is exhausted, then to realistic mocks so a live demo *never* breaks.
 
 ---
 
-## The agents
+## The consumer agents
 
 | Agent | Role | What it does |
 |------|------|--------------|
-| **Disha** | Career Copilot (Catalyst AI) | The direct **Redrob ecosystem hook**. **Catalyst AI** skill assessment: paste/upload a **JD + résumé** → extracts & matches skills (Strong/Moderate/Critical gap), runs an **adaptive SkillLens interview** (dynamic difficulty + per-answer scoring), computes a **readiness score** (skill-match 40% · assessment 40% · confidence 20%) with **radar + bar charts**, a **personalized learning plan** + **curated resources**, and a **downloadable PDF report**. Plus live job search (Remotive/Arbeitnow) &amp; a **Resume Tailor** (text + LaTeX → PDF/.tex/Overleaf). |
-| **Abhay** | Scam Shield | Forward any suspicious SMS / WhatsApp / call / email → instant fraud verdict, risk score, red flags, what to do. Crime map, fraud-network graph, voice-spoof & counterfeit checks, and a **live scam-news ticker** (RSS). |
-| **Vidya** | Document Decoder | Paste or photograph a bill, insurance, legal notice or govt letter → plain language + hidden charges flagged. |
 | **Haq** | Scheme Finder | Share a short profile → central + state schemes you likely qualify for, with how-to-apply steps. |
-| **Asha** | Health Saver | Decode a prescription → cheaper **generic** equivalents + Jan Aushadhi savings; symptom guidance; vitals & visit-prep. |
-| **Nidhi** | Money Autopilot | Make sense of spends, find leaks, budget (50/30/20), and live EMI / SIP calculators. |
-| **Lekh** | Tax Filing Copilot | FY 2025-26 (new regime) tax computed **exactly on-device**; **Form-16 PDF parsed client-side (keyless)** with AI vision fallback for scans/photos; 87A rebate, old-vs-new compare; PDF export. |
-| **Smriti** | Chief of Staff | Dump tasks by text/photo/voice → plan, prioritise, schedule focus blocks, forecast deadlines, Pomodoro, goals & habits, calendar/ICS export. |
 | **Adhrit** | Grievance Autopilot | Describe a problem → the right authority, a ready complaint, the escalation ladder, and a rights library. |
-| **Bhupati** | Kisan Saathi | Snap a crop photo → diagnosis, action plan, farm schemes, timely advisory. |
-| **Nirbhaya** | Women's Safety | Describe any unsafe situation (harassment, stalking, an unsafe commute, domestic or workplace abuse) → a calm risk read, ordered safety steps, the right Indian helplines (**112 · 1091 · 181**, NCW, cyber 1930), your legal rights (POSH, PWDVA, Zero-FIR, NALSA), and a tap-to-call helpline directory. |
-| **Acharya** | Study & Homework | Set a topic and a deadline → a properly structured, human-sounding essay / journal / report / speech / notes / presentation, exported as **PDF, Word (.docx) or PowerPoint (.pptx)** in **Times New Roman 12pt**, then handed to **Smriti** with an **.ics reminder** so the submission is never missed. |
-| **Pragyan** | Educational Videos & Podcasts | Turn **any topic** (a concept, a how-it-works, or a **trending Economic Times** story) into a short **educational video or podcast**: **choose a voice (Natural / Female / Male / Cheerful)**, then it writes the script + subtitles, pulls matching **Pexels** images (keyless Pollinations fallback), and narrates it in-browser — with downloadable script/`.srt`, hashtags & a shareable link. Built-in **news provider** (ranked ET feed). Works on Telegram. |
-| **Udyam** | Business & MSME Launchpad | Turn a business idea into reality — the exact **Udyam, GST & licence** steps and the **MSME schemes & loans** (Mudra, PMEGP, CGTMSE) you qualify for, with official portals. |
-| **Khanan** | Mining Compliance & Ops Copilot | A location-aware compliance + **predictive-operations** copilot for mine owners: an **Owner Copilot** ("Am I ready for a DGMS inspection?") with readiness score, gaps, **who to contact** and **ready-to-send reports/emails**; an inspection checklist; a **royalty/DMF/NMET** calculator; a **permit/licence** expiry tracker (with .ics); a **legal-notice** explainer + reply draft; **predictive forecasts + fleet maintenance**; and one-tap hand-offs to Smriti / Haq / Adhrit / Lekh. |
+| **Vidya** | Document Decoder | Paste or photograph a bill, insurance, legal notice or govt letter → plain language + hidden charges flagged. |
+| **Asha** | Health Saver | Decode a prescription → cheaper **generic** equivalents + Jan Aushadhi savings; symptom guidance; visit-prep. |
+| **Smriti** | Chief of Staff | Dump tasks by text/photo/voice → plan, prioritise, schedule focus blocks, forecast deadlines, calendar/ICS export. Also the **orchestrator** that manages the whole team. |
+| **Udyam** | Business & MSME Launchpad | Turn a business idea into reality — the exact **Udyam, GST & licence** steps and the **MSME schemes & loans** (Mudra, PMEGP, CGTMSE) you qualify for. |
+| **Khanan** | Mining Compliance & Ops | A location-aware compliance + predictive-ops copilot for mine owners — DGMS readiness, royalty/DMF/NMET, permits, legal notices, forecasts. |
+| **Pragyan** | Educational Videos & Podcasts | Turn any topic (or a trending Economic Times story) into a short educational **video/podcast** — script, subtitles, images, narration, a shareable link. Works on Telegram. |
 
-Every agent also has an **"Already affected?"** tab: describe the worst case (you were scammed,
-got a notice, lost a crop…) and it returns urgent next steps, exactly who to contact (real
-helplines), a ready script, and what the agent will do for you.
+---
+
+## The AI Workforce — rentable AI employees (MSME)
+
+Eight autonomous employees, each themed to a **Miscellaneous** MSME sub-sector, plus the
+cross-cutting MSME essentials. Each has a job description, an SOP, a scoped toolset, and named
+**depth functions**. Hire one → assign a task → get finished work.
+
+| Employee | Sub-sector | Sample functions |
+|---|---|---|
+| **Vitta** · Finance & Schemes | MSME essentials | scheme & subsidy match · Mudra/PMEGP/CGTMSE loan recommendation · bankable project report · loan-readiness · Udyam |
+| **Rijul** · Receivables & Samadhaan | Delayed payments | MSME Samadhaan filing (45-day rule) · Section-16 interest (3× RBI) · legal demand notice · ageing · TReDS |
+| **Meera** · Accounts, GST & e-Invoicing | Cross-cutting | GST invoice → **Tally XML** · e-invoice IRN · **e-way bill** · reconciliation · GST liability |
+| **Prithvi** · Environment, Water & Sanitation | Environment | CPCB pollution category (Red/Orange/Green) · CTE/CTO · EPR · ZLD/water · BRSR |
+| **Anna** · Foods, Beverages & FMCG | Food & FMCG | FSSAI licence tier · compliant label · HACCP · **PMFME 35% subsidy** · recall |
+| **Devraj** · Infrastructure & Construction | Construction | Bill of Quantities · RERA · BOCW labour cess · site-safety plan · tender doc |
+| **Tara** · Electronics, IT & Telecom | Electronics/IT | BIS-CRS · **E-waste EPR** · **DPDP Act 2023** checklist · WPC/ETA · PLI |
+| **Kabir** · Metals, Machinery & Mobility | Auto/EV/metals | **ARAI/AIS homologation** · **FAME-II/EV subsidy** · PLI-Auto · GeM · BIS quality |
+
+**Integrate & rent** — an organisation gets an API key and calls one endpoint:
+
+```bash
+curl -X POST https://<app>/api/employees/accounts/task \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: <your-key>" \
+  -d '{"function":"invoice","task":"120 cartons @ ₹450, 18% GST, buyer 24AAACC1206D1ZM"}'
+# → returns the plan, each step, the finished deliverable, an auto-generated Tally XML,
+#   and a validated GSTIN — as JSON.
+```
+
+Design your own from a job description, too (`id: "custom"`). Every run can auto-attach a **Tally
+voucher (XML)** and **e-way bill (JSON)**, validate GSTINs, export the deliverable to **PDF/Word**,
+and set **calendar reminders**.
 
 ---
 
 ## Cross-cutting features
 
-- **Agentic workflows** (the **AI-native workflow** layer) — the **Workflows** tab runs a
-  multi-agent **chain** where each agent's output feeds the next, **visualised live** as each
-  step runs: *Weather → Crop → Schemes → Budget → Plan* (live **Open-Meteo** weather → Bhupati →
-  Haq → Nidhi → Smriti — the biggest chain), *Write homework → Schedule submission* (Acharya →
-  Smriti), *Decode → Complaint → Schedule* (Vidya → Adhrit → Smriti), *Check scam → Act → Report*
-  (Abhay → Emergency → Adhrit), *Tailor résumé → Interview → Plan* (Disha → Disha → Smriti),
-  *Analyse spends → Plan savings*, *Decode Rx → Refill reminders*. An AI **planner** picks the
-  right chain from a free-text problem, and finishing a chain fires a **completion reminder**.
-- **Orchestrator** (the *Talk to Saarthi* / *Start with any tool* CTA) — a **node-graph** view with
-  **Smriti at the top of the hierarchy** managing the team. Describe any goal in plain words and she
-  **proactively decomposes it** into the right agent-actions, **checks live weather first** for
-  outdoor work (warning on hazards), and watches **control flow live down the edges** to exactly the
-  agents she picks. When done she **auto-creates a calendar `.ics` + email reminder** for any dated
-  task — you never have to ask. If a request fits no specialist, **Smriti answers it herself**.
-- **Build your own workflow** — a **drag-and-drop canvas**: drag agents + sources (Weather,
-  Photo/PDF) + outputs (PDF/Word/PPT, Reminder) onto the board, link them into a chain with rules
-  (Smriti & outputs are final steps; no loops), then run it and see the result on the page.
-- **Smriti as manager** — Smriti reviews your task board, **delegates** each task to the right
-  specialist agent, brings back the **finished deliverable** (e.g. Adhrit drafts the email), and
-  shows it under *Completed by your team*; tasks with deadlines export to **.ics** with alarms.
-- **AI assistant (floating chat)** — bottom-right on every page. Describe your problem; it
-  classifies it (Gemini router + an instant offline keyword fallback) and offers **"Talk to
-  {agent}"**. Supports voice input.
-- **Helplines** — the navbar phone button opens a searchable modal of 22 official Indian
-  helplines (1930, 112, 1098, 1078, 1915, 14416 Tele-MANAS, …), tap-to-call. Phone numbers inside
-  **any agent's answer** are also turned into tappable `tel:` links (and URLs into links).
-- **Emergency SOS contact** — in Smriti's results and every agent's *"Already affected?"* tab you can
-  save a **private** emergency contact (browser-only `localStorage`) and alert them in one tap via
-  **SMS / WhatsApp / Call**, with your **live location** attached if you allow it.
-- **Deep links** — `?agent=kavach` opens that console, `?q=…` opens the chat pre-filled
-  (used by the Telegram bot to hand off into the web app).
-- **Live data feeds (keyless)** — the **Weather** workflow source & the *Kisan cycle* chain pull
-  **real** forecasts from [Open-Meteo](https://open-meteo.com); Abhay's ticker streams **live
-  scam-news** via RSS; Disha's Job search pulls **real openings** from
-  [Remotive](https://remotive.com) (Arbeitnow fallback). (The app falls back to sample data if a feed is unreachable.)
-- **Deterministic engines** — tax, EMI/SIP, the scam classifier, Smriti's forecasts/ICS, and
-  Khanan's royalty/DMF/NMET maths run **on-device** for reproducible, defensible numbers; the
-  LLM is used for understanding, extraction and language.
-- **Works even with no/low AI quota** — Lekh parses a **text-based Form-16 entirely in the browser**
-  (pdf.js + regex) and all the maths above are on-device, so tax computation, calculators and the
-  checklist keep working with zero API calls. When Gemini quota *is* hit, keys auto-rotate and a
-  clear *"fallback initiated"* notice appears instead of silent wrong data.
-- **Premium, responsive UI** — floating glass navbar (hamburger menu on phones), smooth
-  page/route transitions, language cross-fade.
+- **Smriti-led Orchestrator** — a node-graph view with **Smriti at the top** managing the full team
+  (consumer agents + AI Workforce). Describe any goal and she decomposes it into agent-actions,
+  runs them live down the edges, and turns dated outcomes into a calendar `.ics` + email reminder.
+- **Agentic workflows** — the **Workflows** tab runs multi-agent chains, visualised live:
+  *Decode → Complaint → Schedule* (Vidya → Adhrit → Smriti), *Register → Schemes → Plan*
+  (Udyam → Haq → Smriti), *Decode Rx → Refills* (Asha → Smriti), *Topic → Explainer → Schedule*
+  (Pragyan → Smriti). An AI planner picks the right chain from free text.
+- **Integrations console** — validate a GSTIN, generate a Tally XML / e-way JSON, or compose a
+  WhatsApp send, live. Shows which connectors are live vs. need the org's credentials.
+- **Floating AI assistant** — bottom-right on every page. Classifies your problem and offers to open
+  the right consumer agent *or* hire the matching AI employee.
+- **Deterministic engines** — GSTIN check-digit, Tally XML, e-way payload, tax/EMI/SIP, scam score,
+  and the `.ics`/scheduling maths run **on-device** for reproducible, defensible output.
+- **Works even with no/low AI quota** — connectors and calculators are keyless; when Gemini quota is
+  hit, keys auto-rotate → Groq → mocks, with a clear notice.
+- **Premium, responsive UI** — floating glass navbar, smooth transitions, EN↔HI cross-fade, dark/light.
 
 ---
 
 ## Telegram bot
 
-The same agents, in Telegram (`server/telegram.js`):
+The same brain, in Telegram (`server/telegram.js`):
 
-- **`/start`** → welcome + tappable quick-start buttons and a **"Browse all agents"** menu.
-- **Free text** → auto-routes to the best agent and replies with a complete answer
-  (English/Hindi auto-detected), plus an **"Open in app"** deep link.
-- **Pick an agent** (`/agents` or the menu) → reply to talk **directly** to that specialist.
-- **Emergency SMS** — set a contact with **`/sos +91…`**; when a message looks urgent the bot asks
-  *"Shall I text your emergency contact?"*, offers a **📍 Share location** button, and on **Yes** sends
-  a real SMS with the situation **and a Google-Maps location link** via a free provider — **Fast2SMS**
-  (set `FAST2SMS_KEY`) or a **TextBelt** free fallback.
-- Powered by one Gemini `assist` call that routes **and** writes the full answer; falls back to
-  mock replies if no key is set.
-
-**Try it:** [@saarthi_support_bot](https://t.me/saarthi_support_bot) — or see **Deploy** below to connect your own.
+- **`/start`** → welcome + quick-starts, **👥 Browse agents**, and **🏢 Hire an AI employee**.
+- **Free text** → auto-routes to the best consumer specialist (or answers directly) with an
+  **"Open in app"** deep link.
+- **🏢 AI Workforce** → pick an employee, reply with a task, and it **runs the autonomous loop** and
+  hands back the finished deliverable + an app link.
+- **Send a photo or PDF** → Vidya reads and explains it; or reply to a hired employee with a
+  document and it acts on it (Gemini vision).
+- **Emergency SMS** — set a contact with `/sos +91…`; on an urgent message the bot offers to text
+  them (with a Google-Maps location link) via Fast2SMS / TextBelt.
 
 ---
 
@@ -133,24 +139,24 @@ The same agents, in Telegram (`server/telegram.js`):
 
 ```
 Browser (React 19 + Vite + Tailwind + Framer Motion)
-   │  POST /api/<feature>   (text, optional image, language)
+   │  POST /api/<feature>  ·  /api/employees/:id/task  ·  /api/agent  ·  /api/tools/*
    ▼
-Express app (server/app.js)  ──►  Google Gemini  (structured JSON output)
-   │  • API key stays server-side, never shipped to the browser
-   │  • graceful mock fallback if no key / API error → demo never breaks
-   │
-   ├─ /api/telegram   ◄── Telegram webhook (same agents)
-   └─ deployed on Vercel as a serverless function (api/index.js)
-
-Telegram  ──►  /api/telegram  ──►  Gemini  ──►  reply + deep link back to the web app
+Express app (server/app.js)  ──►  Google Gemini (multi-key rotation) ──► Groq fallback ──► mocks
+   ├─ orchestrator.js  plan→act→observe→reflect→synthesize (persona-scoped for employees)
+   ├─ employees.js     the AI-employee catalog (personas over the agent skills) + auto-artefacts
+   ├─ connectors.js    GSTIN validate · Tally XML · e-way JSON · WhatsApp (real, deterministic)
+   ├─ tenancy.js       per-tenant API keys + usage metering for the rent API
+   ├─ workflows.js     multi-agent chains + planner
+   ├─ prompts.js       per-feature system prompts + JSON schemas (the "brains")
+   └─ telegram.js      the Telegram webhook (agents + AI Workforce + photo/PDF)
+   deployed on Vercel as one serverless function (api/index.js)
 ```
 
-- **Structured output** — every feature defines a strict `responseSchema`; Gemini returns
-  typed JSON the UI renders directly (no fragile parsing).
-- **Multimodal** — Vidya, Asha, Lekh, Bhupati, Smriti, Khanan accept a **photo/PDF** via Gemini vision.
-- **One deploy** — frontend (static `dist/`) + the Express API (serverless) live on one Vercel URL.
+- **Structured output** — every feature declares a strict `responseSchema`; Gemini returns typed JSON.
+- **Multimodal** — image/PDF arrive as base64 `inlineData`; Gemini vision reads them.
+- **One deploy** — static `dist/` + the Express API (serverless) on one Vercel URL.
 
-Full details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+Full details in **[ARCHITECTURE.md](ARCHITECTURE.md)**; MSME deep dive in **[MSME.md](MSME.md)**.
 
 ---
 
@@ -161,10 +167,10 @@ Full details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 npm install
 ```
 
-**2. Add your Gemini key** (free at <https://aistudio.google.com/apikey>)
+**2. Add your keys** (free at <https://aistudio.google.com/apikey>)
 ```bash
-cp .env.example .env        # then edit .env and paste your key
-# GEMINI_API_KEY=AIza...
+cp .env.example .env        # then edit .env
+# GEMINI_API_KEY=AIza...            (add GEMINI_API_KEY_2/3/4… for rotation)
 ```
 > Skip this and the app still runs in **demo mode** with realistic sample data.
 
@@ -180,38 +186,40 @@ npm run build        # builds the web app to dist/
 npm start            # runs the local API server (server/index.js)
 ```
 
+**Generate agent / AI-employee faces** (keyless, via Pollinations)
+```bash
+node scripts/gen-faces.mjs            # consumer agents + hero
+node scripts/gen-workforce-faces.mjs  # the 8 AI-Workforce employees
+```
+
 ### Environment variables
 | Var | Required | Purpose |
 |-----|----------|---------|
 | `GEMINI_API_KEY` | for live AI | Google AI Studio key (else demo/mock mode) |
-| `GEMINI_API_KEY_2/3…` | optional | extra keys — auto-**rotated** when one hits its free-tier quota (or use `GEMINI_API_KEYS=k1,k2,k3`) |
-| `GEMINI_MODEL` | optional | defaults to `gemini-2.5-flash`; set `gemini-2.5-flash-lite` for a higher free **daily** request limit |
-| `GROQ_API_KEY` | optional | **automatic fallback** when Gemini quota is exhausted (fast, generous free tier — [console.groq.com/keys](https://console.groq.com/keys)) |
-| `GROQ_MODEL` | optional | defaults to `llama-3.3-70b-versatile` |
-| `PORT` | optional | local API port (default `8787`) |
-| `PEXELS_API_KEY` | optional | nicer Pragyan stock images (keyless Pollinations fallback) |
+| `GEMINI_API_KEY_2/3/4/5` | optional | extra keys — auto-**rotated** when one hits its quota |
+| `GEMINI_API_KEYS` | optional | comma-separated keys (alternative to the numbered vars) |
+| `GEMINI_MODEL` | optional | defaults to `gemini-2.5-flash` |
+| `GROQ_API_KEY` | optional | **automatic fallback** when all Gemini keys are exhausted |
+| `WORKFORCE_API_KEYS` | optional | `key:Tenant:plan,…` — enables per-tenant metering for the rent API (open demo if unset) |
+| `WHATSAPP_API_URL` / `WHATSAPP_API_TOKEN` | optional | provider (Meta/Gupshup) for real WhatsApp send (else a keyless `wa.me` link) |
 | `TELEGRAM_BOT_TOKEN` | for the bot | from @BotFather |
 | `APP_URL` | for the bot | deployed URL for deep links, e.g. `https://getsaarthi.vercel.app` |
-| `SMTP_HOST` / `SMTP_PORT` | for email | e.g. `smtp.gmail.com` / `587` |
-| `SMTP_USERNAME` / `SMTP_PASSWORD` | for email | Gmail address + **App Password** (2-Step Verification) |
-| `SMTP_FROM_EMAIL` | for email | the "from" address (usually same as username) |
-| `FAST2SMS_KEY` | for SMS | Fast2SMS auth key so the Telegram bot can text an emergency contact (India) |
-| `TEXTBELT_KEY` | optional | paid TextBelt key; without it a free shared key (~1 SMS/day) is used |
+| `SMTP_HOST/PORT/USERNAME/PASSWORD/FROM_EMAIL` | for email | Gmail SMTP for "email me when it's done" (+ `.ics`) |
+| `FAST2SMS_KEY` / `TEXTBELT_KEY` | for SMS | emergency SMS from the Telegram bot |
+| `PEXELS_API_KEY` | optional | nicer Pragyan stock images (keyless Pollinations fallback) |
 
 ---
 
 ## Deploy (Vercel) + Telegram bot
 
-Frontend **and** the `/api` Gemini backend deploy together — the Express app is wrapped as a
-Vercel serverless function (`api/index.js`, routed via `vercel.json`).
+Frontend **and** the `/api` backend deploy together — the Express app is wrapped as a Vercel
+serverless function (`api/index.js`, routed via `vercel.json`).
 
 ### 1. Deploy on Vercel
 1. Push the repo to GitHub and **Import Project** on Vercel (auto-detects **Vite**).
-2. Add **Environment Variables** (Settings → Environment Variables): `GEMINI_API_KEY`
-   (optionally `GEMINI_MODEL`, `GEMINI_API_KEY_2/3…`, `GROQ_API_KEY`, `PEXELS_API_KEY`), `TELEGRAM_BOT_TOKEN` &
-   `APP_URL` for the bot, `SMTP_HOST/SMTP_PORT/SMTP_USERNAME/SMTP_PASSWORD/SMTP_FROM_EMAIL`
-   for "email me when it's done", and `FAST2SMS_KEY` for the bot's emergency SMS.
-3. **Deploy.** The site is live; agents / chat / helplines all work via `/api/*`.
+2. Add **Environment Variables** — at minimum `GEMINI_API_KEY` (+ `GEMINI_API_KEY_2/3…` for rotation),
+   optionally `GROQ_API_KEY`, `WORKFORCE_API_KEYS`, `TELEGRAM_BOT_TOKEN` & `APP_URL`, SMTP/SMS keys.
+3. **Deploy.** The site is live; agents, AI Workforce, connectors and chat all work via `/api/*`.
 
 ### 2. Telegram bot
 1. In Telegram, open **@BotFather** → `/newbot` → copy the **token**.
@@ -220,53 +228,47 @@ Vercel serverless function (`api/index.js`, routed via `vercel.json`).
    ```
    https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<your-app>.vercel.app/api/telegram
    ```
-   It should return `{"ok":true}`. Verify the endpoint: open
-   `https://<your-app>.vercel.app/api/telegram` → `{"ok":true,"bot":"Saarthi Telegram webhook"}`.
-4. Message your bot. (Remove later with `…/bot<TOKEN>/deleteWebhook`.)
+   It should return `{"ok":true}`. Verify: open `https://<your-app>.vercel.app/api/telegram`.
+4. Message your bot `/start`. (Remove later with `…/bot<TOKEN>/deleteWebhook`.)
 
 > Never commit secrets. `.env` is gitignored — set keys only in the Vercel dashboard.
-> If you ever paste a token publicly, **revoke it** via @BotFather.
 
 ---
 
 ## Project structure
 
 ```
-api/
-  index.js          Vercel serverless wrapper (exports the Express app)
+api/index.js         Vercel serverless wrapper (exports the Express app)
 server/
-  app.js            Express app + all /api routes (+ telegram webhook, notify)
-  index.js          local dev server (listens on PORT)
-  gemini.js         Gemini client wrapper (structured JSON, multi-key rotation)
-  prompts.js        per-feature system prompts + JSON schemas (the "brains")
-  mocks.js          demo-safe sample responses
-  telegram.js       Telegram bot webhook (buttons, agent menu, routing, /sos SMS)
-  notify.js         email (Gmail SMTP) with .ics attachment
-  sms.js            emergency SMS (Fast2SMS / TextBelt)
-  docgen.js         PDF / Word / PPTX generation (lazy-imported)
-  workflows.js      multi-agent chains + planner;  news.js / jobs.js  live feeds
+  app.js             Express app + all /api routes (agents, employees, tools, telegram, notify)
+  index.js           local dev server (listens on PORT)
+  gemini.js          Gemini client — multi-key rotation + Groq fallback (structured JSON)
+  orchestrator.js    autonomous plan→act→reflect→synthesize loop (persona-scoped for employees)
+  employees.js       the 8-employee AI-Workforce catalog + real integration artefacts
+  connectors.js      GSTIN validate · Tally XML · e-way JSON · WhatsApp (deterministic, real)
+  tenancy.js         per-tenant API keys + usage metering
+  workflows.js       multi-agent chains + planner;  prompts.js  per-feature prompts + schemas
+  telegram.js        Telegram webhook (agents + AI Workforce + photo/PDF)
+  mocks.js           demo-safe sample responses;  notify.js / sms.js / docgen.js  actions
 src/
-  App.tsx           view switching, deep links, scroll restore
-  app/AppContext    language + health context, i18n helper
-  components/       Nav, Landing, FloatingChat, SosAlert, NotifyMe, ActionBar,
-                    Helplines, Select, Logo, AgentAvatar, LanguagePicker, ui
-  features/         per-agent tools + console/ (dashboards) + disha/Catalyst + kavach/ sehat/ kar/ khanan/ pragyan/
-  lib/              api client, features metadata, i18n (en/hi), route classifier,
-                    linkify (tel: links), form16 (keyless PDF parse), reminders (ICS), text
-  hooks/            useVoice
-vercel.json         build + /api routing + function config
+  App.tsx            view switching, deep links (?agent, ?q, ?hire), scroll restore
+  components/        Nav, Landing, FloatingChat, ActionBar, Helplines, Logo, ui …
+  features/          Workforce (hire/assign), Orchestrator, WorkflowsView, Integrations,
+                     per-agent consoles (kavach/ sehat/ study/ pragyan/ khanan/ console/)
+  lib/               api client, features/roleIcons/hire metadata, i18n (en/hi), reminders (ICS)
+scripts/             gen-faces.mjs · gen-workforce-faces.mjs (keyless portrait generation)
+vercel.json          build + /api routing + function config
 ```
 
 ---
 
-## Demo
+## Demo (60 seconds)
 
-1. **Land** on the hero → switch language to **हिन्दी** (top right); UI + AI output flip.
-2. **Abhay** → *Try an example* (digital-arrest scam) → risk ring hits **94**, red flags, 1930 helpline.
-3. **Vidya** → snap a hospital bill → flags a **duplicated charge**, explains "TPA".
-4. **Haq** → profile a woman farmer in Maharashtra → **PM-KISAN, Ayushman Bharat, Atal Pension** + how to apply.
-5. **The floating assistant** → type "*I got an OTP and money was debited*" → it routes to Abhay; open **"Already affected?"** for emergency steps + 1930.
-6. **Telegram** → send the same message to the bot → full answer + "Open in app" link.
-
----
-
+1. **Land** → the hero shows the full team; scroll to **"Rent a fleet of AI employees."**
+2. **AI Workforce** → hire **Accounts** → *"Draft a GST invoice for 120 cartons @ ₹450, 18% GST,
+   buyer 24AAACC1206D1ZM"* → get the invoice + **one-tap Tally XML** + a **green GSTIN check**.
+3. **Receivables** → *"A corporate hasn't paid my ₹4L invoice for 90 days"* → a ready **MSME Samadhaan
+   complaint** with Section-16 interest, downloadable as **PDF/Word**.
+4. **Integrate** → copy the one-line API call — "your ERP or cron calls this; the workflow runs itself."
+5. **Telegram** → send a bill photo → Vidya reads it; or hire an employee and reply with a task.
+6. Close: *"Not a chatbot that talks — a workforce that works."*

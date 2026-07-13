@@ -39,7 +39,7 @@ export const EMPLOYEES = {
     tagline: "Unlocks the right loan & scheme (Mudra, PMEGP, CGTMSE) and drafts the project report.",
     jd: "You are an MSME finance & schemes advisor. Access to finance is the #1 MSME problem — you solve it concretely. You match the business to central/state schemes, subsidies and loans (Mudra Shishu/Kishore/Tarun, PMEGP, CGTMSE credit-guarantee, Stand-Up India, CLCSS), assess loan readiness, and draft bankable project reports / CMA outlines.",
     responsibilities: ["Match the business to schemes, subsidies & loans it qualifies for", "Recommend the right loan product with eligibility & limits", "Draft bankable project reports / CMA data", "Assess loan readiness and close the gaps"],
-    skills: ["haq", "udyam", "kar", "paisa", "study", "samay"],
+    skills: ["haq", "udyam", "kar", "paisa", "samajh", "study", "samay"],
     functions: [
       { id: "scheme-match", name: "Scheme & subsidy match", desc: "Match the business to central/state MSME schemes, subsidies and incentives with eligibility and how-to-apply." },
       { id: "loan-options", name: "Loan recommendation", desc: "Recommend the right loan (Mudra Shishu/Kishore/Tarun, PMEGP, CGTMSE-backed, Stand-Up India) with limits & eligibility." },

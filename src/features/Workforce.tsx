@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Loader2, CheckCircle2, Sparkles, Zap, Code2, ChevronDown, Building2, Plus, Users, KeyRound, Activity, X, Download, FileText, CalendarPlus } from "lucide-react";
+import { ArrowLeft, Send, Loader2, CheckCircle2, Sparkles, Zap, Code2, ChevronDown, Building2, Plus, Users, KeyRound, Activity, X, Download, FileText, CalendarPlus, ImagePlus } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CopyBlock } from "../components/ui";
 import { ActionBar } from "../components/ActionBar";
 import { clean } from "../lib/text";
 import { linkify } from "../lib/linkify";
-import { getEmployees, assignEmployeeTask, getWorkforceMe, generateDoc, Employee, EmployeeRun, WorkforceMe } from "../lib/api";
+import { getEmployees, assignEmployeeTask, getWorkforceMe, generateDoc, fileToInlineData, Employee, EmployeeRun, WorkforceMe } from "../lib/api";
 import { getHired, getRuns, hire, fire, recordRun, DEMO_API_KEY, HiredEmployee, FleetRun } from "../lib/fleet";
 import { roleIcon } from "../lib/roleIcons";
 import { Integrations } from "./Integrations";
@@ -155,18 +155,24 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
   const [fn, setFn] = useState<string | null>(null); // selected depth function
   const [run, setRun] = useState<EmployeeRun | null>(null);
   const [busy, setBusy] = useState(false);
-
+  const [doc, setDoc] = useState<{ mimeType: string; data: string } | null>(null); // attached image / PDF
+  const [docName, setDocName] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { setTask(employee.samples[0] || ""); setFn(null); setRun(null); }, [employee.id]);
+  useEffect(() => { setTask(employee.samples[0] || ""); setFn(null); setRun(null); setDoc(null); setDocName(""); }, [employee.id]);
   // flow down to the answer when a task is assigned
   useEffect(() => { if (busy || run) requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }, [busy, run]);
   const activeFn = employee.functions?.find((f) => f.id === fn) || null;
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; if (!f) return;
+    setDocName(f.name); fileToInlineData(f).then(setDoc);
+  }
 
   async function assign() {
-    if (!task.trim() || busy) return;
+    if ((!task.trim() && !doc) || busy) return;
     setBusy(true); setRun(null);
     try {
-      const r = await assignEmployeeTask(employee.id, { task: task.trim(), function: fn || undefined, today: new Date().toDateString(), language: lang.name });
+      const r = await assignEmployeeTask(employee.id, { task: task.trim() || docName, function: fn || undefined, image: doc || undefined, today: new Date().toDateString(), language: lang.name });
       setRun(r);
       hire({ id: employee.id, title: employee.title, name: employee.name, icon: employee.icon, accent: employee.accent });
       recordRun({ employeeId: employee.id, title: employee.title, icon: employee.icon, accent: employee.accent, task: task.trim(), headline: r.result?.headline || "Completed" });
@@ -210,10 +216,19 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
         </div>
 
         <textarea value={task} onChange={(e) => setTask(e.target.value)} rows={3} placeholder={activeFn ? activeFn.desc : t("wfx.taskPh")} className="field mt-3 resize-none deva" />
-        <div className="mt-3 flex items-center gap-2">
-          <button onClick={assign} disabled={busy || !task.trim()} className="btn-accent text-[15px]" style={{ background: employee.accent }}>
+        {doc && (
+          <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-line bg-mist px-3 py-2">
+            <FileText className="h-4 w-4" style={{ color: employee.accent }} />
+            <span className="max-w-[14rem] truncate text-sm text-graphite deva">{docName}</span>
+            <button onClick={() => { setDoc(null); setDocName(""); if (fileRef.current) fileRef.current.value = ""; }} className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white"><X className="h-3 w-3" /></button>
+          </div>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button onClick={assign} disabled={busy || (!task.trim() && !doc)} className="btn-accent text-[15px]" style={{ background: employee.accent }}>
             {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("wfx.working").replace("{name}", employee.name)}</> : <><Send className="h-4 w-4" /> {t("wfx.assign")}</>}
           </button>
+          <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" />
+          <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm"><ImagePlus className="h-4 w-4" /> {t("wfx.attach")}</button>
         </div>
       </div>
 
@@ -232,18 +247,22 @@ function CustomPanel({ onRan }: { onRan: () => void }) {
   const [task, setTask] = useState("");
   const [run, setRun] = useState<EmployeeRun | null>(null);
   const [busy, setBusy] = useState(false);
+  const [doc, setDoc] = useState<{ mimeType: string; data: string } | null>(null);
+  const [docName, setDocName] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
   const accent = "#4B5563";
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (busy || run) requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }, [busy, run]);
 
   const toggle = (s: string) => setSkills((p) => p.includes(s) ? p.filter((x) => x !== s) : [...p, s]);
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) { const f = e.target.files?.[0]; if (!f) return; setDocName(f.name); fileToInlineData(f).then(setDoc); }
 
   async function assign() {
     if (!task.trim() || !jd.trim() || busy) return;
     setBusy(true); setRun(null);
     const roleTitle = title.trim() || "AI Specialist";
     try {
-      const r = await assignEmployeeTask("custom", { task: task.trim(), today: new Date().toDateString(), language: lang.name, custom: { title: roleTitle, jd: jd.trim(), skills } });
+      const r = await assignEmployeeTask("custom", { task: task.trim(), image: doc || undefined, today: new Date().toDateString(), language: lang.name, custom: { title: roleTitle, jd: jd.trim(), skills } });
       setRun(r);
       hire({ id: "custom:" + roleTitle, title: roleTitle, name: "Custom", icon: "sparkles", accent });
       recordRun({ employeeId: "custom", title: roleTitle, icon: "sparkles", accent, task: task.trim(), headline: r.result?.headline || "Completed" });
@@ -267,6 +286,15 @@ function CustomPanel({ onRan }: { onRan: () => void }) {
           </div>
         </div>
         <textarea value={task} onChange={(e) => setTask(e.target.value)} rows={2} placeholder={t("wfx.taskPh")} className="field mt-3 resize-none deva" />
+        {doc && (
+          <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-line bg-mist px-3 py-2">
+            <FileText className="h-4 w-4" style={{ color: accent }} />
+            <span className="max-w-[14rem] truncate text-sm text-graphite deva">{docName}</span>
+            <button onClick={() => { setDoc(null); setDocName(""); if (fileRef.current) fileRef.current.value = ""; }} className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white"><X className="h-3 w-3" /></button>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" />
+        <button onClick={() => fileRef.current?.click()} className="btn-ghost mt-3 mr-2 text-sm"><ImagePlus className="h-4 w-4" /> {t("wfx.attach")}</button>
         <button onClick={assign} disabled={busy || !task.trim() || !jd.trim()} className="btn-accent mt-3 text-[15px]" style={{ background: accent }}>
           {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("wfx.hiring")}</> : <><Zap className="h-4 w-4" /> {t("wfx.hireRun")}</>}
         </button>

@@ -2,6 +2,7 @@ import { generateJSON, hasKey } from "./gemini.js";
 import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
 import { sendSMS } from "./sms.js";
+import { employeeList, runEmployee } from "./employees.js";
 
 // Per-chat emergency contact + a pending "shall I text?" alert.
 // (In-memory: fine within a warm instance; a cold start clears it — re-set with /sos.)
@@ -19,35 +20,39 @@ const API = (m) => `https://api.telegram.org/bot${TOKEN}/${m}`;
 
 const isHindi = (s) => /[ऀ-ॿ]/.test(s || "");
 
-const SUGGESTIONS = ["I got a suspicious SMS", "Help me understand a bill", "How do I save tax?"];
+const SUGGESTIONS = ["Which govt scheme can I claim?", "Explain this bill / notice", "How do I register on Udyam?"];
+// The consumer specialists (kept in the app).
 const AGENTS = [
-  { key: "kavach", name: "Abhay · Scams" },
-  { key: "samajh", name: "Vidya · Documents" },
   { key: "haq", name: "Haq · Schemes" },
-  { key: "sehat", name: "Asha · Health" },
-  { key: "paisa", name: "Nidhi · Money" },
-  { key: "kar", name: "Lekh · Tax" },
-  { key: "samay", name: "Smriti · Tasks" },
   { key: "setu", name: "Adhrit · Complaints" },
-  { key: "krishi", name: "Bhupati · Farming" },
-  { key: "raahat", name: "Nirbhaya · Women's Safety" },
-  { key: "disha", name: "Disha · Careers" },
-  { key: "study", name: "Acharya · Study" },
-  { key: "pragyan", name: "Pragyan · Edu Videos" },
+  { key: "samajh", name: "Vidya · Documents" },
+  { key: "sehat", name: "Asha · Health" },
+  { key: "samay", name: "Smriti · Tasks" },
   { key: "udyam", name: "Udyam · Business/MSME" },
-  { key: "khanan", name: "Khanan · Mining (Dhanbad)" },
+  { key: "khanan", name: "Khanan · Mining" },
+  { key: "pragyan", name: "Pragyan · Edu Videos" },
 ];
 const NAME = Object.fromEntries(AGENTS.map((a) => [a.key, a.name.split(" · ")[0]]));
+
+// The hireable AI Workforce (B2B employees) — the MSME product.
+const EMPLOYEES = employeeList();
+const EMP = Object.fromEntries(EMPLOYEES.map((e) => [e.id, e]));
 
 const mainKeyboard = () => ({
   inline_keyboard: [
     ...SUGGESTIONS.map((s) => [{ text: s, callback_data: `q:${s}` }]),
-    [{ text: "🤖 Browse all agents", callback_data: "menu" }],
+    [{ text: "👥 Browse agents", callback_data: "menu" }, { text: "🏢 Hire an AI employee", callback_data: "wf" }],
   ],
 });
 const agentsKeyboard = () => {
   const rows = [];
   for (let i = 0; i < AGENTS.length; i += 2) rows.push(AGENTS.slice(i, i + 2).map((a) => ({ text: a.name, callback_data: `a:${a.key}` })));
+  rows.push([{ text: "🏢 AI Workforce", callback_data: "wf" }], [{ text: "⬅️ Back", callback_data: "start" }]);
+  return { inline_keyboard: rows };
+};
+const wfKeyboard = () => {
+  const rows = [];
+  for (let i = 0; i < EMPLOYEES.length; i += 2) rows.push(EMPLOYEES.slice(i, i + 2).map((e) => ({ text: `${e.name} · ${e.short}`, callback_data: `w:${e.id}` })));
   rows.push([{ text: "⬅️ Back", callback_data: "start" }]);
   return { inline_keyboard: rows };
 };
@@ -66,7 +71,7 @@ const send = (chat_id, text, extra = {}) => tg("sendMessage", { chat_id, text, d
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const WELCOME =
-  "🙏 Namaste! I'm Saarthi — your all-in-one AI helper for everyday India.\n\nTell me what you're facing and I'll connect you to the right AI expert. Tap a quick start below, browse all agents, or just type your problem.";
+  "🙏 Namaste! I'm Saarthi — AI for everyday India and its MSMEs.\n\n• Ask anything and I'll route you to the right specialist.\n• Or 🏢 hire an autonomous AI employee — Finance & Schemes, GST & Accounts, MSME Samadhaan (delayed payments), FSSAI, Environment, Construction, Electronics, Auto/EV — to do a real job.\n\nTap a quick start, browse agents, or just type your problem.";
 
 async function runAssist(chatId, text, agentHint) {
   const language = isHindi(text) ? "Hindi" : "English";
@@ -99,7 +104,7 @@ async function runAssist(chatId, text, agentHint) {
     ? `I can help with this as ${name}. The AI service is busy right now — tap "Open in the app" below for the full step-by-step answer. 👇`
     : data.reply;
   let reply = `${body}\n\n— ${name}`;
-  if (APP_URL && agent) reply += `\n\nOpen ${name} in the app: ${APP_URL}/?agent=${encodeURIComponent(agent)}&q=${encodeURIComponent(text)}`;
+  if (APP_URL && agent && NAME[agent]) reply += `\n\nOpen ${name} in the app: ${APP_URL}/?agent=${encodeURIComponent(agent)}&q=${encodeURIComponent(text)}`;
 
   if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
   else await send(chatId, reply, { reply_markup: mainKeyboard() });
@@ -154,6 +159,67 @@ async function runPragyan(chatId, title) {
   await send(chatId, "Make another?", { reply_markup: mainKeyboard() });
 }
 
+// AI Workforce: assign a task to a hireable AI employee and hand back the finished
+// deliverable. Runs the same persona-scoped autonomous loop as the app/API.
+async function runEmployeeTask(chatId, empId, text, image) {
+  const e = EMP[empId];
+  if (!e) return runAssist(chatId, text);
+  const language = isHindi(text) ? "Hindi" : "English";
+  tg("sendChatAction", { chat_id: chatId, action: "typing" });
+  const m = await tg("sendMessage", { chat_id: chatId, text: `🏢 ${e.name} (${e.short}) is on it…\n💭 Planning and working…` });
+  const mid = m?.result?.message_id;
+
+  let out;
+  try { out = await runEmployee(empId, text, { today: new Date().toDateString(), language, image }); }
+  catch (err) { console.error("[telegram] employee", err?.message || err); }
+
+  const r = out?.result;
+  const mock = !hasKey || r?._mock;
+  const deliverable = r?.deliverable ? String(r.deliverable).slice(0, 3500) : "";
+  const link = APP_URL ? `${APP_URL}/?hire=${encodeURIComponent(empId)}` : "";
+  const reply = mock
+    ? `🏢 ${e.name} · ${e.short}\n\nI can do this end-to-end — but the AI service is busy right now. Open the app to run me in full 👇${link ? `\n${link}` : ""}`
+    : `🏢 ${e.name} · ${e.short}\n\n${r?.headline || "Done."}\n\n${deliverable}${link ? `\n\n▶️ Open in the app (downloads, calendar, integrate): ${link}` : ""}`;
+
+  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
+  else await send(chatId, reply, { reply_markup: mainKeyboard() });
+}
+
+// Download a Telegram photo/document to a Gemini inlineData part (base64).
+async function tgFileB64(fileId) {
+  try {
+    const f = await tg("getFile", { file_id: fileId });
+    const fp = f?.result?.file_path;
+    if (!fp || !TOKEN) return null;
+    const res = await fetch(`https://api.telegram.org/file/bot${TOKEN}/${fp}`);
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const mimeType = /\.pdf$/i.test(fp) ? "application/pdf" : /\.png$/i.test(fp) ? "image/png" : /\.webp$/i.test(fp) ? "image/webp" : "image/jpeg";
+    return { mimeType, data: buf.toString("base64") };
+  } catch (err) { console.error("[telegram] getFile", err?.message || err); return null; }
+}
+
+// A photo / PDF sent to the bot → let Vidya (document decoder) read & explain it.
+async function runDocument(chatId, caption, image) {
+  const language = isHindi(caption) ? "Hindi" : "English";
+  tg("sendChatAction", { chat_id: chatId, action: "typing" });
+  const thinking = await tg("sendMessage", { chat_id: chatId, text: "📄 Vidya is reading your document…" });
+  const mid = thinking?.result?.message_id;
+  let data;
+  if (!hasKey || !image) data = { ...mocks.samajh, _mock: true };
+  else {
+    try { data = await generateJSON({ system: features.samajh.system(language), parts: features.samajh.parts({ text: caption, image }), schema: features.samajh.schema }); }
+    catch (err) { console.error("[telegram] samajh", err?.message || err); data = { ...mocks.samajh, _mock: true }; }
+  }
+  const watch = (data.watchOuts || []).length ? `\n\n⚠️ Watch-outs:\n• ${(data.watchOuts || []).join("\n• ")}` : "";
+  const link = APP_URL ? `\n\nOpen Vidya in the app: ${APP_URL}/?agent=samajh` : "";
+  const reply = data._mock
+    ? `📄 I can read documents — the AI service is busy right now, open the app to decode it in full.${link}`
+    : `📄 ${data.title || "Document"}\n\n${data.summary || ""}${watch}\n\n— Vidya${link}`;
+  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
+  else await send(chatId, reply, { reply_markup: mainKeyboard() });
+}
+
 /**
  * Telegram webhook. Handles /start (with quick buttons + agent menu), inline
  * button taps, "talk to a specific agent" (via reply), and free-text problems —
@@ -187,6 +253,8 @@ export async function handleTelegram(req, res) {
         await send(chatId, WELCOME, { reply_markup: mainKeyboard() });
       } else if (data === "menu") {
         await send(chatId, "Pick an expert to talk to:", { reply_markup: agentsKeyboard() });
+      } else if (data === "wf") {
+        await send(chatId, "🏢 Hire an AI employee — pick one, then reply with your task and it hands back finished work:", { reply_markup: wfKeyboard() });
       } else if (data.startsWith("q:")) {
         await runAssist(chatId, data.slice(2));
       } else if (data.startsWith("a:")) {
@@ -196,6 +264,11 @@ export async function handleTelegram(req, res) {
           ? `🎬 You're talking to Pragyan.\nReply with any topic to explain (or a trending story) and I'll produce a short educational video/podcast — showing each step.\n#pragyan`
           : `💬 You're talking to ${name}.\nReply to this message with your problem and ${name} will help.\n#${key}`;
         await send(chatId, prompt, { reply_markup: { force_reply: true, input_field_placeholder: key === "pragyan" ? "Topic to explain…" : `Message ${name}…` } });
+      } else if (data.startsWith("w:")) {
+        const id = data.slice(2);
+        const e = EMP[id];
+        if (e) await send(chatId, `🏢 You've hired ${e.name} — ${e.short}.\nReply to this message with the task (e.g. "${(e.samples && e.samples[0]) || "what you need"}") and I'll hand back finished work.\n#w_${id}`,
+          { reply_markup: { force_reply: true, input_field_placeholder: `Assign a task to ${e.name}…` } });
       }
       return;
     }
@@ -212,6 +285,18 @@ export async function handleTelegram(req, res) {
       await send(chatId, p
         ? `📍 Got your location. Tap "✅ Yes, text them" above to alert ${p.num} with it.`
         : "📍 Location saved — I'll include it if you send an emergency alert.", { reply_markup: { remove_keyboard: true } });
+      return;
+    }
+
+    // user sent a photo or PDF → read it (route to a hired employee if replying to one, else Vidya)
+    const photo = Array.isArray(msg.photo) ? msg.photo[msg.photo.length - 1] : null;
+    const document = msg.document && /^(image\/|application\/pdf)/i.test(msg.document.mime_type || "") ? msg.document : null;
+    if (photo || document) {
+      const image = await tgFileB64((photo || document).file_id);
+      const caption = (msg.caption || "").trim();
+      const wfTag = (msg.reply_to_message?.text || "").match(/#w_([a-z]+)/);
+      if (wfTag && EMP[wfTag[1]]) await runEmployeeTask(chatId, wfTag[1], caption || "Please review the attached document and act on it.", image);
+      else await runDocument(chatId, caption, image);
       return;
     }
 
@@ -246,8 +331,12 @@ export async function handleTelegram(req, res) {
       return;
     }
 
-    // replying to a "talk to <agent>" prompt → force that agent
+    // replying to a "hire <employee>" prompt → run that AI employee on the task
     const repliedTo = msg.reply_to_message?.text || "";
+    const wfTag = repliedTo.match(/#w_([a-z]+)/);
+    if (wfTag && EMP[wfTag[1]]) { await runEmployeeTask(chatId, wfTag[1], text); return; }
+
+    // replying to a "talk to <agent>" prompt → force that agent
     const tag = repliedTo.match(/#([a-z]+)/);
     const agentHint = tag && NAME[tag[1]] ? tag[1] : undefined; // pass the agent KEY to the model
 

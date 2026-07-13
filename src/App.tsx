@@ -43,12 +43,16 @@ function Shell() {
     const p = new URLSearchParams(window.location.search);
     const a = p.get("agent");
     const q = p.get("q");
+    const hireId = p.get("hire"); // deep-link from the Telegram bot: open the AI Workforce on an employee
     const valid = ["kavach", "samajh", "haq", "sehat", "paisa", "samay", "setu", "krishi", "kar", "raahat", "disha", "study", "pragyan", "udyam", "khanan"];
-    if (a && valid.includes(a)) {
+    if (hireId) {
+      setWfSeed({ id: hireId });
+      setView("workforce");
+    } else if (a && valid.includes(a)) {
       setView(a as FeatureKey);
       if (a === "pragyan" && q) setPragyan({ title: q, auto: true }); // auto-make the reel
     } else if (q) window.dispatchEvent(new CustomEvent("saarthi:openchat", { detail: { q } }));
-    if (a || q) window.history.replaceState({}, "", window.location.pathname);
+    if (a || q || hireId) window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
   // open the agentic workflows view from anywhere (nav, landing); an optional
