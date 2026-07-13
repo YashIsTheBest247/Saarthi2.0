@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain, AlertTriangle, MessageCircle, ChevronDown, Zap, Sparkles } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { FEATURES, featureByKey } from "../lib/features";
-import { callFeature, fileToInlineData, FeatureKey, planAgent, runAgentStep, synthesizeAgent, AgentStepResult, AgentFinal } from "../lib/api";
+import { FEATURES, VISIBLE_FEATURES, featureByKey } from "../lib/features";
+import { callFeature, fileToInlineData, FeatureKey, planAgent, runAgentStep, synthesizeAgent, getEmployees, Employee, AgentStepResult, AgentFinal } from "../lib/api";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CopyBlock } from "../components/ui";
@@ -16,7 +16,7 @@ import { SosAlert, SOS_RE } from "../components/SosAlert";
 import { ActionBar } from "../components/ActionBar";
 
 const SMRITI = featureByKey("samay");
-const OTHERS = FEATURES.filter((f) => f.key !== "samay");
+const OTHERS = VISIBLE_FEATURES.filter((f) => f.key !== "samay");
 const AV = 48; // avatar size
 
 interface FeedItem { id: number; agent: string; title: string; status: "running" | "done" | "skip"; agentName?: string; text?: string }
@@ -47,6 +47,8 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [mode, setMode] = useState<"guided" | "auto">("auto"); // auto = fully agentic plan→act→reflect→synthesise
   const [plan, setPlan] = useState<{ agent: string; task: string; why?: string }[]>([]); // the live-generated plan
   const [final, setFinal] = useState<AgentFinal | null>(null); // the synthesised deliverable
+  const [employees, setEmployees] = useState<Employee[]>([]);   // AI Workforce, shown as part of Smriti's team
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
   const historyRef = useRef("");                   // accumulated conversation context
 
   // some agents (weather, emergency, khananCopilot) map onto a visible graph node — or none
@@ -68,17 +70,25 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
     }
   }, [running, feed.length]);
 
-  // node positions: Smriti up top-centre, agents fanned out in two arcs below
+  // Smriti's full team: the consumer specialists + the hireable AI Workforce.
+  const team = [
+    ...OTHERS.map((f) => ({ key: f.key as string, photo: f.photo, name: t(f.nameKey), tint: f.tint, accent: f.accent, hire: false, id: f.key as string })),
+    ...employees.map((e) => ({ key: e.id, photo: e.photo, name: e.name, tint: e.accent, accent: e.accent, hire: true, id: e.id })),
+  ];
+  // node positions: Smriti up top-centre, the team fanned out in rows below
   const W = size.w, H = size.h;
   const smriti = { x: W / 2, y: 46 };
-  const row1 = OTHERS.slice(0, 6), row2 = OTHERS.slice(6);
-  const place = (arr: typeof OTHERS, y: number, all: number) => arr.map((f, i) => {
-    const pad = Math.min(70, W * 0.1);
+  const rowCount = team.length > 10 ? 3 : 2;
+  const perRow = Math.ceil(team.length / rowCount);
+  const ys = rowCount === 3 ? [0.34, 0.58, 0.82] : [0.46, 0.82];
+  const place = (arr: typeof team, y: number) => arr.map((m, i) => {
+    const pad = Math.min(64, W * 0.09);
     const n = arr.length;
     const x = n === 1 ? W / 2 : pad + (i * (W - 2 * pad)) / (n - 1);
-    return { f, x, y, key: f.key };
+    return { m, x, y, key: m.key };
   });
-  const nodes = [...place(row1, Math.max(170, H * 0.46), 6), ...place(row2, Math.max(300, H * 0.82), 5)];
+  const nodes = Array.from({ length: rowCount }, (_, ri) =>
+    place(team.slice(ri * perRow, (ri + 1) * perRow), Math.max(120, H * ys[ri]))).flat();
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
@@ -269,7 +279,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
               const d = `M ${smriti.x} ${my} C ${smriti.x} ${midY}, ${n.x} ${midY}, ${n.x} ${dy}`;
               return (
                 <path key={n.key} d={d} fill="none" strokeWidth={act ? 2.4 : 1.4}
-                  stroke={act ? n.f.accent : "#d9d4ca"} className={active === n.key ? "flow-line" : ""}
+                  stroke={act ? n.m.accent : "#d9d4ca"} className={active === n.key ? "flow-line" : ""}
                   style={{ opacity: act ? 1 : 0.5, transition: "stroke .3s, opacity .3s" }} />
               );
             })}
@@ -292,15 +302,16 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
           {nodes.map((n) => {
             const isActive = active === n.key, isDone = done.has(n.key);
             return (
-              <div key={n.key} className="absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: n.x, top: n.y, width: AV + 36 }}>
+              <div key={n.key} onClick={() => n.m.hire && window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id: n.m.id } }))}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 text-center ${n.m.hire ? "cursor-pointer" : ""}`} style={{ left: n.x, top: n.y, width: AV + 36 }}>
                 <motion.div animate={isActive ? { scale: [1, 1.1, 1] } : { scale: 1 }} transition={{ repeat: isActive ? Infinity : 0, duration: 0.9 }}
                   className="relative mx-auto w-fit rounded-xl"
-                  style={{ boxShadow: isActive ? `0 0 0 4px ${n.f.accent}40` : isDone ? `0 0 0 2px ${n.f.accent}` : undefined, opacity: running && !isActive && !isDone ? 0.55 : 1, transition: "opacity .3s" }}>
-                  <AgentAvatar photo={n.f.photo} name={t(n.f.nameKey)} tint={n.f.tint} accent={n.f.accent} rounded="rounded-xl" className="flex-none" />
+                  style={{ boxShadow: isActive ? `0 0 0 4px ${n.m.accent}40` : isDone ? `0 0 0 2px ${n.m.accent}` : undefined, opacity: running && !isActive && !isDone ? 0.55 : 1, transition: "opacity .3s" }}>
+                  <AgentAvatar photo={n.m.photo} name={n.m.name} tint={n.m.tint} accent={n.m.accent} rounded="rounded-xl" className="flex-none" />
                   {isDone && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-white"><CheckCircle2 className="h-4 w-4 text-[#138A72]" /></span>}
-                  {isActive && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-white"><Loader2 className="h-4 w-4 animate-spin" style={{ color: n.f.accent }} /></span>}
+                  {isActive && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-white"><Loader2 className="h-4 w-4 animate-spin" style={{ color: n.m.accent }} /></span>}
                 </motion.div>
-                <div className="mt-1 line-clamp-1 text-[11px] font-medium text-graphite deva" style={{ width: AV + 36 }}>{t(n.f.nameKey)}</div>
+                <div className="mt-1 line-clamp-1 text-[11px] font-medium text-graphite deva" style={{ width: AV + 36 }}>{n.m.name}</div>
               </div>
             );
           })}
@@ -398,7 +409,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
             {mode === "auto" && plan.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink deva">
-                  <Sparkles className="h-4 w-4" style={{ color: SMRITI.accent }} /> {t("orc.planTitle")}
+                  <span className="inline-flex h-4 w-4 flex-none" style={{ color: SMRITI.accent }}><BrandMark className="h-4 w-4" /></span> {t("orc.planTitle")}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
                   {plan.map((s, i) => {

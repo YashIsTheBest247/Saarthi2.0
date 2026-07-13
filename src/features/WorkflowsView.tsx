@@ -15,13 +15,10 @@ import { Plus } from "lucide-react";
 interface WfMeta { id: string; k: string; accent: string; agents: string[]; example: string }
 
 const WF: WfMeta[] = [
-  { id: "kisan-cycle", k: "wf.kisan", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"], example: "Tomato crop in Nashik, leaves turning yellow with spots. Small farmer, half acre." },
-  { id: "homework-to-submission", k: "wf.hw", accent: "#7A4FB0", agents: ["study", "samay"], example: "Write a history essay on the Salt March of 1930 — causes, the march, and why it mattered. Due Friday 5pm." },
   { id: "resolve-grievance", k: "wf.grievance", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"], example: "I ordered a phone for ₹15,000; it came damaged and the seller refuses a refund." },
-  { id: "scam-to-safety", k: "wf.scam", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"], example: "Your electricity will be disconnected tonight. Pay now or call 9xxxxxxxxx immediately." },
-  { id: "land-a-job", k: "wf.job", accent: "#6D4AA7", agents: ["disha", "disha", "samay"], example: "2 yrs as a sales exec in Pune, B.Com; want to move into a customer-success role." },
-  { id: "money-makeover", k: "wf.money", accent: "#138A72", agents: ["paisa", "samay"], example: "Swiggy 450, Netflix 199, rent 12000, petrol 1500, shopping 2200, credit card due 5th." },
+  { id: "msme-launch", k: "wf.msme", accent: "#138A72", agents: ["udyam", "haq", "samay"], example: "I want to start a small home-based pickle unit and sell online. What registrations, licences and schemes do I need?" },
   { id: "health-savings", k: "wf.health", accent: "#C0453B", agents: ["sehat", "samay"], example: "Glycomet 500 twice daily, Ecosprin 75 after dinner." },
+  { id: "explainer", k: "wf.explainer", accent: "#6D4AA7", agents: ["pragyan", "samay"], example: "Explain how UPI works in simple terms, for a 60-second video." },
 ];
 
 const agentMeta = (k: string) => FEATURES.find((f) => f.key === (k as FeatureKey));

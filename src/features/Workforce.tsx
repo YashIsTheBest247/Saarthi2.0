@@ -12,6 +12,7 @@ import { getHired, getRuns, hire, fire, recordRun, DEMO_API_KEY, HiredEmployee, 
 import { roleIcon } from "../lib/roleIcons";
 import { Integrations } from "./Integrations";
 import { downloadICS, parseWhen } from "../lib/reminders";
+import { BrandMark } from "../components/Logo";
 
 /* short labels for the skill keys an employee can delegate to */
 const SKILL_LABEL: Record<string, string> = {
@@ -155,7 +156,10 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
   const [run, setRun] = useState<EmployeeRun | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => { setTask(employee.samples[0] || ""); setFn(null); setRun(null); }, [employee.id]);
+  // flow down to the answer when a task is assigned
+  useEffect(() => { if (busy || run) requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }, [busy, run]);
   const activeFn = employee.functions?.find((f) => f.id === fn) || null;
 
   async function assign() {
@@ -213,7 +217,7 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
         </div>
       </div>
 
-      <RunResult run={run} busy={busy} accent={employee.accent} />
+      <div ref={resultRef} className="scroll-mt-24"><RunResult run={run} busy={busy} accent={employee.accent} /></div>
       <Integration employeeId={employee.id} accent={employee.accent} sampleTask={employee.samples[0] || "..."} />
     </motion.div>
   );
@@ -229,6 +233,8 @@ function CustomPanel({ onRan }: { onRan: () => void }) {
   const [run, setRun] = useState<EmployeeRun | null>(null);
   const [busy, setBusy] = useState(false);
   const accent = "#4B5563";
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (busy || run) requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }, [busy, run]);
 
   const toggle = (s: string) => setSkills((p) => p.includes(s) ? p.filter((x) => x !== s) : [...p, s]);
 
@@ -265,7 +271,7 @@ function CustomPanel({ onRan }: { onRan: () => void }) {
           {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("wfx.hiring")}</> : <><Zap className="h-4 w-4" /> {t("wfx.hireRun")}</>}
         </button>
       </div>
-      <RunResult run={run} busy={busy} accent={accent} />
+      <div ref={resultRef} className="scroll-mt-24"><RunResult run={run} busy={busy} accent={accent} /></div>
     </motion.div>
   );
 }
@@ -290,16 +296,26 @@ function RunResult({ run, busy, accent }: { run: EmployeeRun | null; busy: boole
     try { await saveDoc(run.docKind || run.employee?.title || "document", clean(run.result.deliverable), fmt); }
     finally { setDocBusy(""); }
   };
-  if (busy) return (
-    <div className="card flex items-center gap-3 p-4">
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: accent }} />
-      <span className="text-sm text-graphite deva">{t("wfx.thinking")}</span>
-    </div>
+  return (
+    <AnimatePresence mode="wait">
+      {busy ? (
+        <motion.div key="busy" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="card flex items-center gap-3 p-4">
+          <motion.span animate={{ scale: [1, 1.12, 1] }} transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }} className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-ink text-white"><BrandMark className="h-4 w-4" /></motion.span>
+          <span className="text-sm text-graphite deva">{t("wfx.thinking")}</span>
+        </motion.div>
+      ) : run ? (
+        <ResultBody key="result" run={run} accent={accent} docBusy={docBusy} doExport={doExport} />
+      ) : null}
+    </AnimatePresence>
   );
-  if (!run) return null;
+}
+
+/* the finished-run body — separated so it can animate in as one unit */
+function ResultBody({ run, accent, docBusy, doExport }: { run: EmployeeRun; accent: string; docBusy: "" | "pdf" | "docx"; doExport: (f: "pdf" | "docx") => void }) {
+  const { t } = useApp();
   const r = run.result;
   return (
-    <div className="space-y-3">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="space-y-3">
       {run.function && (
         <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold" style={{ background: `${accent}1a`, color: accent }}>
           <Zap className="h-3.5 w-3.5" /> {t("wfx.ranFunction")}: {run.function.name}
@@ -307,7 +323,7 @@ function RunResult({ run, busy, accent }: { run: EmployeeRun | null; busy: boole
       )}
       {run.plan?.length > 0 && (
         <div className="card p-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink deva"><Sparkles className="h-4 w-4" style={{ color: accent }} /> {t("wfx.planTitle")}</div>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink deva"><BrandMark className="h-4 w-4" /> {t("wfx.planTitle")}</div>
           <div className="flex flex-wrap items-center gap-1">
             {run.plan.map((s, i) => (
               <span key={i} className="inline-flex items-center gap-1">
@@ -395,7 +411,7 @@ function RunResult({ run, busy, accent }: { run: EmployeeRun | null; busy: boole
           )}
         </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

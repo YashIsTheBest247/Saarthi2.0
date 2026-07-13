@@ -59,8 +59,8 @@ export const synthesizeAgent = (body: { goal: string; steps: AgentStepResult[]; 
 /* ─────────────── AI Workforce — rentable AI employees (server/employees.js) ─────────────── */
 export interface EmployeeFunction { id: string; name: string; desc: string }
 export interface Employee {
-  id: string; title: string; name: string; dept: string; sector: string; subSector: string;
-  icon: string; accent: string; tagline: string; jd: string;
+  id: string; title: string; short: string; name: string; dept: string; sector: string; subSector: string;
+  icon: string; accent: string; photo: string; tagline: string; jd: string;
   responsibilities: string[]; skills: string[]; functions: EmployeeFunction[]; kpis: string[]; samples: string[];
 }
 export interface RunArtifact { type: string; label: string; filename: string; mime: string; content: string }

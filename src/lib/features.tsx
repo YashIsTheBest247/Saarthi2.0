@@ -224,3 +224,9 @@ export const FEATURES: FeatureMeta[] = [
 ];
 
 export const featureByKey = (k: FeatureKey) => FEATURES.find((f) => f.key === k)!;
+
+// The consumer specialists surfaced to users. The rest still power internal
+// workflows, the orchestrator and the chat router, but aren't browsed directly —
+// the app's public face is these five plus the AI Workforce (server/employees.js).
+export const KEEP_KEYS: FeatureKey[] = ["haq", "setu", "samajh", "sehat", "samay", "udyam", "khanan", "pragyan"];
+export const VISIBLE_FEATURES = KEEP_KEYS.map(featureByKey);

@@ -1,12 +1,13 @@
 import { useState, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, LucideIcon } from "lucide-react";
+import { ArrowLeft, Zap, LucideIcon } from "lucide-react";
 import { useApp } from "../../app/AppContext";
 import { featureByKey } from "../../lib/features";
 import { LanguagePicker } from "../../components/LanguagePicker";
 import { StatusBadge } from "../../components/ui";
 import { AgentAvatar } from "../../components/AgentAvatar";
 import { FeatureKey } from "../../lib/api";
+import { hireAsEmployee } from "../../lib/hire";
 
 export interface ConsoleModule {
   id: string;
@@ -43,6 +44,10 @@ export function AgentConsole({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button onClick={onBack} className="btn-ghost px-4 py-2 text-sm"><ArrowLeft className="h-4 w-4" />{t("common.back")}</button>
         <div className="flex items-center gap-2">
+          <button onClick={() => hireAsEmployee(agentKey)} title={t("team.hireHint")}
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-3.5 py-2 text-sm font-semibold text-linen transition hover:-translate-y-0.5">
+            <Zap className="h-4 w-4" /> {t("team.hire")}
+          </button>
           <LanguagePicker compact />
         </div>
       </div>

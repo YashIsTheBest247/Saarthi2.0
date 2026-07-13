@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ArrowUpRight, ArrowRight, Phone, Menu as MenuIcon, X, Sun, Moon } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { LanguagePicker } from "./LanguagePicker";
-import { FEATURES, FeatureMeta } from "../lib/features";
-import { FeatureKey } from "../lib/api";
+import { VISIBLE_FEATURES as FEATURES, FeatureMeta } from "../lib/features";
+import { FeatureKey, getEmployees, Employee } from "../lib/api";
 import { AgentAvatar } from "./AgentAvatar";
+import { roleIcon } from "../lib/roleIcons";
 import { BrandMark } from "./Logo";
 import { HelplinesModal } from "./Helplines";
 
@@ -14,6 +15,9 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
   const { t } = useApp();
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<FeatureMeta>(FEATURES[0]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,6 +73,17 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
                         {f.badge}
                       </span>
                     )}
+                  </button>
+                ))}
+                <div className="mt-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-faint">{t("nav.workforce")}</div>
+                {employees.map((e) => (
+                  <button key={e.id} onClick={() => { setOpen(false); hire(e.id); }}
+                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-mist/60">
+                    <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-9 w-9 flex-none" />
+                    <span className="min-w-0 flex-1">
+                      <span className="display block truncate text-[15px] font-bold deva">{e.name}</span>
+                      <span className="block truncate text-[11px] text-muted deva">{e.short}</span>
+                    </span>
                   </button>
                 ))}
               </div>

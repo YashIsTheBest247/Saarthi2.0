@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { featureByKey } from "../lib/features";
-import { callFeature, FeatureKey } from "../lib/api";
-import { routeToAgent, AGENT_KEYS } from "../lib/route";
+import { featureByKey, KEEP_KEYS } from "../lib/features";
+import { callFeature, getEmployees, Employee, FeatureKey } from "../lib/api";
+import { routeToAgent } from "../lib/route";
 import { useVoice } from "../hooks/useVoice";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
@@ -15,12 +15,26 @@ interface Msg {
   from: "bot" | "user";
   text?: string;
   agent?: FeatureKey;
+  empId?: string; // an AI Workforce employee suggestion
   reason?: string;
   chooser?: boolean;
 }
 
 let mid = 1;
 const ACCENT = "#2D6BFF";
+
+// When a query fits a B2B AI employee rather than a consumer agent, suggest it.
+const WF_KEYWORDS: [RegExp, string][] = [
+  [/\b(tax|gst|invoice|e-?way|itr|tds|billing|accounts?|book-?keeping)\b/i, "accounts"],
+  [/\b(loan|scheme|subsidy|mudra|pmegp|cgtmse|stand-?up|clcss|udyam|register|funding|working capital|project report)\b/i, "finance"],
+  [/\b(payment|overdue|unpaid|samadhaan|recover|dues|delayed|receivable)\b/i, "receivables"],
+  [/\b(pollution|environment|effluent|epr|sanitation|cpcb|spcb|consent|zld|water treatment)\b/i, "enviro"],
+  [/\b(food|fssai|label|haccp|beverage|fmcg|shelf.?life|pmfme)\b/i, "food"],
+  [/\b(construction|rera|boq|building|site|infra|labour cess|tender)\b/i, "build"],
+  [/\b(electronics|bis|crs|dpdp|telecom|hardware|e-?waste|wpc|pli)\b/i, "electronics"],
+  [/\b(vehicle|e-?rickshaw|ev|automobile|automotive|homologation|arai|fame|metal|machinery|fleet|homolog)\b/i, "mobility"],
+];
+const wfMatch = (q: string) => WF_KEYWORDS.find(([re]) => re.test(q))?.[1] || null;
 
 export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const { t, lang } = useApp();
@@ -30,6 +44,9 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const [glowDone, setGlowDone] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([{ id: 0, from: "bot", text: t("chat.greet") }]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const hire = (id: string) => { window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } })); setOpen(false); };
   const bodyRef = useRef<HTMLDivElement>(null);
   const voice = useVoice(lang.speech, setInput);
 
@@ -72,12 +89,12 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
     add({ from: "user", text: q });
     setBusy(true);
 
-    const local = routeToAgent(q); // instant offline guess
-    let agent: FeatureKey | null = local;
+    const local = routeToAgent(q); // instant offline guess (only accept a visible agent)
+    let agent: FeatureKey | null = (KEEP_KEYS as string[]).includes(local as string) ? local : null;
     let reason = "";
     try {
       const r = await callFeature<{ agent: string; reason: string; _mock?: boolean }>("route", { problem: q, language: lang.name });
-      if (!r._mock && r.agent && (AGENT_KEYS as string[]).includes(r.agent)) {
+      if (!r._mock && r.agent && (KEEP_KEYS as string[]).includes(r.agent)) {
         agent = r.agent as FeatureKey;
         reason = r.reason || "";
       }
@@ -90,16 +107,25 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
       setBusy(false);
       const f = featureByKey(agent);
       add({ from: "bot", agent, reason: reason || `${t("chat.match")} ${t(f.nameKey)} — ${t(f.tagKey)}.` });
-    } else {
-      try {
-        const a = await callFeature<{ reply: string; _mock?: boolean }>("assist", { problem: q, language: lang.name });
-        setBusy(false);
-        if (a._mock) add({ from: "bot", text: t("chat.unsure"), chooser: true });
-        else add({ from: "bot", text: a.reply });
-      } catch {
-        setBusy(false);
-        add({ from: "bot", text: t("chat.unsure"), chooser: true });
-      }
+      return;
+    }
+    // no consumer specialist fits → is it a job for an AI Workforce employee?
+    const wf = wfMatch(q);
+    if (wf) {
+      setBusy(false);
+      const e = employees.find((x) => x.id === wf);
+      add({ from: "bot", empId: wf, text: e ? `${t("chat.wfMatch")} ${e.name} — ${e.short}.` : "" });
+      return;
+    }
+    // otherwise Smriti answers directly
+    try {
+      const a = await callFeature<{ reply: string; _mock?: boolean }>("assist", { problem: q, language: lang.name });
+      setBusy(false);
+      if (a._mock) add({ from: "bot", text: t("chat.unsure"), chooser: true });
+      else add({ from: "bot", text: a.reply });
+    } catch {
+      setBusy(false);
+      add({ from: "bot", text: t("chat.unsure"), chooser: true });
     }
   }
 
@@ -144,18 +170,48 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
                     <div className="min-w-0 max-w-[85%] space-y-2">
                       {m.text && <div className="whitespace-pre-wrap rounded-2xl rounded-tl-md border border-line bg-paper px-3.5 py-2 text-sm text-graphite deva">{linkify(m.text)}</div>}
                       {m.agent && <AgentSuggestion agent={m.agent} reason={m.reason} onOpen={onOpen} close={() => setOpen(false)} />}
+                      {m.empId && (() => {
+                        const e = employees.find((x) => x.id === m.empId);
+                        return e ? (
+                          <div className="rounded-2xl rounded-tl-md border border-line bg-paper p-3">
+                            <div className="flex items-center gap-2">
+                              <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-9 w-9 flex-none" />
+                              <div className="min-w-0"><div className="text-sm font-bold text-ink deva">{e.name}</div><div className="text-xs text-muted deva">{e.short}</div></div>
+                            </div>
+                            <button onClick={() => hire(e.id)} className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white" style={{ background: e.accent }}>
+                              {t("chat.hireBtn").replace("{name}", e.name)}
+                            </button>
+                          </div>
+                        ) : null;
+                      })()}
                       {m.chooser && (
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {AGENT_KEYS.map((k) => {
-                            const f = featureByKey(k);
-                            return (
-                              <button key={k} onClick={() => { onOpen(k); setOpen(false); }}
-                                className="flex items-center gap-2 rounded-xl border border-line bg-paper px-2.5 py-2 text-left text-xs font-medium hover:bg-mist">
-                                <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-5 w-5 flex-none" />
-                                <span className="truncate deva">{t(f.nameKey)}</span>
-                              </button>
-                            );
-                          })}
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {KEEP_KEYS.map((k) => {
+                              const f = featureByKey(k);
+                              return (
+                                <button key={k} onClick={() => { onOpen(k); setOpen(false); }}
+                                  className="flex items-center gap-2 rounded-xl border border-line bg-paper px-2.5 py-2 text-left text-xs font-medium hover:bg-mist">
+                                  <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-5 w-5 flex-none" />
+                                  <span className="truncate deva">{t(f.nameKey)}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {employees.length > 0 && (
+                            <>
+                              <div className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-faint deva">{t("nav.workforce")}</div>
+                              <div className="grid grid-cols-2 gap-1.5">
+                                {employees.map((e) => (
+                                  <button key={e.id} onClick={() => hire(e.id)}
+                                    className="flex items-center gap-2 rounded-xl border border-line bg-paper px-2.5 py-2 text-left text-xs font-medium hover:bg-mist">
+                                    <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-5 w-5 flex-none" />
+                                    <span className="truncate deva">{e.short}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>

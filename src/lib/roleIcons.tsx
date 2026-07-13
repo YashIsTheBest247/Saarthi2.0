@@ -3,7 +3,7 @@
 import {
   Package, ShieldCheck, Truck, Headphones, Leaf, Wrench, Receipt, Users,
   Megaphone, Sprout, Pill, Zap, GraduationCap, Sparkles, LucideIcon,
-  UtensilsCrossed, HardHat, Server, Stamp, Landmark, Scale, ClipboardList, Ship,
+  UtensilsCrossed, HardHat, Server, Stamp, Landmark, Scale, ClipboardList, Ship, Cpu, Car,
 } from "lucide-react";
 
 export const ROLE_ICONS: Record<string, LucideIcon> = {
@@ -28,6 +28,8 @@ export const ROLE_ICONS: Record<string, LucideIcon> = {
   scale: Scale,
   clipboard: ClipboardList,
   ship: Ship,
+  cpu: Cpu,
+  car: Car,
   sparkles: Sparkles,
 };
 

@@ -22,9 +22,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { FEATURES, FeatureMeta, featureByKey } from "../lib/features";
-import { FeatureKey } from "../lib/api";
+import { FEATURES, VISIBLE_FEATURES, FeatureMeta, featureByKey } from "../lib/features";
+import { FeatureKey, getEmployees, Employee } from "../lib/api";
 import { roleIcon } from "../lib/roleIcons";
+import { hireAsEmployee } from "../lib/hire";
 import { Reveal, Eyebrow } from "./ui";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
@@ -87,6 +88,8 @@ function VerticalMarquee({ iso }: { iso: string }) {
 /* ------------------------------ Hero ------------------------------ */
 function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
   const { t, lang } = useApp();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
   return (
     <section id="hero" className="relative isolate overflow-hidden bg-[#15110D] text-white">
       {/* background portrait */}
@@ -141,9 +144,13 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.32 }}
           className="mt-6 flex flex-wrap items-center gap-3"
         >
-          <div className="flex -space-x-3">
-            {FEATURES.map((f) => (
+          <div className="flex flex-wrap -space-x-3">
+            {VISIBLE_FEATURES.map((f) => (
               <AgentAvatar key={f.key} photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent}
+                rounded="rounded-full" className="h-10 w-10 ring-2 ring-[#15110D]" />
+            ))}
+            {employees.map((e) => (
+              <AgentAvatar key={e.id} photo={e.photo} name={e.name} tint={e.accent} accent={e.accent}
                 rounded="rounded-full" className="h-10 w-10 ring-2 ring-[#15110D]" />
             ))}
           </div>
@@ -380,9 +387,61 @@ function FlagshipCard({ f, onOpen }: { f: FeatureMeta; onOpen: (k: FeatureKey) =
   );
 }
 
+/* Flagship card for a hireable AI employee (same layout, employee data). */
+function EmployeeFlagshipCard({ e }: { e: Employee }) {
+  const { t } = useApp();
+  const Icon = roleIcon(e.icon);
+  const chips = e.functions.map((f) => f.name).slice(0, 7);
+  const hire = () => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id: e.id } }));
+  return (
+    <div className="relative h-full overflow-hidden rounded-[2rem] text-white" style={{ background: `linear-gradient(135deg, ${e.accent} 0%, #14110D 92%)` }}>
+      <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full blur-3xl" style={{ background: e.accent, opacity: 0.3 }} />
+      <div className="absolute -bottom-24 -right-10 h-72 w-72 rounded-full blur-3xl" style={{ background: e.accent, opacity: 0.15 }} />
+      <div className="relative grid gap-8 p-7 sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium deva">
+            <Icon className="h-3.5 w-3.5" /> {t("agents.wfEyebrow")} · {e.sector}
+          </span>
+          <h2 className="display mt-4 text-balance text-3xl font-bold leading-tight tracking-tight deva sm:text-[2.6rem]">{e.title}</h2>
+          <p className="mt-3 line-clamp-4 max-w-xl leading-relaxed text-white/65 deva">{e.jd}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {chips.map((m) => (
+              <span key={m} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80">{m}</span>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button onClick={hire} className="btn bg-white px-5 py-3 text-[15px] text-[#16140F] hover:-translate-y-0.5">
+              {t("wfl.hireOne")} · {e.name} <ArrowUpRight className="h-4 w-4" />
+            </button>
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/55">
+              <span><b className="text-white">{e.functions.length}</b> · {t("wfx.functionsShort")}</span>
+              {e.kpis?.[0] && <span><b className="text-white">✓</b> · {e.kpis[0]}</span>}
+            </span>
+          </div>
+        </div>
+        <div className="relative mx-auto aspect-[4/5] w-full max-w-xs">
+          <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-3xl" className="h-full w-full ring-1 ring-white/20" />
+          <div className="absolute bottom-3 left-3 rounded-2xl bg-black/55 px-4 py-2.5 backdrop-blur-sm">
+            <div className="display text-sm font-bold deva">{e.name}</div>
+            <div className="text-[11px] text-white/70 deva">{e.short}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type Slide = { type: "agent"; f: FeatureMeta } | { type: "emp"; e: Employee };
+
 function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
-  const count = FEATURES.length;
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const slides: Slide[] = [
+    ...VISIBLE_FEATURES.map((f) => ({ type: "agent" as const, f })),
+    ...employees.map((e) => ({ type: "emp" as const, e })),
+  ];
+  const count = slides.length;
   const [idx, setIdx] = useState(0);
 
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -433,9 +492,9 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
         >
           <div className="overflow-hidden">
             <div className="flex" style={{ transform: `translateX(-${idx * 100}%)`, transition: "transform 0.55s cubic-bezier(.22,1,.36,1)", willChange: "transform" }}>
-              {FEATURES.map((f) => (
-                <div key={f.key} className="w-full flex-none">
-                  <FlagshipCard f={f} onOpen={onOpen} />
+              {slides.map((s) => (
+                <div key={s.type === "agent" ? s.f.key : s.e.id} className="w-full flex-none">
+                  {s.type === "agent" ? <FlagshipCard f={s.f} onOpen={onOpen} /> : <EmployeeFlagshipCard e={s.e} />}
                 </div>
               ))}
             </div>
@@ -459,13 +518,13 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-          {FEATURES.map((f, i) => (
+          {slides.map((s, i) => (
             <button
-              key={f.key}
+              key={s.type === "agent" ? s.f.key : s.e.id}
               onClick={() => go(i)}
-              aria-label={`Show ${t(f.nameKey)}`}
+              aria-label={s.type === "agent" ? `Show ${t(s.f.nameKey)}` : `Show ${s.e.name}`}
               className="h-2.5 rounded-full transition-all duration-300"
-              style={{ width: i === idx ? 26 : 10, background: i === idx ? f.accent : "#D9D4CB" }}
+              style={{ width: i === idx ? 26 : 10, background: i === idx ? (s.type === "agent" ? s.f.accent : s.e.accent) : "#D9D4CB" }}
             />
           ))}
         </div>
@@ -477,13 +536,10 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
 
 /* -------------------------- Truly Agentic -------------------------- */
 const FLOWS = [
-  { id: "kisan-cycle", title: "Weather → Crop → Schemes → Budget → Plan", desc: "The biggest chain: live weather drives crop advice, then schemes, an input budget and a full season plan.", accent: "#4B7A2B", agents: ["weather", "krishi", "haq", "paisa", "samay"] },
-  { id: "homework-to-submission", title: "Write homework → Schedule submission", desc: "Acharya writes the assignment to your brief; Smriti schedules it and reminds you to submit on time.", accent: "#7A4FB0", agents: ["study", "samay"] },
   { id: "resolve-grievance", title: "Decode → Complaint → Schedule", desc: "A confusing notice becomes a filed complaint with deadlines.", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"] },
-  { id: "scam-to-safety", title: "Check scam → Act → Report", desc: "Verify a message, get urgent steps, draft the report.", accent: "#2D6BFF", agents: ["kavach", "emergency", "setu"] },
-  { id: "land-a-job", title: "Tailor résumé → Interview → Plan", desc: "From background to tailored résumé, mock interview and a plan.", accent: "#6D4AA7", agents: ["disha", "disha", "samay"] },
-  { id: "money-makeover", title: "Analyse spends → Plan savings", desc: "Make sense of money, then schedule what actually saves it.", accent: "#138A72", agents: ["paisa", "samay"] },
+  { id: "msme-launch", title: "Register → Schemes → Plan", desc: "A business idea becomes the exact Udyam/GST path, the MSME loans you qualify for, and a launch plan.", accent: "#138A72", agents: ["udyam", "haq", "samay"] },
   { id: "health-savings", title: "Decode Rx → Refill reminders", desc: "Cheaper generics, then timely refill reminders.", accent: "#C0453B", agents: ["sehat", "samay"] },
+  { id: "explainer", title: "Topic → Explainer video → Schedule", desc: "Any topic becomes a short explainer script, then scheduled posts.", accent: "#6D4AA7", agents: ["pragyan", "samay"] },
 ];
 
 function FlowChain({ agents }: { agents: string[] }) {
@@ -577,7 +633,7 @@ function NodeDecor({ flip = false }: { flip?: boolean }) {
 /* ------------------------- Ten quiet jobs ------------------------ */
 function QuietJobs() {
   const { t } = useApp();
-  const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi"];
+  const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
   return (
     <section className="bg-mist py-20">
       <div className="mx-auto max-w-6xl px-5">
@@ -635,7 +691,7 @@ function Trusted() {
 function OrchestratorIntro() {
   const { t } = useApp();
   const open = () => window.dispatchEvent(new Event("saarthi:orchestrator"));
-  const fan = ["khanan", "haq", "setu", "paisa", "sehat", "samay"]
+  const fan = ["khanan", "haq", "setu", "samajh", "sehat", "samay"]
     .map((k) => featureByKey(k as FeatureKey))
     .filter(Boolean) as FeatureMeta[];
   const steps = [
@@ -719,13 +775,9 @@ function OrchestratorIntro() {
 /* ----------------------- AI Workforce (B2B) ----------------------- */
 function WorkforceIntro() {
   const { t } = useApp();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
   const open = (detail: { id?: string; custom?: boolean } = {}) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail }));
-  const roles = [
-    { i: "landmark", id: "finance", t: t("wfl.m1") }, { i: "scale", id: "receivables", t: t("wfl.m2") }, { i: "clipboard", id: "gem", t: t("wfl.m3") },
-    { i: "ship", id: "exports", t: t("wfl.m4") }, { i: "stamp", id: "registration", t: t("wfl.m5") }, { i: "package", id: "procurement", t: t("wfl.r1") },
-    { i: "shield", id: "compliance", t: t("wfl.r2") }, { i: "receipt", id: "accounts", t: t("wfl.r7") }, { i: "truck", id: "logistics", t: t("wfl.r3") },
-    { i: "food", id: "foodqa", t: t("wfl.r10") }, { i: "construction", id: "construction", t: t("wfl.r11") }, { i: "server", id: "itops", t: t("wfl.r12") },
-  ];
   const steps = [
     { n: "01", icon: Users, t: t("wfl.s1t"), d: t("wfl.s1d") },
     { n: "02", icon: Zap, t: t("wfl.s2t"), d: t("wfl.s2d") },
@@ -742,40 +794,38 @@ function WorkforceIntro() {
           <p className="mt-4 text-lg text-muted deva">{t("wfl.sub")}</p>
         </Reveal>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
-          {/* left: the roles */}
-          <Reveal>
-            <div className="flex flex-wrap gap-2">
-              {roles.map((r) => {
-                const Icon = roleIcon(r.i);
-                return (
-                  <button key={r.t} onClick={() => open({ id: r.id })} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-graphite deva transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-soft">
-                    <Icon className="h-4 w-4 text-muted" /> {r.t}
-                  </button>
-                );
-              })}
-              <button onClick={() => open({ custom: true })} className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-line px-3 py-1.5 text-sm text-muted deva transition hover:-translate-y-0.5 hover:border-ink/30 hover:text-graphite">+ {t("wfl.custom")}</button>
-            </div>
-          </Reveal>
-
-          {/* right: how it works + CTA */}
-          <Reveal delay={0.08}>
-            <div className="space-y-5">
-              {steps.map((s) => (
-                <div key={s.n} className="flex gap-4">
-                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-line bg-paper"><s.icon className="h-5 w-5 text-ink" /></span>
-                  <div>
-                    <h3 className="display text-lg font-bold text-ink deva">{s.t}</h3>
-                    <p className="mt-1 text-[15px] leading-relaxed text-muted deva">{s.d}</p>
-                  </div>
-                </div>
-              ))}
-              <button onClick={() => open()} className="btn-primary mt-1 text-[15px]">
-                {t("wfl.cta")} <ArrowUpRight className="h-4 w-4" />
+        {/* the hireable AI employees — clean, elegant pills */}
+        <Reveal className="mt-10">
+          <div className="flex flex-wrap gap-2.5">
+            {employees.map((e) => (
+              <button key={e.id} onClick={() => open({ id: e.id })}
+                className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-graphite deva transition-all duration-300 hover:border-ink/25 hover:bg-ink hover:text-white hover:shadow-soft">
+                <span className="h-1.5 w-1.5 flex-none rounded-full transition-transform duration-300 group-hover:scale-125" style={{ background: e.accent }} />
+                {e.short}
               </button>
+            ))}
+            <button onClick={() => open({ custom: true })}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-dashed border-line px-4 py-2 text-sm font-medium text-muted deva transition-all duration-300 hover:border-ink/25 hover:text-graphite">
+              + {t("wfl.custom")}
+            </button>
+          </div>
+        </Reveal>
+
+        {/* how it works + CTA */}
+        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+          {steps.map((s) => (
+            <div key={s.n} className="flex gap-3">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-line bg-paper"><s.icon className="h-5 w-5 text-ink" /></span>
+              <div>
+                <h3 className="display text-base font-bold text-ink deva">{s.t}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted deva">{s.d}</p>
+              </div>
             </div>
-          </Reveal>
+          ))}
         </div>
+        <button onClick={() => open()} className="btn-primary mt-8 text-[15px]">
+          {t("wfl.cta")} <ArrowUpRight className="h-4 w-4" />
+        </button>
       </div>
     </section>
   );
@@ -784,6 +834,9 @@ function WorkforceIntro() {
 /* ---------------------- Big agent photo cards ---------------------- */
 function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">
       <span id="agents" className="block scroll-mt-28" />
@@ -796,7 +849,7 @@ function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
       </Reveal>
 
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((f, i) => {
+        {VISIBLE_FEATURES.map((f, i) => {
           const Icon = f.icon;
           return (
             <Reveal key={f.key} delay={(i % 4) * 0.06}>
@@ -827,6 +880,43 @@ function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
           );
         })}
       </div>
+
+      {/* MSME AI Workforce — profile cards for the hireable sector agents */}
+      <Reveal className="mt-16 max-w-xl">
+        <Eyebrow>{t("agents.wfEyebrow")}</Eyebrow>
+        <h2 className="display mt-4 text-balance text-3xl font-bold tracking-tight deva sm:text-5xl">{t("agents.wfTitle")}</h2>
+        <p className="mt-3 text-[15px] text-muted deva">{t("agents.wfSub")}</p>
+      </Reveal>
+
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {employees.map((e, i) => {
+          const Icon = roleIcon(e.icon);
+          return (
+            <Reveal key={e.id} delay={(i % 4) * 0.06}>
+              <button
+                onClick={() => hire(e.id)}
+                className="group relative block aspect-[3/4] w-full overflow-hidden rounded-[1.5rem] border border-line text-left shadow-soft transition-all duration-500 hover:-translate-y-1.5 hover:shadow-float"
+              >
+                <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent}
+                  rounded="rounded-none" className="absolute inset-0 h-full w-full transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent" />
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-paper/90 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm" style={{ color: e.accent }}>
+                  <Icon className="h-3.5 w-3.5" /> {e.short}
+                </span>
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
+                  <div>
+                    <div className="display text-xl font-bold text-linen deva">{e.name}</div>
+                    <div className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-linen/75 deva">{e.tagline}</div>
+                  </div>
+                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linen text-[#16140F] transition-transform group-hover:rotate-45">
+                    <ArrowUpRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </button>
+            </Reveal>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -834,14 +924,18 @@ function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
 /* ---------------------- Team panel with tabs ---------------------- */
 function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const tabs = [
     { id: "all", label: t("team.tabAll"), match: (_: FeatureMeta) => true },
-    { id: "protect", label: t("team.tabProtect"), match: (f: FeatureMeta) => f.group === "protect" },
+    { id: "workforce", label: t("team.tabWorkforce"), match: (_: FeatureMeta) => false },
     { id: "save", label: t("team.tabSave"), match: (f: FeatureMeta) => f.group === "claim" },
     { id: "automate", label: t("team.tabAutomate"), match: (f: FeatureMeta) => f.group === "automate" },
   ];
   const [tab, setTab] = useState(tabs[0]);
-  const members = FEATURES.filter(tab.match);
+  const members = VISIBLE_FEATURES.filter(tab.match);
+  const showEmployees = tab.id === "all" || tab.id === "workforce";
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">
@@ -872,18 +966,44 @@ function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
                   className="grid gap-3 sm:grid-cols-2"
                 >
                   {members.map((f, i) => (
-                    <motion.button key={f.key} onClick={() => onOpen(f.key)}
+                    <motion.div key={f.key}
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04, duration: 0.25 }}
                       whileHover={{ y: -3 }}
-                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 text-left transition-shadow hover:border-faint hover:shadow-float">
-                      <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
-                      <div className="min-w-0 flex-1">
-                        <div className="display font-bold deva">{t(f.nameKey)}</div>
-                        <div className="text-xs text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
-                      </div>
-                      <span className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></span>
-                    </motion.button>
+                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 transition-shadow hover:border-faint hover:shadow-float">
+                      <button onClick={() => onOpen(f.key)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                        <AgentAvatar photo={f.photo} name={t(f.nameKey)} tint={f.tint} accent={f.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
+                        <div className="min-w-0 flex-1">
+                          <div className="display font-bold deva">{t(f.nameKey)}</div>
+                          <div className="text-xs text-muted deva">{t(f.tagKey)} · {t("team.region")}</div>
+                        </div>
+                      </button>
+                      <button onClick={() => hireAsEmployee(f.key)} title={t("team.hireHint")}
+                        className="flex-none whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-linen transition hover:-translate-y-0.5">
+                        {t("team.hire")}
+                      </button>
+                      <button onClick={() => onOpen(f.key)} title={t("team.open")} className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></button>
+                    </motion.div>
+                  ))}
+                  {showEmployees && employees.map((e, i) => (
+                    <motion.div key={e.id}
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: (members.length + i) * 0.03, duration: 0.25 }}
+                      whileHover={{ y: -3 }}
+                      className="group flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 transition-shadow hover:border-faint hover:shadow-float">
+                      <button onClick={() => hire(e.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                        <AgentAvatar photo={e.photo} name={e.name} tint={e.accent} accent={e.accent} rounded="rounded-full" className="h-12 w-12 flex-none transition-transform group-hover:scale-105" />
+                        <div className="min-w-0 flex-1">
+                          <div className="display font-bold deva">{e.name}</div>
+                          <div className="text-xs text-muted deva">{e.short} · {t("team.aiEmployee")}</div>
+                        </div>
+                      </button>
+                      <button onClick={() => hire(e.id)} title={t("wfl.hireOne")}
+                        className="flex-none whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-linen transition hover:-translate-y-0.5">
+                        {t("team.hire")}
+                      </button>
+                      <button onClick={() => hire(e.id)} className="arrow-btn flex-none transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><ArrowUpRight className="h-4 w-4" /></button>
+                    </motion.div>
                   ))}
                 </motion.div>
               </AnimatePresence>
@@ -938,7 +1058,7 @@ function HowVisual({ i }: { i: number }) {
 
   if (i === 1) {
     // routing: a hub fanning out to specialist agent nodes
-    const picks = ["kavach", "paisa", "kar"].map((k) => featureByKey(k as FeatureKey));
+    const picks = ["haq", "setu", "udyam"].map((k) => featureByKey(k as FeatureKey));
     return (
       <div className="relative flex h-32 items-center gap-3 rounded-2xl border border-line bg-mist/50 p-3">
         <div className="flex flex-none flex-col items-center gap-1">
@@ -1070,6 +1190,9 @@ function FooterCol({ title, children }: { title: string; children: ReactNode }) 
 
 function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const { t } = useApp();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const link = "text-left text-linen/55 transition-colors hover:text-linen deva";
   return (
     <footer id="site-footer" className="relative overflow-hidden bg-ink text-linen">
@@ -1091,7 +1214,7 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
         <div className="h-px w-full bg-white/10" />
 
         {/* link columns */}
-        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
+        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.15fr_0.85fr]">
           <div>
             <div className="flex items-center gap-2.5">
               <BrandMark className="h-9 w-9" />
@@ -1104,9 +1227,22 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
             <div className="display text-base font-bold text-[#2D6BFF]">{t("footer.agents")}</div>
             <div className="mt-1 text-[15px] font-medium text-[#2D6BFF] deva">{t("footer.agentsTag")}</div>
             <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-[17px]">
-              {[...FEATURES].sort((a, b) => t(a.nameKey).length - t(b.nameKey).length).map((f) => (
+              {[...VISIBLE_FEATURES].sort((a, b) => t(a.nameKey).length - t(b.nameKey).length).map((f) => (
                 <button key={f.key} onClick={() => onOpen(f.key)} className={link}>
                   {t(f.nameKey)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="display text-base font-bold text-[#2D6BFF]">{t("nav.workforce")}</div>
+            <div className="mt-1 text-[15px] font-medium text-[#2D6BFF] deva">{t("agents.wfEyebrow")}</div>
+            <div className="mt-4 flex flex-col gap-3 text-[17px]">
+              {employees.map((e) => (
+                <button key={e.id} onClick={() => hire(e.id)} className="text-left transition-colors hover:text-linen">
+                  <span className="block text-linen/70 group-hover:text-linen deva">{e.name}</span>
+                  <span className="block text-xs text-linen/40 deva">{e.short}</span>
                 </button>
               ))}
             </div>

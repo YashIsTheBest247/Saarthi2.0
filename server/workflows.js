@@ -22,36 +22,15 @@ export const WORKFLOWS = {
       { key: "schedule", agent: "samay", label: "Smriti schedules follow-ups", input: (c) => ({ text: `Plan to take this grievance to closure. Right authority: ${c.results.complaint?.authority || ""}. Escalation: ${(c.results.complaint?.escalation || []).map((e) => e.step).join("; ")}.`, today: c.today }) },
     ],
   },
-  "scam-to-safety": {
-    title: "Check scam → Act → Report",
-    desc: "Verify a suspicious message, get urgent next steps, and draft the report to file.",
-    seedLabel: "Paste the suspicious SMS / call / email",
-    accent: "#2D6BFF",
-    steps: [
-      { key: "scan", agent: "kavach", label: "Abhay checks the message", input: (c) => ({ message: c.seed.text, channel: "unknown" }) },
-      { key: "act", agent: "emergency", label: "Emergency next steps", input: (c) => ({ agentName: "Abhay", domain: "online fraud & cyber-crime", situation: `${c.seed.text}\n\nVerdict: ${c.results.scan?.verdict} (${c.results.scan?.category}); risk ${c.results.scan?.riskScore}.` }) },
-      { key: "report", agent: "setu", label: "Adhrit drafts the report", input: (c) => ({ problem: `Help me report this fraud to my bank and the cyber cell. Details: ${c.seed.text}` }) },
-    ],
-  },
-  "land-a-job": {
-    title: "Tailor résumé → Interview prep → Plan",
-    desc: "From your background to a tailored résumé, mock interview, and an application plan.",
-    seedLabel: "Your background + target role (paste here)",
-    accent: "#6D4AA7",
-    steps: [
-      { key: "resume", agent: "disha", label: "Disha tailors your résumé", input: (c) => ({ mode: "resume", details: c.seed.text }) },
-      { key: "interview", agent: "disha", label: "Disha runs a mock interview", input: (c) => ({ mode: "interview", details: c.seed.text }) },
-      { key: "plan", agent: "samay", label: "Smriti plans your applications", input: (c) => ({ text: `Make me a week-long job-application plan based on this goal: ${c.seed.text}`, today: c.today }) },
-    ],
-  },
-  "money-makeover": {
-    title: "Analyse spends → Plan savings",
-    desc: "Make sense of your spending, then schedule the actions that actually save money.",
-    seedLabel: "Paste your spends / bank SMS / bills",
+  "msme-launch": {
+    title: "Register → Schemes → Plan",
+    desc: "Turn a business idea into the exact Udyam/GST/licence path, the MSME loans & schemes you qualify for, and a launch plan.",
+    seedLabel: "Describe your business idea / what you make",
     accent: "#138A72",
     steps: [
-      { key: "analyse", agent: "paisa", label: "Nidhi analyses your money", input: (c) => ({ text: c.seed.text, image: c.seed.image }) },
-      { key: "plan", agent: "samay", label: "Smriti schedules the save plan", input: (c) => ({ text: `Turn this savings plan into scheduled actions: ${(c.results.analyse?.plan || []).join("; ")}.`, today: c.today }) },
+      { key: "launch", agent: "udyam", label: "Udyam maps the path", input: (c) => ({ problem: c.seed.text }) },
+      { key: "schemes", agent: "haq", label: "Haq finds schemes & loans", input: (c) => ({ profile: { occupation: "MSME entrepreneur", details: `${c.seed.text}\n\n${c.results.launch?.summary || ""}` } }) },
+      { key: "plan", agent: "samay", label: "Smriti plans the launch", input: (c) => ({ text: `Plan the steps to launch this MSME: ${c.seed.text}. Registrations/licences to complete: ${(c.results.launch?.steps || []).map((s) => s.title || s.step || s).join("; ")}. Schemes to apply for: ${(c.results.schemes?.schemes || []).map((s) => s.name).join(", ")}.`, today: c.today }) },
     ],
   },
   "health-savings": {
@@ -64,27 +43,14 @@ export const WORKFLOWS = {
       { key: "remind", agent: "samay", label: "Smriti sets refill reminders", input: (c) => ({ text: `Set reminders to take and refill these medicines on time: ${(c.results.rx?.medicines || []).map((m) => m.brandName || m.genericName).join(", ")}.`, today: c.today }) },
     ],
   },
-  "homework-to-submission": {
-    title: "Write homework → Schedule submission",
-    desc: "Acharya writes the assignment to your brief; Smriti schedules review time and reminds you to submit before the deadline.",
-    seedLabel: "What to write + when it's due (e.g. history essay on the Salt March, due Friday 5pm)",
-    accent: "#7A4FB0",
+  "explainer": {
+    title: "Topic → Explainer video → Schedule posts",
+    desc: "Turn any topic or product into a short explainer video script, then schedule the posts.",
+    seedLabel: "The topic / product to explain",
+    accent: "#6D4AA7",
     steps: [
-      { key: "draft", agent: "study", label: "Acharya writes it", input: (c) => ({ topic: c.seed.text, kind: "essay", level: "high school", length: "about 600 words", tone: "formal academic", today: c.today }) },
-      { key: "schedule", agent: "samay", label: "Smriti schedules submission", input: (c) => ({ text: `Plan time to review and submit this assignment on time: "${c.results.draft?.title || c.seed.text}". Add a clear reminder before the deadline.`, today: c.today }) },
-    ],
-  },
-  "kisan-cycle": {
-    title: "Weather → Crop → Schemes → Budget → Plan",
-    desc: "A full-season co-pilot: live weather, weather-aware crop advice, farm schemes, an input budget, and a sowing/spraying schedule.",
-    seedLabel: "Your crop, place & problem (e.g. tomato in Nashik, leaves yellowing)",
-    accent: "#4B7A2B",
-    steps: [
-      { key: "weather", agent: "weather", label: "Weather reads the live forecast", input: (c) => ({ place: c.seed.text }) },
-      { key: "crop", agent: "krishi", label: "Bhupati gives weather-aware advice", input: (c) => ({ text: `${c.seed.text}\n\nLive weather: ${c.results.weather?.summary || ""}` }) },
-      { key: "schemes", agent: "haq", label: "Haq finds farm schemes", input: (c) => ({ profile: { occupation: "Farmer", details: c.seed.text } }) },
-      { key: "budget", agent: "paisa", label: "Nidhi budgets the inputs", input: (c) => ({ text: `Estimate a budget for farm inputs (seeds, fertiliser, pesticide, irrigation) for: ${c.results.crop?.diagnosis || c.seed.text}` }) },
-      { key: "plan", agent: "samay", label: "Smriti schedules the season", input: (c) => ({ text: `Schedule sowing, spraying and irrigation. Actions: ${(c.results.crop?.actionPlan || []).map((a) => a.step).join("; ")}. Weather: ${c.results.weather?.summary || ""}`, today: c.today }) },
+      { key: "video", agent: "pragyan", label: "Pragyan scripts the video", input: (c) => ({ title: c.seed.text, headlines: [], mode: "topic" }) },
+      { key: "schedule", agent: "samay", label: "Smriti schedules the posts", input: (c) => ({ text: `Plan creating and posting this explainer over the next week: "${c.results.video?.title || c.seed.text}".`, today: c.today }) },
     ],
   },
 };
@@ -151,10 +117,9 @@ export async function runStep(id, index, seed = {}, results = {}, language = "En
 
 const keywordPick = (text) => {
   const s = (text || "").toLowerCase();
-  if (/scam|fraud|otp|suspicious|debited|phishing|lottery|kyc/.test(s)) return "scam-to-safety";
-  if (/job|resume|résumé|interview|career|hiring|internship/.test(s)) return "land-a-job";
-  if (/spend|budget|salary|save|expense|emi|loan|money/.test(s)) return "money-makeover";
-  if (/medicine|prescription|tablet|generic|pharmacy|doctor/.test(s)) return "health-savings";
+  if (/business|startup|msme|udyam|gst|licen[cs]e|loan|scheme|subsidy|register/.test(s)) return "msme-launch";
+  if (/medicine|prescription|tablet|generic|pharmacy|doctor|health/.test(s)) return "health-savings";
+  if (/video|explainer|content|post|reel|market|podcast|topic/.test(s)) return "explainer";
   return "resolve-grievance";
 };
 
