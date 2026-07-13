@@ -3,8 +3,8 @@
 **Rentable, autonomous "AI employees" that plug into an MSME's systems and run entire
 back-office workflows on their own.**
 
-- **Live web app:** <https://getsaarthi.vercel.app>
-- **Telegram bot:** [@saarthi_support_bot](https://t.me/saarthi_support_bot)
+- **Live web app:** <https://saarthi20.vercel.app>
+- **Telegram bot:** [@saarthi_helper_bot](https://t.me/saarthi_helper_bot)
 - **Repo docs:** [README.md](README.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---

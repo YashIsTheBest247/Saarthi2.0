@@ -19,8 +19,8 @@ Saarthi is two things in one product:
 > maths where correctness matters — agents that *act*, not a generic chatbot.
 
 ### Try it live
-- **Web app:** <https://getsaarthi.vercel.app>
-- **Telegram bot:** [@saarthi_support_bot](https://t.me/saarthi_support_bot)
+- **Web app:** <https://saarthi20.vercel.app>
+- **Telegram bot:** [@saarthi_helper_bot](https://t.me/saarthi_helper_bot)
 
 > **MSME challenge submission:** see **[MSME.md](MSME.md)** for the full problem-statement mapping,
 > the AI-Workforce deep dive, business model, feasibility and demo script.

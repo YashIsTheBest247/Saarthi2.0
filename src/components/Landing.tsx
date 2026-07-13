@@ -134,7 +134,7 @@ function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
           <a href="#how" className="btn border border-white/30 px-5 py-3 text-[15px] text-white hover:bg-white/10">
             {t("hero.cta2")}
           </a>
-          <a href="https://t.me/saarthi_support_bot" target="_blank" rel="noreferrer" className="btn border border-white/30 px-5 py-3 text-[15px] text-white hover:bg-white/10">
+          <a href="https://t.me/saarthi_helper_bot" target="_blank" rel="noreferrer" className="btn border border-white/30 px-5 py-3 text-[15px] text-white hover:bg-white/10">
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M21.94 4.3 18.6 20.06c-.25 1.1-.9 1.37-1.83.85l-5.05-3.72-2.44 2.35c-.27.27-.5.5-1.02.5l.36-5.16L17.02 6.4c.41-.36-.09-.56-.63-.2L6.55 12.6l-5.1-1.6c-1.1-.34-1.12-1.1.23-1.63l19.9-7.67c.92-.34 1.73.22 1.36 2.6Z"/></svg>
             {t("hero.cta3")}
           </a>
