@@ -14,6 +14,7 @@ import { clean } from "../lib/text";
 import { linkify } from "../lib/linkify";
 import { SosAlert, SOS_RE } from "../components/SosAlert";
 import { ActionBar } from "../components/ActionBar";
+import { ReelPlayer, Reel } from "../components/ReelPlayer";
 
 const SMRITI = featureByKey("samay");
 const OTHERS = VISIBLE_FEATURES.filter((f) => f.key !== "samay");
@@ -28,7 +29,7 @@ async function retry<T>(fn: () => Promise<T>, tries = 2, delay = 800): Promise<T
   throw last;
 }
 
-interface FeedItem { id: number; agent: string; title: string; status: "running" | "done" | "skip"; agentName?: string; text?: string }
+interface FeedItem { id: number; agent: string; title: string; status: "running" | "done" | "skip"; agentName?: string; text?: string; data?: Record<string, unknown> }
 
 export function Orchestrator({ onBack }: { onBack: () => void }) {
   const { t, lang } = useApp();
@@ -146,7 +147,7 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
         executed.push(res);
         ctx = ctx ? `${ctx}\n[${res.name}] ${res.summary}` : `[${res.name}] ${res.summary}`;
         setDone((p) => new Set(p).add(nk));
-        setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", agentName: res.name, text: res.summary } : x));
+        setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", agentName: res.name, text: res.summary, data: res.data } : x));
       } catch {
         setFeed((p) => p.map((x) => x.id === fid ? { ...x, status: "done", text: t("orc.agentUnreach") } : x));
       }
@@ -536,6 +537,11 @@ function FeedCard({ it, dated, history }: { it: FeedItem; dated: { title: string
   const ok = it.status === "done";
   const canContinue = ok && it.agent !== "weather" && !!f && !!it.text;
 
+  // Pragyan produces a playable reel (scenes + narration + visuals) — render the
+  // actual video player here, not just its one-line summary.
+  const reel = it.agent === "pragyan" && Array.isArray((it.data as { scenes?: unknown[] } | undefined)?.scenes) && ((it.data as { scenes: unknown[] }).scenes.length > 0)
+    ? (it.data as unknown as Reel) : null;
+
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<{ role: "user" | "agent"; text: string }[]>([]);
   const [input, setInput] = useState("");
@@ -580,9 +586,11 @@ function FeedCard({ it, dated, history }: { it: FeedItem; dated: { title: string
           : <span className="rounded-full bg-[#F7EEDB] px-2 py-0.5 text-[10px] font-semibold text-[#B07A1E]">You</span>}
       </div>
 
-      {it.text && it.status !== "running" && (ok
-        ? <div className="mt-2"><CopyBlock text={clean(it.text)} /><ActionBar title={it.title} text={clean(it.text)} deadline={dated.find((d) => d.title === it.title)?.deadline} accent={f?.accent} /></div>
-        : <p className="mt-2 whitespace-pre-wrap text-sm text-graphite deva">{linkify(clean(it.text || ""))}</p>)}
+      {reel && it.status !== "running"
+        ? <div className="mt-3"><ReelPlayer reel={reel} accent={f?.accent} /></div>
+        : it.text && it.status !== "running" && (ok
+          ? <div className="mt-2"><CopyBlock text={clean(it.text)} /><ActionBar title={it.title} text={clean(it.text)} deadline={dated.find((d) => d.title === it.title)?.deadline} accent={f?.accent} /></div>
+          : <p className="mt-2 whitespace-pre-wrap text-sm text-graphite deva">{linkify(clean(it.text || ""))}</p>)}
 
       {canContinue && (
         <div className="mt-1.5 border-t border-line/70 pt-2">
