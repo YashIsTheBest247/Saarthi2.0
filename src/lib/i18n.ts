@@ -524,6 +524,7 @@ const en: Dict = {
 
   "chat.title": "Saarthi Assistant",
   "chat.subtitle": "Finds your right agent",
+  "chat.voiceBtn": "Talk to AI avatar",
   "chat.greet": "Namaste! 🙏 Tell me what you're facing, and I'll connect you to the right AI expert.",
   "chat.ph": "Describe your problem…",
   "chat.match": "This looks like a job for",
@@ -1282,6 +1283,7 @@ const hi: Dict = {
 
   "chat.title": "सारथी असिस्टेंट",
   "chat.subtitle": "आपका सही एजेंट ढूँढे",
+  "chat.voiceBtn": "AI अवतार से बात करें",
   "chat.greet": "नमस्ते! 🙏 बताइए आपकी क्या समस्या है, मैं आपको सही AI एक्सपर्ट से जोड़ देता हूँ।",
   "chat.ph": "अपनी समस्या बताएँ…",
   "chat.match": "यह काम सही रहेगा",

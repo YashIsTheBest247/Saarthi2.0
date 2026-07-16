@@ -22,6 +22,7 @@ import { WorkflowsView } from "./features/WorkflowsView";
 import { Orchestrator } from "./features/Orchestrator";
 import { Workforce } from "./features/Workforce";
 import { FloatingChat } from "./components/FloatingChat";
+import { VoiceAvatar } from "./components/VoiceAvatar";
 import { FeatureKey } from "./lib/api";
 
 type View = "home" | FeatureKey | "workflows" | "orchestrator" | "workforce";
@@ -148,6 +149,7 @@ function Shell() {
       </main>
 
       <FloatingChat onOpen={open} />
+      <VoiceAvatar photo="/host.jpg" name="Saarthi" />
     </div>
   );
 }

@@ -43,6 +43,9 @@ Saarthi is two things in one product:
   **PDF and Word (.docx)** in one tap.
 - **PDF & image aware** — attach a bill/invoice/notice (image or PDF); Gemini vision reads it.
 - **Bilingual** (English / हिन्दी) — UI *and* AI answers flip language. **Voice** input everywhere.
+- **Talk to a face** — a **voice AI avatar**: tap the mic, speak, and a lip-syncing character host
+  answers *out loud* (browser speech-in + speech-out, no keys). **Choose your avatar and voice**
+  (remembered across sessions); works in English & Hindi. Launched from the chat's *Talk to AI avatar* button.
 - **Telegram bot** with the same brain — chat, hire an AI employee, send a photo/PDF to decode.
 - **Resilient AI** — rotates multiple Gemini keys, then **falls back to Groq** (Llama 3.3 70B) when
   quota is exhausted, then to realistic mocks so a live demo *never* breaks.
@@ -109,8 +112,9 @@ and set **calendar reminders**.
   (Pragyan → Smriti). An AI planner picks the right chain from free text.
 - **Integrations console** — validate a GSTIN, generate a Tally XML / e-way JSON, or compose a
   WhatsApp send, live. Shows which connectors are live vs. need the org's credentials.
-- **Floating AI assistant** — bottom-right on every page. Classifies your problem and offers to open
-  the right consumer agent *or* hire the matching AI employee.
+- **Floating AI assistant** — bottom-right on every page. Type to classify your problem and open the
+  right consumer agent *or* hire the matching AI employee — or tap **Talk to AI avatar** to *speak*
+  with a lip-syncing voice host that listens and replies out loud (pick the avatar & voice).
 - **Deterministic engines** — GSTIN check-digit, Tally XML, e-way payload, tax/EMI/SIP, scam score,
   and the `.ics`/scheduling maths run **on-device** for reproducible, defensible output.
 - **Works even with no/low AI quota** — connectors and calculators are keyless; when Gemini quota is
@@ -252,7 +256,8 @@ server/
   mocks.js           demo-safe sample responses;  notify.js / sms.js / docgen.js  actions
 src/
   App.tsx            view switching, deep links (?agent, ?q, ?hire), scroll restore
-  components/        Nav, Landing, FloatingChat, ActionBar, Helplines, Logo, ui …
+  components/        Nav, Landing, FloatingChat, VoiceAvatar + TalkingAvatar (voice host),
+                     ReelPlayer, ActionBar, Helplines, Logo, ui …
   features/          Workforce (hire/assign), Orchestrator, WorkflowsView, Integrations,
                      per-agent consoles (kavach/ sehat/ study/ pragyan/ khanan/ console/)
   lib/               api client, features/roleIcons/hire metadata, i18n (en/hi), reminders (ICS)

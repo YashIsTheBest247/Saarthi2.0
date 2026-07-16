@@ -5,7 +5,6 @@ import { useApp } from "../app/AppContext";
 import { featureByKey, KEEP_KEYS } from "../lib/features";
 import { callFeature, getEmployees, Employee, FeatureKey } from "../lib/api";
 import { routeToAgent } from "../lib/route";
-import { useVoice } from "../hooks/useVoice";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
 import { linkify } from "../lib/linkify";
@@ -48,7 +47,6 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   useEffect(() => { getEmployees().then(setEmployees); }, []);
   const hire = (id: string) => { window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } })); setOpen(false); };
   const bodyRef = useRef<HTMLDivElement>(null);
-  const voice = useVoice(lang.speech, setInput);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
@@ -237,35 +235,29 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
               )}
             </div>
 
-            {/* input */}
-            <form onSubmit={(e) => { e.preventDefault(); handle(input); }} className="flex items-center gap-2 border-t border-line bg-paper p-3">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={t("chat.ph")}
-                className="min-w-0 flex-1 rounded-full border border-line bg-mist px-4 py-2.5 text-sm text-ink outline-none placeholder:text-faint focus:border-[#2D6BFF] focus:bg-paper deva"
-              />
-              {voice.supported && (
-                <button
-                  type="button"
-                  onClick={() => (voice.listening ? voice.stop() : voice.start(input))}
-                  aria-label={voice.listening ? t("common.listening") : t("common.speak")}
-                  className={`flex h-10 w-10 flex-none items-center justify-center rounded-full border transition-colors ${voice.listening ? "border-transparent bg-[#C0453B] text-white" : "border-line bg-paper text-graphite hover:text-ink"}`}
-                >
-                  {voice.listening ? (
-                    <span className="relative flex h-4 w-4 items-center justify-center">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/60" />
-                      <Mic className="relative h-4 w-4" />
-                    </span>
-                  ) : (
-                    <Mic className="h-4 w-4" />
-                  )}
-                </button>
-              )}
-              <button type="submit" disabled={busy || !input.trim()} className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-white disabled:opacity-40" style={{ background: ACCENT }}>
-                <Send className="h-4 w-4" />
+            {/* footer: type, or talk to the AI avatar */}
+            <div className="border-t border-line bg-paper">
+              {/* voice-avatar launcher */}
+              <button
+                type="button"
+                onClick={() => { setOpen(false); window.dispatchEvent(new CustomEvent("saarthi:voice")); }}
+                className="flex w-full items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors hover:bg-mist deva"
+                style={{ color: ACCENT }}
+              >
+                <Mic className="h-4 w-4" /> {t("chat.voiceBtn")}
               </button>
-            </form>
+              <form onSubmit={(e) => { e.preventDefault(); handle(input); }} className="flex items-center gap-2 border-t border-line px-3 pb-3 pt-2.5">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={t("chat.ph")}
+                  className="min-w-0 flex-1 rounded-full border border-line bg-mist px-4 py-2.5 text-sm text-ink outline-none placeholder:text-faint focus:border-[#2D6BFF] focus:bg-paper deva"
+                />
+                <button type="submit" disabled={busy || !input.trim()} className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-white disabled:opacity-40" style={{ background: ACCENT }}>
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

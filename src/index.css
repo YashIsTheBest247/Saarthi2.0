@@ -205,4 +205,20 @@
   .animate-ticker:hover {
     animation-play-state: paused;
   }
+  /* talking avatar: the lower jaw slides down/up subtly so the mouth moves naturally */
+  @keyframes jawTalk {
+    0%   { transform: translateY(0.15%); }
+    22%  { transform: translateY(1.3%); }
+    40%  { transform: translateY(0.5%); }
+    62%  { transform: translateY(1.5%); }
+    82%  { transform: translateY(0.55%); }
+    100% { transform: translateY(0.2%); }
+  }
+  .jaw-talk { animation: jawTalk 0.46s ease-in-out infinite; }
+  /* gentle idle "breathing" float so the avatar feels alive */
+  @keyframes avatarFloat {
+    0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+    50%      { transform: translateY(-1.4%) rotate(0.5deg); }
+  }
+  .avatar-float { animation: avatarFloat 4.5s ease-in-out infinite; }
 }
