@@ -273,16 +273,16 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     <>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm" onClick={close}>
-            <div className="flex items-center justify-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-ink/60 p-3 backdrop-blur-sm sm:items-center sm:p-4" onClick={close}>
+            <div className="my-auto flex w-full max-w-md flex-col items-center gap-2.5 sm:w-auto sm:max-w-none sm:flex-row sm:items-center" onClick={(e) => e.stopPropagation()}>
 
               {/* left panel: avatar + voice picker, outside the main box */}
               <AnimatePresence>
                 {showCustomize && (
-                  <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }}
-                    className="w-40 flex-none self-center rounded-3xl border border-line bg-paper p-3.5 shadow-float">
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    className="w-full flex-none rounded-3xl border border-line bg-paper p-3.5 shadow-float sm:w-40 sm:self-center">
                     <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted deva">{L("Avatar", "अवतार")}</div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-2">
                       {AVATARS.map((a) => (
                         <button key={a.id} onClick={() => setAvatarId(a.id)}
                           className="relative aspect-square overflow-hidden rounded-xl border-2 transition"
@@ -292,7 +292,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
                       ))}
                     </div>
                     <div className="mb-1.5 mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted deva">{L("Voice", "आवाज़")}</div>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 sm:flex-col">
                       {VOICE_PROFILES.map((v) => (
                         <button key={v.id} onClick={() => selectVoice(v.id)}
                           className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${v.id === voiceId ? "border-transparent text-white" : "border-line bg-paper text-graphite hover:bg-mist"}`}
@@ -315,7 +315,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
 
               {/* half-body 3D host — floating, no circle crop */}
               <div className="flex flex-col items-center">
-                <div className="relative mx-auto h-64 w-56">
+                <div className="relative mx-auto h-56 w-48 sm:h-64 sm:w-56">
                   {/* soft, state-reactive glow behind her (no ring) */}
                   <motion.div className="absolute inset-x-4 bottom-6 top-2 rounded-[45%] blur-3xl"
                     animate={{ opacity: status === "speaking" || status === "listening" ? [0.28, 0.42, 0.28] : 0.14 }}
