@@ -107,7 +107,7 @@ GSTIN**, export the deliverable to **PDF/Word**, and set **calendar reminders**.
 
 ---
 
-## 5. The innovation (why we win)
+## 5. The innovation
 
 1. **Agentic, not conversational.** A real *plan → act → observe → reflect → synthesize* loop
    composes an arbitrary chain of specialist skills at runtime and revises it — and produces the
@@ -139,7 +139,7 @@ Details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ---
 
-## 7. Feasibility — it already works
+## 7. Feasibility
 
 - **Live web app** and **Telegram bot** (links at top).
 - **Full system test with live keys: 20/20 passing** — consumer agents, autonomous employee runs
@@ -189,7 +189,7 @@ Details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ---
 
-## 12. 60-second demo script
+## 12. Demo
 
 1. Open the app → the hero shows the full team → scroll to **"Rent a fleet of AI employees."**
 2. Hire **Accounts** → *"Draft a GST invoice for 120 cartons @ ₹450, 18% GST, buyer
@@ -199,4 +199,3 @@ Details in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 4. Open **Integrate** → show the one-line API call: "your ERP or a cron job calls this — the workflow
    runs itself."
 5. **Telegram** → send a bill photo → Vidya reads it; or hire an employee and reply with a task.
-6. Close: *"Not a chatbot that talks — a workforce that works."*
