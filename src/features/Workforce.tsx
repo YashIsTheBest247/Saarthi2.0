@@ -38,6 +38,7 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
   const employees = useMemo(() => rawEmployees.map((e) => ({ ...e, ...wfLoc(e, lang.iso === "hi") })), [rawEmployees, lang.iso]);
   const [sel, setSel] = useState<Employee | null>(null);
   const [custom, setCustom] = useState(false);
+  const [mode, setMode] = useState<"assign" | "hire">("assign"); // do work here vs integrate for automation
   const [me, setMe] = useState<WorkforceMe | null>(null);
   const [tick, setTick] = useState(0); // bump to re-read localStorage fleet
   const [sector, setSector] = useState<string>("All");
@@ -109,8 +110,7 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
         {shown.map((e) => {
           const Icon = roleIcon(e.icon);
           return (
-          <button key={e.id} onClick={() => { setCustom(false); setSel(e); requestAnimationFrame(() => runRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
-            className="card group p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md" style={sel?.id === e.id ? { boxShadow: `0 0 0 2px ${e.accent}` } : {}}>
+          <div key={e.id} className="card group flex flex-col p-4 text-left transition hover:shadow-md" style={sel?.id === e.id ? { boxShadow: `0 0 0 2px ${e.accent}` } : {}}>
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl" style={{ background: `${e.accent}1a`, color: e.accent }}><Icon className="h-5 w-5" /></span>
               <div className="min-w-0">
@@ -122,11 +122,19 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
             <div className="mt-2.5 flex flex-wrap gap-1">
               {e.skills.slice(0, 4).map((s) => <span key={s} className="rounded-full bg-mist px-2 py-0.5 text-[10px] font-semibold text-graphite">{SKILL_LABEL[s] || s}</span>)}
             </div>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: e.accent }}><Zap className="h-3.5 w-3.5" /> {t("wfx.hire")}</span>
-              <span className="text-[11px] font-medium text-muted">{e.functions?.length || 0} {t("wfx.functionsShort")}</span>
+            <div className="mt-3 flex items-center gap-2">
+              {/* two distinct actions: do the work here, or hire & integrate for automation */}
+              <button onClick={() => { setCustom(false); setSel(e); setMode("assign"); requestAnimationFrame(() => runRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition hover:brightness-110" style={{ background: e.accent }}>
+                <Zap className="h-3.5 w-3.5" /> {t("wfx.assignHere")}
+              </button>
+              <button onClick={() => { setCustom(false); setSel(e); setMode("hire"); requestAnimationFrame(() => runRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+                className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition hover:bg-mist" style={{ borderColor: `${e.accent}55`, color: e.accent }}>
+                <Code2 className="h-3.5 w-3.5" /> {t("wfx.integrateBtn")}
+              </button>
+              <span className="ml-auto text-[11px] font-medium text-muted">{e.functions?.length || 0} {t("wfx.functionsShort")}</span>
             </div>
-          </button>
+          </div>
           );
         })}
 
@@ -142,7 +150,7 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
       {/* task / run panel */}
       <div ref={runRef} className="mt-8 scroll-mt-24">
         <AnimatePresence mode="wait">
-          {sel && <TaskPanel key={sel.id} employee={sel} onRan={bump} />}
+          {sel && <TaskPanel key={sel.id} employee={sel} mode={mode} onMode={setMode} onRan={bump} />}
           {custom && <CustomPanel key="custom" onRan={bump} />}
         </AnimatePresence>
       </div>
@@ -151,7 +159,7 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
 }
 
 /* ── assign a task to a catalog employee, run it, show the deliverable + integration ── */
-function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void }) {
+function TaskPanel({ employee, mode, onMode, onRan }: { employee: Employee; mode: "assign" | "hire"; onMode: (m: "assign" | "hire") => void; onRan: () => void }) {
   const { t, lang } = useApp();
   const [task, setTask] = useState(employee.samples[0] || "");
   const [fn, setFn] = useState<string | null>(null); // selected depth function
@@ -159,9 +167,10 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
   const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<{ mimeType: string; data: string } | null>(null); // attached image / PDF
   const [docName, setDocName] = useState("");
+  const [hired, setHired] = useState(false); // is this employee in the org's fleet?
   const fileRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { setTask(employee.samples[0] || ""); setFn(null); setRun(null); setDoc(null); setDocName(""); }, [employee.id]);
+  useEffect(() => { setTask(employee.samples[0] || ""); setFn(null); setRun(null); setDoc(null); setDocName(""); setHired(getHired().some((h) => h.id === employee.id)); }, [employee.id]);
   // flow down to the answer when a task is assigned
   useEffect(() => { if (busy || run) requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }, [busy, run]);
   const activeFn = employee.functions?.find((f) => f.id === fn) || null;
@@ -176,10 +185,16 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
     try {
       const r = await assignEmployeeTask(employee.id, { task: task.trim() || docName, function: fn || undefined, image: doc || undefined, today: new Date().toDateString(), language: lang.name });
       setRun(r);
-      hire({ id: employee.id, title: employee.title, name: employee.name, icon: employee.icon, accent: employee.accent });
       recordRun({ employeeId: employee.id, title: employee.title, icon: employee.icon, accent: employee.accent, task: task.trim(), headline: r.result?.headline || "Completed" });
       onRan();
     } catch { /* ignore */ } finally { setBusy(false); }
+  }
+
+  // Hire = add to the org's fleet, to be integrated & automated via the API.
+  function doHire() {
+    hire({ id: employee.id, title: employee.title, name: employee.name, icon: employee.icon, accent: employee.accent });
+    setHired(true);
+    onRan();
   }
 
   return (
@@ -194,6 +209,18 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
         </div>
         <p className="mt-3 text-sm text-graphite deva">{employee.jd}</p>
 
+        {/* two modes: do the work here on Saarthi, or hire & integrate for automation */}
+        <div className="mt-4 inline-flex rounded-xl border border-line bg-mist/50 p-1 text-sm font-semibold">
+          <button onClick={() => onMode("assign")} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition" style={mode === "assign" ? { background: employee.accent, color: "#fff" } : { color: "#6b6b6b" }}>
+            <Zap className="h-3.5 w-3.5" /> {t("wfx.assignHere")}
+          </button>
+          <button onClick={() => onMode("hire")} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition" style={mode === "hire" ? { background: employee.accent, color: "#fff" } : { color: "#6b6b6b" }}>
+            <Code2 className="h-3.5 w-3.5" /> {t("wfx.integrateBtn")}
+          </button>
+        </div>
+
+        {mode === "assign" ? (
+        <>
         {/* depth functions — the role's concrete duties, each a callable workflow */}
         {employee.functions?.length > 0 && (
           <div className="mt-4">
@@ -232,10 +259,20 @@ function TaskPanel({ employee, onRan }: { employee: Employee; onRan: () => void 
           <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" onChange={onFile} className="hidden" />
           <button onClick={() => fileRef.current?.click()} className="btn-ghost text-sm"><ImagePlus className="h-4 w-4" /> {t("wfx.attach")}</button>
         </div>
+        <p className="mt-3 text-xs text-muted deva">{t("wfx.assignHint")}</p>
+        </>
+        ) : (
+        <div className="mt-4">
+          <p className="text-sm text-graphite deva">{t("wfx.hireExplain")}</p>
+          <button onClick={doHire} disabled={hired} className="btn-accent mt-3 text-[15px] disabled:opacity-60" style={{ background: employee.accent }}>
+            {hired ? <><CheckCircle2 className="h-4 w-4" /> {t("wfx.inFleet")}</> : <><Plus className="h-4 w-4" /> {t("wfx.addFleet")}</>}
+          </button>
+        </div>
+        )}
       </div>
 
-      <div ref={resultRef} className="scroll-mt-24"><RunResult run={run} busy={busy} accent={employee.accent} /></div>
-      <Integration employeeId={employee.id} accent={employee.accent} sampleTask={employee.samples[0] || "..."} />
+      {mode === "assign" && <div ref={resultRef} className="scroll-mt-24"><RunResult run={run} busy={busy} accent={employee.accent} /></div>}
+      {mode === "hire" && <Integration employeeId={employee.id} accent={employee.accent} sampleTask={employee.samples[0] || "..."} />}
     </motion.div>
   );
 }
