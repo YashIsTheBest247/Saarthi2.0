@@ -91,13 +91,19 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
   const primed = useRef(false);      // TTS unlocked within a user gesture yet?
   const voiceRef = useRef(voiceProfile);
   const sysVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const langRef = useRef(lang); // always the current language, read live inside speak/listen/ask
   statusRef.current = status;
   handsFreeRef.current = handsFree;
   openRef.current = open;
   voiceRef.current = voiceProfile;
   sysVoicesRef.current = sysVoices;
+  langRef.current = lang;
 
   const speechLang = lang.speech || (hi ? "hi-IN" : "en-IN");
+  // the live BCP-47 code + language name, read from the ref so a language switch
+  // takes effect immediately (no page refresh needed)
+  const speechLangNow = () => { const l = langRef.current; return l.speech || (l.iso === "hi" ? "hi-IN" : "en-IN"); };
+  const langNameNow = () => langRef.current.name;
 
   // Browsers block speechSynthesis until it's first invoked inside a user gesture.
   // Call this on tap to unlock it with a silent utterance.
@@ -160,7 +166,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
   // correctly; if none are installed, return undefined so u.lang guides the engine.
   const voiceForProfile = (vp: VoiceChoice): SpeechSynthesisVoice | undefined => {
     const sv = sysVoicesRef.current;
-    const base = speechLang.split("-")[0];
+    const base = speechLangNow().split("-")[0];
     if (base !== "en") {
       const langVoices = sv.filter((v) => v.lang?.startsWith(base));
       if (!langVoices.length) return undefined;
@@ -182,7 +188,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     const next = () => {
       if (!speakActive.current || i >= chunks.length) { if (i >= chunks.length) speakActive.current = false; onDone(); return; }
       const u = new SpeechSynthesisUtterance(chunks[i++]);
-      u.lang = speechLang; if (voice) u.voice = voice;
+      u.lang = speechLangNow(); if (voice) u.voice = voice;
       u.rate = vp.rate; u.pitch = vp.pitch;
       u.onboundary = () => { avatarState.level = 1; }; // spike the jaw on each word → speech-synced mouth
       u.onend = () => next();
@@ -201,7 +207,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
       `You are ${name}, a warm, friendly AI voice host for everyday India. This is a SPOKEN conversation, so reply in a natural, conversational tone in 2–4 short sentences (never more than ~60 words), no markdown, no lists, no emojis — just words that sound good read aloud. If the user needs a specialist (scams, schemes, health, tax, business, complaints, farming, careers), briefly say who can help and give the key point.\n\n` +
       `Conversation so far:\n${history}\n\nReply to the user's last message.`;
     try {
-      const r = await callFeature<{ reply: string; agentName?: string }>("assist", { problem, language: lang.name });
+      const r = await callFeature<{ reply: string; agentName?: string }>("assist", { problem, language: langNameNow() });
       const answer = clean(r.reply || "").replace(/\s+/g, " ").trim() || L("Sorry, I didn't catch that. Could you say it again?", "माफ़ करें, मैं समझ नहीं पाई। कृपया दोबारा बोलें।");
       turnsRef.current = [...turnsRef.current, { role: "host", text: answer }];
       setReply(answer);
@@ -220,7 +226,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
     const rec = new SR();
     recRef.current = rec;
-    rec.lang = speechLang; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.lang = speechLangNow(); rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
     let finalText = "";
     rec.onstart = () => { setUserText(""); setStatus("listening"); };
     rec.onresult = (e: SREvent) => {
@@ -249,7 +255,7 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     if (!("speechSynthesis" in window)) return;
     try { window.speechSynthesis.cancel(); } catch { /* noop */ }
     const u = new SpeechSynthesisUtterance(L("Hello, I'm Saarthi. How can I help you?", "नमस्ते, मैं सारथी हूँ। मैं आपकी कैसे मदद करूँ?"));
-    u.lang = speechLang;
+    u.lang = speechLangNow();
     const voice = voiceForProfile(vp); if (voice) u.voice = voice;
     u.rate = vp.rate; u.pitch = vp.pitch;
     try { window.speechSynthesis.speak(u); } catch { /* noop */ }
