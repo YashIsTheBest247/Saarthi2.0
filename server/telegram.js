@@ -3,12 +3,14 @@ import { features } from "./prompts.js";
 import { mocks } from "./mocks.js";
 import { sendSMS } from "./sms.js";
 import { employeeList, runEmployee } from "./employees.js";
+import { buildDoc, slug } from "./docgen.js";
 
 // Per-chat emergency contact + a pending "shall I text?" alert.
 // (In-memory: fine within a warm instance; a cold start clears it — re-set with /sos.)
 const emergencyNum = new Map(); // chatId -> "+91…"
 const pendingSos = new Map();   // chatId -> { num, situation }
 const lastLoc = new Map();      // chatId -> { lat, lng, ts }
+const pendingWf = new Map();    // chatId -> { empId, task, ts } — employee awaiting more input
 const recentLoc = (id) => { const l = lastLoc.get(id); return l && Date.now() - l.ts < 15 * 60 * 1000 ? l : null; };
 const SOS_RE = /\b(accident|emergency|injured|injury|bleeding|unconscious|collapse|trapped|fire|drowning|attack|assault|harass(?:ing|ed|ment)?|stalk(?:ing|er)?|following me|unsafe|molest|kidnap|abduct|suicide|fainted|heart attack|stroke|snake ?bite|electrocut|gas leak|landslide|flood|save me|help me)\b|दुर्घटना|आपातकाल|घायल|बचाओ|आग लग|हादसा|पीछा कर|छेड़|असुरक्षित/i;
 
@@ -37,6 +39,26 @@ const NAME = Object.fromEntries(AGENTS.map((a) => [a.key, a.name.split(" · ")[0
 // The hireable AI Workforce (B2B employees) — the MSME product.
 const EMPLOYEES = employeeList();
 const EMP = Object.fromEntries(EMPLOYEES.map((e) => [e.id, e]));
+
+// What each employee needs from the user, so the bot can ask for the input fields up front.
+const INPUT_HINTS = {
+  finance: "what your business makes/sells, team size, and how much funding you need & for what",
+  receivables: "the buyer's name, the invoice amount, its date, and how many days it's overdue",
+  accounts: "the item(s), quantity, rate, GST %, and the buyer's GSTIN & state",
+  enviro: "your industry/process, your state, and what you need (consent · EPR · ZLD · BRSR)",
+  food: "your product, turnover band, and whether you sell in one state or many",
+  build: "the project type, scope/area, and the state (for RERA · BOQ · BOCW cess)",
+  electronics: "the product, and what you need (BIS-CRS · E-waste EPR · DPDP · WPC/ETA · PLI)",
+  mobility: "the vehicle/part type, and what you need (ARAI/AIS · FAME-II · PLI · GeM · BIS)",
+};
+
+// Decide if the task is too thin for the employee to do a good job → ask for details first.
+function needsMoreInfo(empId, text) {
+  const t = (text || "").trim();
+  if (t.length < 22) return true;                                        // too short to be a real task
+  if ((empId === "accounts" || empId === "receivables") && !/\d/.test(t)) return true; // needs numbers (amounts/rates)
+  return false;
+}
 
 const mainKeyboard = () => ({
   inline_keyboard: [
@@ -69,6 +91,33 @@ async function tg(method, body) {
 }
 const send = (chat_id, text, extra = {}) => tg("sendMessage", { chat_id, text, disable_web_page_preview: true, ...extra });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Upload a generated file (PDF / XML / JSON) to the chat as a downloadable document.
+async function tgDocument(chatId, buffer, filename, mime, caption) {
+  if (!TOKEN) return null;
+  try {
+    const form = new FormData();
+    form.append("chat_id", String(chatId));
+    if (caption) form.append("caption", caption.slice(0, 1000));
+    form.append("document", new Blob([buffer], { type: mime || "application/octet-stream" }), filename);
+    const res = await fetch(API("sendDocument"), { method: "POST", body: form });
+    return await res.json();
+  } catch (err) { console.error("[telegram] sendDocument", err?.message || err); return null; }
+}
+
+// Rotate an "engagement" status through stages while a slow task runs, editing one
+// message so the user sees progress (thinking → working → compiling → …). Returns a
+// stop() to call when done.
+function startProgress(chatId, messageId, stages) {
+  let i = 0;
+  tg("sendChatAction", { chat_id: chatId, action: "typing" });
+  const timer = setInterval(() => {
+    i = Math.min(i + 1, stages.length - 1);
+    tg("editMessageText", { chat_id: chatId, message_id: messageId, text: stages[i] });
+    tg("sendChatAction", { chat_id: chatId, action: "typing" });
+  }, 3200);
+  return () => clearInterval(timer);
+}
 
 const WELCOME =
   "🙏 Namaste! I'm Saarthi — AI for everyday India and its MSMEs.\n\n• Ask anything and I'll route you to the right specialist.\n• Or 🏢 hire an autonomous AI employee — Finance & Schemes, GST & Accounts, MSME Samadhaan (delayed payments), FSSAI, Environment, Construction, Electronics, Auto/EV — to do a real job.\n\nTap a quick start, browse agents, or just type your problem.";
@@ -164,25 +213,50 @@ async function runPragyan(chatId, title) {
 async function runEmployeeTask(chatId, empId, text, image) {
   const e = EMP[empId];
   if (!e) return runAssist(chatId, text);
-  const language = isHindi(text) ? "Hindi" : "English";
-  tg("sendChatAction", { chat_id: chatId, action: "typing" });
-  const m = await tg("sendMessage", { chat_id: chatId, text: `🏢 ${e.name} (${e.short}) is on it…\n💭 Planning and working…` });
+  const hin = isHindi(text);
+  const language = hin ? "Hindi" : "English";
+  const m = await tg("sendMessage", { chat_id: chatId, text: `🏢 ${e.name} (${e.short}) ${hin ? "काम शुरू कर रहे हैं…" : "is getting started…"}` });
   const mid = m?.result?.message_id;
+
+  // live engagement while the autonomous loop runs
+  const stages = hin
+    ? [`🏢 ${e.name} योजना बना रहे हैं…`, "⚙️ चरण-दर-चरण काम कर रहे हैं…", "📊 जानकारी संकलित कर रहे हैं…", "✍️ आपका दस्तावेज़ तैयार कर रहे हैं…", "📄 अंतिम रूप दे रहे हैं…"]
+    : [`🏢 ${e.name} is planning the work…`, "⚙️ Working through the steps…", "📊 Compiling the details…", "✍️ Drafting your deliverable…", "📄 Finalising the output…"];
+  const stop = mid ? startProgress(chatId, mid, stages) : () => {};
 
   let out;
   try { out = await runEmployee(empId, text, { today: new Date().toDateString(), language, image }); }
   catch (err) { console.error("[telegram] employee", err?.message || err); }
+  stop();
 
   const r = out?.result;
   const mock = !hasKey || r?._mock;
   const deliverable = r?.deliverable ? String(r.deliverable).slice(0, 3500) : "";
   const link = APP_URL ? `${APP_URL}/?hire=${encodeURIComponent(empId)}` : "";
   const reply = mock
-    ? `🏢 ${e.name} · ${e.short}\n\nI can do this end-to-end — but the AI service is busy right now. Open the app to run me in full 👇${link ? `\n${link}` : ""}`
-    : `🏢 ${e.name} · ${e.short}\n\n${r?.headline || "Done."}\n\n${deliverable}${link ? `\n\n▶️ Open in the app (downloads, calendar, integrate): ${link}` : ""}`;
+    ? `🏢 ${e.name} · ${e.short}\n\n${hin ? "मैं यह पूरा काम कर सकता हूँ — पर अभी AI सेवा व्यस्त है। पूरा चलाने के लिए ऐप खोलें 👇" : "I can do this end-to-end — but the AI service is busy right now. Open the app to run me in full 👇"}${link ? `\n${link}` : ""}`
+    : `🏢 ${e.name} · ${e.short}\n\n${r?.headline || "Done."}\n\n${deliverable}${link ? `\n\n▶️ ${hin ? "ऐप में खोलें (डाउनलोड, कैलेंडर, इंटीग्रेट)" : "Open in the app (downloads, calendar, integrate)"}: ${link}` : ""}`;
 
   if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
   else await send(chatId, reply, { reply_markup: mainKeyboard() });
+
+  if (mock || !r?.deliverable) return;
+
+  // 📄 the finished deliverable as a downloadable PDF report
+  try {
+    tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
+    const title = r.headline || `${e.name} — ${e.short}`;
+    const paragraphs = String(r.deliverable).split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
+    const content = { title, kind: "document", sections: [{ heading: "", paragraphs: paragraphs.length ? paragraphs : [String(r.deliverable)] }], slides: [], wordCount: String(r.deliverable).split(/\s+/).length };
+    const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
+    await tgDocument(chatId, Buffer.from(buf), `${slug(title)}.pdf`, "application/pdf", `📄 ${title}`);
+  } catch (err) { console.error("[telegram] report pdf", err?.message || err); }
+
+  // 📎 integration artefacts (Tally XML, e-way JSON) as files, where produced
+  for (const a of (out?.artifacts || [])) {
+    try { await tgDocument(chatId, Buffer.from(String(a.content), "utf8"), a.filename || `${a.type}.txt`, a.mime || "text/plain", `📎 ${a.label || a.type}`); }
+    catch (err) { console.error("[telegram] artefact", err?.message || err); }
+  }
 }
 
 // Download a Telegram photo/document to a Gemini inlineData part (base64).
@@ -267,8 +341,11 @@ export async function handleTelegram(req, res) {
       } else if (data.startsWith("w:")) {
         const id = data.slice(2);
         const e = EMP[id];
-        if (e) await send(chatId, `🏢 You've hired ${e.name} — ${e.short}.\nReply to this message with the task (e.g. "${(e.samples && e.samples[0]) || "what you need"}") and I'll hand back finished work.\n#w_${id}`,
-          { reply_markup: { force_reply: true, input_field_placeholder: `Assign a task to ${e.name}…` } });
+        if (e) {
+          const hint = INPUT_HINTS[id];
+          const prompt = `🏢 You've hired ${e.name} — ${e.short}.\n\nReply to this message with your task${hint ? `, and please include: ${hint}` : ""}.\n\n💡 e.g. "${(e.samples && e.samples[0]) || "what you need"}"\n\nI'll plan it, do the work, and send back the finished deliverable — as text, a PDF report, and any integration files.\n#w_${id}`;
+          await send(chatId, prompt, { reply_markup: { force_reply: true, input_field_placeholder: `Assign a task to ${e.name}…` } });
+        }
       }
       return;
     }
@@ -331,10 +408,31 @@ export async function handleTelegram(req, res) {
       return;
     }
 
-    // replying to a "hire <employee>" prompt → run that AI employee on the task
     const repliedTo = msg.reply_to_message?.text || "";
     const wfTag = repliedTo.match(/#w_([a-z]+)/);
-    if (wfTag && EMP[wfTag[1]]) { await runEmployeeTask(chatId, wfTag[1], text); return; }
+
+    // wizard: if this employee was waiting for the details we asked for, this message IS the details
+    const pend = pendingWf.get(String(chatId));
+    if (pend && Date.now() - pend.ts < 10 * 60 * 1000 && !wfTag && !text.startsWith("/")) {
+      pendingWf.delete(String(chatId));
+      await runEmployeeTask(chatId, pend.empId, `${pend.task}\n${text}`.trim());
+      return;
+    }
+
+    // replying to a "hire <employee>" prompt → run (or ask for the required inputs first)
+    if (wfTag && EMP[wfTag[1]]) {
+      const empId = wfTag[1];
+      if (needsMoreInfo(empId, text)) {
+        pendingWf.set(String(chatId), { empId, task: text, ts: Date.now() });
+        const hin = isHindi(text);
+        const hint = INPUT_HINTS[empId] || (hin ? "ज़रूरी विवरण" : "the key details");
+        await send(chatId, `${EMP[empId].name} ${hin ? "को यह बेहतर करने के लिए थोड़ी और जानकारी चाहिए।" : "needs a little more to do this well."}\n\n${hin ? "कृपया बताएँ" : "Please share"}: ${hint}.`,
+          { reply_markup: { force_reply: true, input_field_placeholder: hin ? "विवरण जोड़ें…" : "Add the details…" } });
+        return;
+      }
+      await runEmployeeTask(chatId, empId, text);
+      return;
+    }
 
     // replying to a "talk to <agent>" prompt → force that agent
     const tag = repliedTo.match(/#([a-z]+)/);

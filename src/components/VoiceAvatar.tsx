@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, X, Loader2, Volume2, Radio, Hand, SlidersHorizontal } from "lucide-react";
+import { Mic, X, Loader2, Volume2, Radio, Hand, SlidersHorizontal, Download } from "lucide-react";
 import { useApp } from "../app/AppContext";
-import { callFeature } from "../lib/api";
+import { callFeature, generateDoc } from "../lib/api";
 import { clean } from "../lib/text";
 import { TalkingAvatar } from "./TalkingAvatar";
 import { avatarState } from "../lib/avatarState";
@@ -54,7 +54,6 @@ const VOICE_PROFILES: VoiceChoice[] = [
   { id: "natural", label: "Natural", hin: "सामान्य", voiceIndex: 0, pitch: 1.0, rate: 1.0 },
   { id: "warm", label: "Warm", hin: "गर्मजोश", voiceIndex: 1, pitch: 1.08, rate: 0.97 },
   { id: "bright", label: "Bright", hin: "उत्साही", voiceIndex: 2, pitch: 1.22, rate: 1.05 },
-  { id: "calm", label: "Calm", hin: "शांत", voiceIndex: 3, pitch: 0.94, rate: 0.92 },
 ];
 
 type Status = "idle" | "listening" | "thinking" | "speaking";
@@ -73,14 +72,17 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
   const [imgOk, setImgOk] = useState(true);
   const [unsupported, setUnsupported] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   // user's chosen avatar + voice, remembered across sessions
   const [avatarId, setAvatarId] = useState(() => localStorage.getItem("saarthi.avatar") || AVATARS[0].id);
-  const [voiceId, setVoiceId] = useState(() => localStorage.getItem("saarthi.voice") || "warm");
+  const [voiceId, setVoiceId] = useState(() => { const s = localStorage.getItem("saarthi.voice"); return VOICE_PROFILES.some((v) => v.id === s) ? s! : "warm"; });
+  const [hinglish, setHinglish] = useState(() => localStorage.getItem("saarthi.hinglish") === "1"); // reply in a Hindi+English mix
   const [sysVoices, setSysVoices] = useState<SpeechSynthesisVoice[]>([]);
   const avatar = AVATARS.find((a) => a.id === avatarId) || AVATARS[0];
   const voiceProfile = VOICE_PROFILES.find((v) => v.id === voiceId) || VOICE_PROFILES[0];
   useEffect(() => { localStorage.setItem("saarthi.avatar", avatarId); }, [avatarId]);
   useEffect(() => { localStorage.setItem("saarthi.voice", voiceId); }, [voiceId]);
+  useEffect(() => { localStorage.setItem("saarthi.hinglish", hinglish ? "1" : "0"); }, [hinglish]);
 
   const recRef = useRef<SpeechRec | null>(null);
   const turnsRef = useRef<Turn[]>([]);
@@ -92,18 +94,23 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
   const voiceRef = useRef(voiceProfile);
   const sysVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const langRef = useRef(lang); // always the current language, read live inside speak/listen/ask
+  const hinglishRef = useRef(hinglish);
   statusRef.current = status;
   handsFreeRef.current = handsFree;
   openRef.current = open;
   voiceRef.current = voiceProfile;
   sysVoicesRef.current = sysVoices;
   langRef.current = lang;
+  hinglishRef.current = hinglish;
 
   const speechLang = lang.speech || (hi ? "hi-IN" : "en-IN");
-  // the live BCP-47 code + language name, read from the ref so a language switch
-  // takes effect immediately (no page refresh needed)
-  const speechLangNow = () => { const l = langRef.current; return l.speech || (l.iso === "hi" ? "hi-IN" : "en-IN"); };
-  const langNameNow = () => langRef.current.name;
+  // the live BCP-47 code + language name, read from the refs so a language (or
+  // Hinglish) switch takes effect immediately — no page refresh needed.
+  // Hinglish is romanised, so an Indian-English voice reads it most naturally.
+  const speechLangNow = () => { if (hinglishRef.current) return "en-IN"; const l = langRef.current; return l.speech || (l.iso === "hi" ? "hi-IN" : "en-IN"); };
+  const langNameNow = () => hinglishRef.current
+    ? "Hinglish — a warm, natural mix of Hindi and English written in Roman/Latin script (e.g. \"Aapka kaam ho gaya, don't worry — main aapki help karti hoon\")"
+    : langRef.current.name;
 
   // Browsers block speechSynthesis until it's first invoked inside a user gesture.
   // Call this on tap to unlock it with a silent utterance.
@@ -261,6 +268,22 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     try { window.speechSynthesis.speak(u); } catch { /* noop */ }
   };
 
+  // save the whole conversation as a downloadable PDF report
+  const downloadReport = async () => {
+    const turns = turnsRef.current;
+    if (!turns.length || downloading) return;
+    setDownloading(true);
+    try {
+      const title = L("Saarthi — voice conversation", "सारथी — वॉइस बातचीत");
+      const body = turns.map((tn) => `${tn.role === "user" ? L("You", "आप") : name}: ${tn.text}`).join("\n\n");
+      const blob = await generateDoc(title, body, "pdf");
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "saarthi-conversation.pdf"; a.click(); URL.revokeObjectURL(url);
+      }
+    } finally { setDownloading(false); }
+  };
+
   const onMic = () => {
     primeTTS(); // unlock speech within this user gesture
     if (status === "listening") { try { recRef.current?.stop(); } catch { /* noop */ } return; }
@@ -315,6 +338,14 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
                         </button>
                       ))}
                     </div>
+
+                    <div className="mb-1.5 mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted deva">{L("Style", "अंदाज़")}</div>
+                    <button onClick={() => setHinglish((v) => !v)}
+                      className={`w-full rounded-full border px-3 py-1.5 text-xs font-medium transition ${hinglish ? "border-transparent text-white" : "border-line bg-paper text-graphite hover:bg-mist"}`}
+                      style={hinglish ? { background: accent } : undefined}
+                      title={L("Reply in a Hindi + English mix", "हिंदी + अंग्रेज़ी मिश्रण में जवाब")}>
+                      Hinglish {hinglish ? "✓" : ""}
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -356,6 +387,14 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
                 {reply && status !== "listening" && <div className="mr-auto max-w-[90%] rounded-2xl rounded-bl-sm border border-line bg-mist/60 px-3 py-2 text-sm text-graphite deva">{reply}</div>}
                 {!userText && !reply && <p className="pt-2 text-center text-sm text-muted deva">{L("Ask me anything — schemes, scams, taxes, health, your business…", "कुछ भी पूछें — योजनाएँ, धोखाधड़ी, टैक्स, सेहत, आपका व्यापार…")}</p>}
               </div>
+
+              {reply && (
+                <button onClick={downloadReport} disabled={downloading}
+                  className="mx-auto mt-2 flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-xs font-medium text-graphite transition hover:bg-mist disabled:opacity-50">
+                  {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  {L("Download conversation (PDF)", "बातचीत डाउनलोड करें (PDF)")}
+                </button>
+              )}
 
               {/* footer: controls — sticky so the mic & hands-free are always visible */}
               <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-3 bg-paper/95 px-4 pb-4 pt-3 backdrop-blur-sm shadow-[0_-8px_16px_-10px_rgba(0,0,0,0.15)]">
