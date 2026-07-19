@@ -4,7 +4,9 @@
 export interface HiredEmployee { id: string; title: string; name: string; icon: string; accent: string; hiredAt: number }
 export interface FleetRun { employeeId: string; title: string; icon: string; accent: string; task: string; headline: string; at: number }
 
-const HK = "saarthi.fleet.hired";
+// v2: "hired" now means only employees explicitly hired for integration/automation
+// (previously, assigning a task auto-hired). Bumping the key drops that stale data.
+const HK = "saarthi.fleet.hired.v2";
 const RK = "saarthi.fleet.runs";
 
 function read<T>(k: string, fallback: T): T {

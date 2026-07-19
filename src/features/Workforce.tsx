@@ -485,7 +485,6 @@ function ResultBody({ run, accent, docBusy, doExport }: { run: EmployeeRun; acce
 /* ── integration snippet: how an org wires this employee into its own systems ── */
 function Integration({ employeeId, accent, sampleTask }: { employeeId: string; accent: string; sampleTask: string }) {
   const { t } = useApp();
-  const [open, setOpen] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://getsaarthi.vercel.app";
   const url = `${origin}/api/employees/${employeeId}/task`;
   const snippet = useMemo(() => `# Assign a task to your AI employee from any system (ERP, cron, Zapier…)
@@ -495,19 +494,30 @@ curl -X POST ${url} \\
   -d '{"task": "${sampleTask.replace(/"/g, '\\"').slice(0, 60)}…", "language": "English"}'
 # → returns the plan, each step, and the finished deliverable as JSON`, [url, sampleTask]);
 
+  const step = (n: string, desc: string, children?: React.ReactNode) => (
+    <div className="rounded-2xl border border-line p-3.5">
+      <div className="text-sm font-bold text-ink deva">{n}</div>
+      <p className="mt-1 text-xs text-graphite deva">{desc}</p>
+      {children && <div className="mt-2">{children}</div>}
+    </div>
+  );
+
   return (
-    <div className="card p-4">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 text-sm font-semibold text-ink deva">
+    <div className="card p-5">
+      <div className="flex items-center gap-2 text-sm font-semibold text-ink deva">
         <Code2 className="h-4 w-4" style={{ color: accent }} /> {t("wfx.integrate")}
-        <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="mt-3 space-y-2">
-          <p className="text-xs text-muted deva">{t("wfx.integrateSub")}</p>
-          <CopyBlock text={snippet} />
-          <p className="text-xs text-muted deva">{t("wfx.integrateNote")}</p>
-        </div>
-      )}
+      </div>
+      <p className="mt-1 text-xs text-muted deva">{t("wfx.integrateSub")}</p>
+
+      <div className="mt-3 grid gap-2.5">
+        {step(t("wfx.intKey"), t("wfx.intKeyDesc"),
+          <code className="inline-block rounded-md bg-mist px-2 py-1 text-xs text-graphite">x-api-key: {DEMO_API_KEY}</code>)}
+        {step(t("wfx.intCall"), t("wfx.integrateNote"), <CopyBlock text={snippet} />)}
+        {step(t("wfx.intBack"), t("wfx.intBackDesc"))}
+        {step(t("wfx.intAuto"), t("wfx.intAutoDesc"))}
+      </div>
+
+      <p className="mt-3 text-center text-[11px] font-medium" style={{ color: accent }}>{t("wfx.intBilling")}</p>
     </div>
   );
 }
