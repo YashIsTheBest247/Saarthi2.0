@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, Mic } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { featureByKey, KEEP_KEYS } from "../lib/features";
-import { callFeature, getEmployees, Employee, FeatureKey } from "../lib/api";
+import { callFeature, Employee, FeatureKey } from "../lib/api";
+import { useEmployees } from "../lib/useEmployees";
 import { routeToAgent } from "../lib/route";
 import { AgentAvatar } from "./AgentAvatar";
 import { BrandMark } from "./Logo";
@@ -43,8 +44,7 @@ export function FloatingChat({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const [glowDone, setGlowDone] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([{ id: 0, from: "bot", text: t("chat.greet") }]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const hire = (id: string) => { window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } })); setOpen(false); };
   const bodyRef = useRef<HTMLDivElement>(null);
 

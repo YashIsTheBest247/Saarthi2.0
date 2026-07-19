@@ -8,6 +8,7 @@ import { ActionBar } from "../components/ActionBar";
 import { clean } from "../lib/text";
 import { linkify } from "../lib/linkify";
 import { getEmployees, assignEmployeeTask, getWorkforceMe, generateDoc, fileToInlineData, Employee, EmployeeRun, WorkforceMe } from "../lib/api";
+import { wfLoc } from "../lib/wfI18n";
 import { getHired, getRuns, hire, fire, recordRun, DEMO_API_KEY, HiredEmployee, FleetRun } from "../lib/fleet";
 import { roleIcon } from "../lib/roleIcons";
 import { Integrations } from "./Integrations";
@@ -32,8 +33,9 @@ function dl(name: string, content: string, mime: string) {
 }
 
 export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => void; initialId?: string; initialCustom?: boolean }) {
-  const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { t, lang } = useApp();
+  const [rawEmployees, setRawEmployees] = useState<Employee[]>([]);
+  const employees = useMemo(() => rawEmployees.map((e) => ({ ...e, ...wfLoc(e, lang.iso === "hi") })), [rawEmployees, lang.iso]);
   const [sel, setSel] = useState<Employee | null>(null);
   const [custom, setCustom] = useState(false);
   const [me, setMe] = useState<WorkforceMe | null>(null);
@@ -42,7 +44,7 @@ export function Workforce({ onBack, initialId, initialCustom }: { onBack: () => 
   const runRef = useRef<HTMLDivElement>(null);
   const seeded = useRef(false); // apply the landing preselection only once
 
-  useEffect(() => { getEmployees().then(setEmployees); getWorkforceMe().then(setMe); }, [tick]);
+  useEffect(() => { getEmployees().then(setRawEmployees); getWorkforceMe().then(setMe); }, [tick]);
   const bump = () => setTick((n) => n + 1);
 
   // preselect an employee (or the custom panel) when opened from a landing chip

@@ -521,6 +521,8 @@ const en: Dict = {
   "footer.contact": "Contact",
   "footer.privacy": "Privacy",
   "footer.rights": "Made for India · All Rights Reserved",
+  "footer.dev": "Connect with the developer",
+  "footer.portfolio": "Portfolio",
 
   "chat.title": "Saarthi Assistant",
   "chat.subtitle": "Finds your right agent",
@@ -1280,6 +1282,8 @@ const hi: Dict = {
   "footer.contact": "संपर्क",
   "footer.privacy": "प्राइवेसी",
   "footer.rights": "भारत के लिए बना · सर्वाधिकार सुरक्षित",
+  "footer.dev": "डेवलपर से जुड़ें",
+  "footer.portfolio": "पोर्टफ़ोलियो",
 
   "chat.title": "सारथी असिस्टेंट",
   "chat.subtitle": "आपका सही एजेंट ढूँढे",

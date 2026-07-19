@@ -155,9 +155,17 @@ export function VoiceAvatar({ photo = "/host.jpg", name = "Saarthi", accent = "#
     return () => { try { window.speechSynthesis?.removeEventListener?.("voiceschanged", load); } catch { /* noop */ } };
   }, [speechLang]);
 
-  // map a profile to a real, distinct system voice (wrap to the last if fewer exist)
+  // map a profile to a real, distinct system voice (wrap to the last if fewer exist).
+  // In a non-English language, keep to that language's voices so it pronounces
+  // correctly; if none are installed, return undefined so u.lang guides the engine.
   const voiceForProfile = (vp: VoiceChoice): SpeechSynthesisVoice | undefined => {
     const sv = sysVoicesRef.current;
+    const base = speechLang.split("-")[0];
+    if (base !== "en") {
+      const langVoices = sv.filter((v) => v.lang?.startsWith(base));
+      if (!langVoices.length) return undefined;
+      return langVoices[vp.voiceIndex] || langVoices[langVoices.length - 1] || langVoices[0];
+    }
     return sv[vp.voiceIndex] || sv[sv.length - 1] || sv[0];
   };
 

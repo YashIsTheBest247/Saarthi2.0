@@ -4,7 +4,8 @@ import { ChevronDown, ArrowUpRight, ArrowRight, Phone, Menu as MenuIcon, X, Sun,
 import { useApp } from "../app/AppContext";
 import { LanguagePicker } from "./LanguagePicker";
 import { VISIBLE_FEATURES as FEATURES, FeatureMeta } from "../lib/features";
-import { FeatureKey, getEmployees, Employee } from "../lib/api";
+import { FeatureKey, Employee } from "../lib/api";
+import { useEmployees } from "../lib/useEmployees";
 import { AgentAvatar } from "./AgentAvatar";
 import { roleIcon } from "../lib/roleIcons";
 import { BrandMark } from "./Logo";
@@ -16,8 +17,7 @@ function AgentsMega({ onOpen, dark }: { onOpen: (k: FeatureKey) => void; dark: b
   const [open, setOpen] = useState(false);
   type Sel = { kind: "agent"; f: FeatureMeta } | { kind: "emp"; e: Employee };
   const [sel, setSel] = useState<Sel>({ kind: "agent", f: FEATURES[0] });
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const ref = useRef<HTMLDivElement>(null);
 

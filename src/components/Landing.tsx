@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, VISIBLE_FEATURES, FeatureMeta, featureByKey } from "../lib/features";
-import { FeatureKey, getEmployees, Employee } from "../lib/api";
+import { FeatureKey, Employee } from "../lib/api";
+import { useEmployees } from "../lib/useEmployees";
 import { roleIcon } from "../lib/roleIcons";
 import { hireAsEmployee } from "../lib/hire";
 import { Reveal, Eyebrow } from "./ui";
@@ -88,8 +89,7 @@ function VerticalMarquee({ iso }: { iso: string }) {
 /* ------------------------------ Hero ------------------------------ */
 function Hero(_: { onOpen: (k?: FeatureKey) => void }) {
   const { t, lang } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   return (
     <section id="hero" className="relative isolate overflow-hidden bg-[#15110D] text-white">
       {/* background portrait */}
@@ -435,8 +435,7 @@ type Slide = { type: "agent"; f: FeatureMeta } | { type: "emp"; e: Employee };
 
 function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const slides: Slide[] = [
     ...VISIBLE_FEATURES.map((f) => ({ type: "agent" as const, f })),
     ...employees.map((e) => ({ type: "emp" as const, e })),
@@ -775,8 +774,7 @@ function OrchestratorIntro() {
 /* ----------------------- AI Workforce (B2B) ----------------------- */
 function WorkforceIntro() {
   const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const open = (detail: { id?: string; custom?: boolean } = {}) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail }));
   const steps = [
     { n: "01", icon: Users, t: t("wfl.s1t"), d: t("wfl.s1d") },
@@ -834,8 +832,7 @@ function WorkforceIntro() {
 /* ---------------------- Big agent photo cards ---------------------- */
 function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">
@@ -924,8 +921,7 @@ function AgentsGrid({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
 /* ---------------------- Team panel with tabs ---------------------- */
 function TeamPanel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
   const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const tabs = [
     { id: "all", label: t("team.tabAll"), match: (_: FeatureMeta) => true },
@@ -1190,8 +1186,7 @@ function FooterCol({ title, children }: { title: string; children: ReactNode }) 
 
 function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
   const { t } = useApp();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  useEffect(() => { getEmployees().then(setEmployees); }, []);
+  const employees = useEmployees();
   const hire = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workforce", { detail: { id } }));
   const link = "text-left text-linen/55 transition-colors hover:text-linen deva";
   return (
@@ -1260,10 +1255,10 @@ function Footer({ onOpen }: { onOpen: (k?: FeatureKey) => void }) {
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-7 text-sm text-linen/40 sm:flex-row">
           <span className="deva">© 2026 Saarthi · {t("footer.rights")}</span>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="font-medium text-linen/70">Connect with the developer</span>
+            <span className="font-medium text-linen/70 deva">{t("footer.dev")}</span>
             <a href="https://yash-munshi.vercel.app/" target="_blank" rel="noreferrer"
                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-linen/70 transition-colors hover:border-white/40 hover:text-linen">
-              <Globe className="h-4 w-4" /> Portfolio
+              <Globe className="h-4 w-4" /> <span className="deva">{t("footer.portfolio")}</span>
             </a>
             <a href="https://github.com/YashIsTheBest247" target="_blank" rel="noreferrer"
                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-linen/70 transition-colors hover:border-white/40 hover:text-linen">
