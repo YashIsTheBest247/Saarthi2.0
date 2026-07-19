@@ -11,6 +11,7 @@ const emergencyNum = new Map(); // chatId -> "+91…"
 const pendingSos = new Map();   // chatId -> { num, situation }
 const lastLoc = new Map();      // chatId -> { lat, lng, ts }
 const pendingWf = new Map();    // chatId -> { empId, task, ts } — employee awaiting more input
+const docStore = new Map();     // chatId -> { title, paragraphs, artifacts?, srt? } — last answer, for on-demand PDF
 const recentLoc = (id) => { const l = lastLoc.get(id); return l && Date.now() - l.ts < 15 * 60 * 1000 ? l : null; };
 const SOS_RE = /\b(accident|emergency|injured|injury|bleeding|unconscious|collapse|trapped|fire|drowning|attack|assault|harass(?:ing|ed|ment)?|stalk(?:ing|er)?|following me|unsafe|molest|kidnap|abduct|suicide|fainted|heart attack|stroke|snake ?bite|electrocut|gas leak|landslide|flood|save me|help me)\b|दुर्घटना|आपातकाल|घायल|बचाओ|आग लग|हादसा|पीछा कर|छेड़|असुरक्षित/i;
 
@@ -21,6 +22,14 @@ const APP_URL = (process.env.APP_URL || "").replace(/\/api\/.*$/i, "").replace(/
 const API = (m) => `https://api.telegram.org/bot${TOKEN}/${m}`;
 
 const isHindi = (s) => /[ऀ-ॿ]/.test(s || "");
+
+// The user wants an explainer video → hand off to Pragyan. Needs a "video" word AND a
+// generate/explain intent, so "my video shop needs GST" doesn't misroute.
+function wantsVideo(text) {
+  const t = text || "";
+  return (/\b(video|reel|animation)\b/i.test(t) || /वीडियो|रील|एनिमेशन/.test(t)) &&
+    (/\b(make|create|generat|convert|turn|explain|banao?|samjha)\b/i.test(t) || /बनाओ|बना|समझा|समझ नहीं|दिखा/.test(t));
+}
 
 const SUGGESTIONS = ["Which govt scheme can I claim?", "Explain this bill / notice", "How do I register on Udyam?"];
 // The consumer specialists (kept in the app).
@@ -66,6 +75,13 @@ const mainKeyboard = () => ({
     [{ text: "👥 Browse agents", callback_data: "menu" }, { text: "🏢 Hire an AI employee", callback_data: "wf" }],
   ],
 });
+// like mainKeyboard, but with a "Download PDF" button on top (shown after an answer)
+const dlKeyboard = (hin = false) => ({
+  inline_keyboard: [
+    [{ text: hin ? "📄 PDF डाउनलोड करें" : "📄 Download PDF", callback_data: "dl" }],
+    [{ text: "👥 Browse agents", callback_data: "menu" }, { text: "🏢 Hire an AI employee", callback_data: "wf" }],
+  ],
+});
 const agentsKeyboard = () => {
   const rows = [];
   for (let i = 0; i < AGENTS.length; i += 2) rows.push(AGENTS.slice(i, i + 2).map((a) => ({ text: a.name, callback_data: `a:${a.key}` })));
@@ -103,6 +119,20 @@ async function tgDocument(chatId, buffer, filename, mime, caption) {
     const res = await fetch(API("sendDocument"), { method: "POST", body: form });
     return await res.json();
   } catch (err) { console.error("[telegram] sendDocument", err?.message || err); return null; }
+}
+
+// Build & send the last answer's documents (PDF + any artefacts/subtitles) on demand.
+async function sendStoredDocs(chatId) {
+  const d = docStore.get(String(chatId));
+  if (!d || !d.paragraphs?.length) { await send(chatId, "Nothing to download right now — ask me something first. 🙂"); return; }
+  try {
+    tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
+    const content = { title: d.title, kind: "document", sections: [{ heading: "", paragraphs: d.paragraphs }], slides: [], wordCount: d.paragraphs.join(" ").split(/\s+/).length };
+    const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
+    await tgDocument(chatId, Buffer.from(buf), `${slug(d.title)}.pdf`, "application/pdf", `📄 ${d.title}`);
+    for (const a of (d.artifacts || [])) await tgDocument(chatId, Buffer.from(String(a.content), "utf8"), a.filename || "file.txt", a.mime || "text/plain", `📎 ${a.label || "File"}`);
+    if (d.srt) await tgDocument(chatId, Buffer.from(d.srt, "utf8"), `${slug(d.title)}.srt`, "application/x-subrip", "📝 Subtitles (.srt)");
+  } catch (err) { console.error("[telegram] download", err?.message || err); }
 }
 
 // Rotate an "engagement" status through stages while a slow task runs, editing one
@@ -155,22 +185,21 @@ async function runAssist(chatId, text, agentHint) {
   let reply = `${body}\n\n— ${name}`;
   if (APP_URL && agent && NAME[agent]) reply += `\n\nOpen ${name} in the app: ${APP_URL}/?agent=${encodeURIComponent(agent)}&q=${encodeURIComponent(text)}`;
 
-  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
-  else await send(chatId, reply, { reply_markup: mainKeyboard() });
-
-  // 📄 send the answer as a downloadable PDF report (every agent, for any substantive reply)
-  if (!data._mock && data.reply && String(data.reply).trim().length > 160) {
-    try {
-      tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
-      const hin = language === "Hindi";
-      const title = `${name} — ${hin ? "सारथी रिपोर्ट" : "Saarthi report"}`;
-      const src = `${text ? (hin ? "आपका सवाल: " : "Your question: ") + text + "\n\n" : ""}${data.reply}`;
-      const paragraphs = String(src).split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
-      const content = { title, kind: "document", sections: [{ heading: "", paragraphs: paragraphs.length ? paragraphs : [src] }], slides: [], wordCount: String(data.reply).split(/\s+/).length };
-      const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
-      await tgDocument(chatId, Buffer.from(buf), `${slug(title)}.pdf`, "application/pdf", `📄 ${title}`);
-    } catch (err) { console.error("[telegram] assist pdf", err?.message || err); }
+  const hin = language === "Hindi";
+  // store the answer so the user can download a PDF on demand (no auto-send)
+  const canDl = !data._mock && data.reply && String(data.reply).trim().length > 160;
+  if (canDl) {
+    const title = `${name} — ${hin ? "सारथी रिपोर्ट" : "Saarthi report"}`;
+    const src = `${text ? (hin ? "आपका सवाल: " : "Your question: ") + text + "\n\n" : ""}${data.reply}`;
+    const paragraphs = String(src).split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
+    docStore.set(String(chatId), { title, paragraphs });
+  } else {
+    docStore.delete(String(chatId));
   }
+  const kb = canDl ? dlKeyboard(hin) : mainKeyboard();
+
+  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: kb });
+  else await send(chatId, reply, { reply_markup: kb });
 
   // Emergency: offer to text the user's saved contact (ask once).
   if (SOS_RE.test(text)) {
@@ -220,30 +249,26 @@ async function runPragyan(chatId, title) {
     (data._mock ? "\n\n(sample script — add a Gemini key for a fully custom reel)" : "");
   await edit(final);
 
-  // 📄 the reel script as a PDF + 📝 subtitles as an .srt file
+  // store the reel script (+ subtitles) for on-demand download
   const scenes = Array.isArray(data.scenes) ? data.scenes : [];
+  let canDl = false;
   if (!data._mock && scenes.length) {
-    try {
-      tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
-      const scriptText =
-        `${data.hook || ""}\n\n` +
-        scenes.map((s, i) => `${i + 1}. ${s.narration}${s.caption ? `\n[${s.caption}]` : ""}`).join("\n\n") +
-        (data.description ? `\n\n${data.description}` : "") + (tags ? `\n\n${tags}` : "");
-      const paragraphs = scriptText.split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
-      const content = { title: data.title || "Pragyan reel", kind: "document", sections: [{ heading: "", paragraphs }], slides: [], wordCount: scriptText.split(/\s+/).length };
-      const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
-      await tgDocument(chatId, Buffer.from(buf), `${slug(data.title || "reel")}-script.pdf`, "application/pdf", `📄 ${data.title || "Reel"} — script`);
-
-      // subtitles (.srt)
-      const pad = (n) => String(n).padStart(2, "0");
-      const tc = (s) => `00:${pad(Math.floor(s / 60))}:${pad(Math.floor(s % 60))},000`;
-      let acc = 0;
-      const srt = scenes.map((s, i) => { const a = acc, b = acc + (s.seconds || 5); acc = b; return `${i + 1}\n${tc(a)} --> ${tc(b)}\n${s.narration}\n`; }).join("\n");
-      await tgDocument(chatId, Buffer.from(srt, "utf8"), `${slug(data.title || "reel")}.srt`, "application/x-subrip", "📝 Subtitles (.srt)");
-    } catch (err) { console.error("[telegram] pragyan docs", err?.message || err); }
+    const scriptText =
+      `${data.hook || ""}\n\n` +
+      scenes.map((s, i) => `${i + 1}. ${s.narration}${s.caption ? `\n[${s.caption}]` : ""}`).join("\n\n") +
+      (data.description ? `\n\n${data.description}` : "") + (tags ? `\n\n${tags}` : "");
+    const paragraphs = scriptText.split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
+    const pad = (n) => String(n).padStart(2, "0");
+    const tc = (s) => `00:${pad(Math.floor(s / 60))}:${pad(Math.floor(s % 60))},000`;
+    let acc = 0;
+    const srt = scenes.map((s, i) => { const a = acc, b = acc + (s.seconds || 5); acc = b; return `${i + 1}\n${tc(a)} --> ${tc(b)}\n${s.narration}\n`; }).join("\n");
+    docStore.set(String(chatId), { title: data.title || "Pragyan reel", paragraphs, srt });
+    canDl = true;
+  } else {
+    docStore.delete(String(chatId));
   }
 
-  await send(chatId, "Make another?", { reply_markup: mainKeyboard() });
+  await send(chatId, "🎬 Script & subtitles are ready.", { reply_markup: canDl ? dlKeyboard(isHindi(title)) : mainKeyboard() });
 }
 
 // AI Workforce: assign a task to a hireable AI employee and hand back the finished
@@ -275,26 +300,19 @@ async function runEmployeeTask(chatId, empId, text, image) {
     ? `🏢 ${e.name} · ${e.short}\n\n${hin ? "मैं यह पूरा काम कर सकता हूँ — पर अभी AI सेवा व्यस्त है। पूरा चलाने के लिए ऐप खोलें 👇" : "I can do this end-to-end — but the AI service is busy right now. Open the app to run me in full 👇"}${link ? `\n${link}` : ""}`
     : `🏢 ${e.name} · ${e.short}\n\n${r?.headline || "Done."}\n\n${deliverable}${link ? `\n\n▶️ ${hin ? "ऐप में खोलें (डाउनलोड, कैलेंडर, इंटीग्रेट)" : "Open in the app (downloads, calendar, integrate)"}: ${link}` : ""}`;
 
-  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
-  else await send(chatId, reply, { reply_markup: mainKeyboard() });
-
-  if (mock || !r?.deliverable) return;
-
-  // 📄 the finished deliverable as a downloadable PDF report
-  try {
-    tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
+  // store the deliverable (+ integration artefacts) for on-demand download
+  const canDl = !mock && r?.deliverable;
+  if (canDl) {
     const title = r.headline || `${e.name} — ${e.short}`;
     const paragraphs = String(r.deliverable).split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
-    const content = { title, kind: "document", sections: [{ heading: "", paragraphs: paragraphs.length ? paragraphs : [String(r.deliverable)] }], slides: [], wordCount: String(r.deliverable).split(/\s+/).length };
-    const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
-    await tgDocument(chatId, Buffer.from(buf), `${slug(title)}.pdf`, "application/pdf", `📄 ${title}`);
-  } catch (err) { console.error("[telegram] report pdf", err?.message || err); }
-
-  // 📎 integration artefacts (Tally XML, e-way JSON) as files, where produced
-  for (const a of (out?.artifacts || [])) {
-    try { await tgDocument(chatId, Buffer.from(String(a.content), "utf8"), a.filename || `${a.type}.txt`, a.mime || "text/plain", `📎 ${a.label || a.type}`); }
-    catch (err) { console.error("[telegram] artefact", err?.message || err); }
+    docStore.set(String(chatId), { title, paragraphs: paragraphs.length ? paragraphs : [String(r.deliverable)], artifacts: out?.artifacts || [] });
+  } else {
+    docStore.delete(String(chatId));
   }
+  const kb = canDl ? dlKeyboard(hin) : mainKeyboard();
+
+  if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: kb });
+  else await send(chatId, reply, { reply_markup: kb });
 }
 
 // Download a Telegram photo/document to a Gemini inlineData part (base64).
@@ -367,6 +385,8 @@ export async function handleTelegram(req, res) {
         await send(chatId, "Pick an expert to talk to:", { reply_markup: agentsKeyboard() });
       } else if (data === "wf") {
         await send(chatId, "🏢 Hire an AI employee — pick one, then reply with your task and it hands back finished work:", { reply_markup: wfKeyboard() });
+      } else if (data === "dl") {
+        await sendStoredDocs(chatId);
       } else if (data.startsWith("q:")) {
         await runAssist(chatId, data.slice(2));
       } else if (data.startsWith("a:")) {
@@ -475,6 +495,17 @@ export async function handleTelegram(req, res) {
     // replying to a "talk to <agent>" prompt → force that agent
     const tag = repliedTo.match(/#([a-z]+)/);
     const agentHint = tag && NAME[tag[1]] ? tag[1] : undefined; // pass the agent KEY to the model
+
+    // Cross-agent handoff: even mid-conversation with another agent, if the ask needs a
+    // video/explainer, pass control to Pragyan — using the current message + the prior
+    // agent's answer as the topic context. (runAssist already routes other domains.)
+    if (agentHint !== "pragyan" && wantsVideo(text)) {
+      const priorCtx = repliedTo && !/#/.test(repliedTo) ? repliedTo.replace(/\s+/g, " ").slice(0, 400) : "";
+      const topic = priorCtx ? `${text}. Explain this topic simply: ${priorCtx}` : text;
+      await send(chatId, `🔀 ${isHindi(text) ? "इसे प्रज्ञान को भेज रहा हूँ — एक आसान एक्सप्लेनर वीडियो के लिए…" : "Passing this to Pragyan to make a simple explainer video…"}`);
+      await runPragyan(chatId, topic);
+      return;
+    }
 
     if (agentHint === "pragyan") await runPragyan(chatId, text);
     else await runAssist(chatId, text, agentHint);
