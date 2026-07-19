@@ -535,10 +535,10 @@ function FlagshipCarousel({ onOpen }: { onOpen: (k: FeatureKey) => void }) {
 
 /* -------------------------- Truly Agentic -------------------------- */
 const FLOWS = [
-  { id: "resolve-grievance", title: "Decode → Complaint → Schedule", desc: "A confusing notice becomes a filed complaint with deadlines.", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"] },
-  { id: "msme-launch", title: "Register → Schemes → Plan", desc: "A business idea becomes the exact Udyam/GST path, the MSME loans you qualify for, and a launch plan.", accent: "#138A72", agents: ["udyam", "haq", "samay"] },
-  { id: "health-savings", title: "Decode Rx → Refill reminders", desc: "Cheaper generics, then timely refill reminders.", accent: "#C0453B", agents: ["sehat", "samay"] },
-  { id: "explainer", title: "Topic → Explainer video → Schedule", desc: "Any topic becomes a short explainer script, then scheduled posts.", accent: "#6D4AA7", agents: ["pragyan", "samay"] },
+  { id: "resolve-grievance", titleKey: "flow.grievance.t", descKey: "flow.grievance.d", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"] },
+  { id: "msme-launch", titleKey: "flow.msme.t", descKey: "flow.msme.d", accent: "#138A72", agents: ["udyam", "haq", "samay"] },
+  { id: "health-savings", titleKey: "flow.health.t", descKey: "flow.health.d", accent: "#C0453B", agents: ["sehat", "samay"] },
+  { id: "explainer", titleKey: "flow.explainer.t", descKey: "flow.explainer.d", accent: "#6D4AA7", agents: ["pragyan", "samay"] },
 ];
 
 function FlowChain({ agents }: { agents: string[] }) {
@@ -555,9 +555,9 @@ function FlowChain({ agents }: { agents: string[] }) {
                 <span className="whitespace-nowrap text-xs font-semibold text-ink deva">{t(m.nameKey)}</span>
               </span>
             ) : a === "weather" ? (
-              <span className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-1 pl-2 pr-2.5 text-[#0E8FA8]"><CloudRain className="h-4 w-4" /><span className="text-xs font-semibold">Weather</span></span>
+              <span className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-1 pl-2 pr-2.5 text-[#0E8FA8]"><CloudRain className="h-4 w-4" /><span className="text-xs font-semibold deva">{t("flow.weather")}</span></span>
             ) : (
-              <span className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-1 pl-2 pr-2.5 text-[#C0453B]"><Siren className="h-4 w-4" /><span className="text-xs font-semibold">SOS</span></span>
+              <span className="flex items-center gap-1.5 rounded-full border border-line bg-paper py-1 pl-2 pr-2.5 text-[#C0453B]"><Siren className="h-4 w-4" /><span className="text-xs font-semibold">{t("flow.sos")}</span></span>
             )}
             {i < agents.length - 1 && <ArrowRight className="h-3.5 w-3.5 flex-none text-faint" />}
           </div>
@@ -568,27 +568,28 @@ function FlowChain({ agents }: { agents: string[] }) {
 }
 
 function TrulyAgentic() {
+  const { t } = useApp();
   const open = () => window.dispatchEvent(new Event("saarthi:workflows"));
   const openWf = (id: string) => window.dispatchEvent(new CustomEvent("saarthi:workflows", { detail: { id } }));
   const openBuilder = () => window.dispatchEvent(new CustomEvent("saarthi:workflows", { detail: { build: true } }));
   return (
     <section className="mx-auto max-w-6xl px-5 py-16">
       <Reveal className="max-w-2xl">
-        <Eyebrow>Truly Agentic</Eyebrow>
-        <h2 className="display mt-4 text-balance text-4xl font-bold tracking-tight deva sm:text-5xl">One ask, a whole team of agents.</h2>
-        <p className="mt-4 text-lg text-muted deva">Not one model answering — Saarthi <b>chains specialists end-to-end</b>, each agent's output feeding the next. An AI planner picks the right chain for your problem.</p>
+        <Eyebrow>{t("agentic.eyebrow")}</Eyebrow>
+        <h2 className="display mt-4 text-balance text-4xl font-bold tracking-tight deva sm:text-5xl">{t("agentic.title")}</h2>
+        <p className="mt-4 text-lg text-muted deva">{t("agentic.sub")}</p>
       </Reveal>
 
       <div className="mt-10 grid gap-4 lg:grid-cols-2">
         {FLOWS.map((fl, i) => (
-          <Reveal key={fl.title} delay={(i % 2) * 0.06}>
+          <Reveal key={fl.id} delay={(i % 2) * 0.06}>
             <button onClick={() => openWf(fl.id)} className="group flex h-full w-full flex-col rounded-2xl border border-line bg-paper p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-white" style={{ background: fl.accent }}><Workflow className="h-4 w-4" /></span>
-                <span className="display text-lg font-bold deva">{fl.title}</span>
+                <span className="display text-lg font-bold deva">{t(fl.titleKey)}</span>
                 <ArrowUpRight className="ml-auto h-4 w-4 text-faint transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-muted deva">{fl.desc}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted deva">{t(fl.descKey)}</p>
               <div className="mt-4"><FlowChain agents={fl.agents} /></div>
             </button>
           </Reveal>
@@ -596,8 +597,8 @@ function TrulyAgentic() {
       </div>
 
       <Reveal className="mt-8 flex flex-wrap gap-3">
-        <button onClick={open} className="btn-primary text-[15px]"><Workflow className="h-4 w-4" /> Run an agentic workflow <ArrowRight className="h-4 w-4" /></button>
-        <button onClick={openBuilder} className="btn border border-line bg-paper px-5 py-3 text-[15px] text-ink hover:-translate-y-0.5"><Plus className="h-4 w-4" /> Build your own workflow</button>
+        <button onClick={open} className="btn-primary text-[15px]"><Workflow className="h-4 w-4" /> {t("agentic.run")} <ArrowRight className="h-4 w-4" /></button>
+        <button onClick={openBuilder} className="btn border border-line bg-paper px-5 py-3 text-[15px] text-ink hover:-translate-y-0.5"><Plus className="h-4 w-4" /> {t("agentic.build")}</button>
       </Reveal>
     </section>
   );
