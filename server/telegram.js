@@ -158,6 +158,20 @@ async function runAssist(chatId, text, agentHint) {
   if (mid) await tg("editMessageText", { chat_id: chatId, message_id: mid, text: reply, disable_web_page_preview: true, reply_markup: mainKeyboard() });
   else await send(chatId, reply, { reply_markup: mainKeyboard() });
 
+  // 📄 send the answer as a downloadable PDF report (every agent, for any substantive reply)
+  if (!data._mock && data.reply && String(data.reply).trim().length > 160) {
+    try {
+      tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
+      const hin = language === "Hindi";
+      const title = `${name} — ${hin ? "सारथी रिपोर्ट" : "Saarthi report"}`;
+      const src = `${text ? (hin ? "आपका सवाल: " : "Your question: ") + text + "\n\n" : ""}${data.reply}`;
+      const paragraphs = String(src).split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
+      const content = { title, kind: "document", sections: [{ heading: "", paragraphs: paragraphs.length ? paragraphs : [src] }], slides: [], wordCount: String(data.reply).split(/\s+/).length };
+      const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
+      await tgDocument(chatId, Buffer.from(buf), `${slug(title)}.pdf`, "application/pdf", `📄 ${title}`);
+    } catch (err) { console.error("[telegram] assist pdf", err?.message || err); }
+  }
+
   // Emergency: offer to text the user's saved contact (ask once).
   if (SOS_RE.test(text)) {
     const num = emergencyNum.get(String(chatId));
@@ -205,6 +219,30 @@ async function runPragyan(chatId, title) {
     (link ? `▶️ Watch & play your reel:\n${link}` : "Open the Saarthi app to watch your reel.") +
     (data._mock ? "\n\n(sample script — add a Gemini key for a fully custom reel)" : "");
   await edit(final);
+
+  // 📄 the reel script as a PDF + 📝 subtitles as an .srt file
+  const scenes = Array.isArray(data.scenes) ? data.scenes : [];
+  if (!data._mock && scenes.length) {
+    try {
+      tg("sendChatAction", { chat_id: chatId, action: "upload_document" });
+      const scriptText =
+        `${data.hook || ""}\n\n` +
+        scenes.map((s, i) => `${i + 1}. ${s.narration}${s.caption ? `\n[${s.caption}]` : ""}`).join("\n\n") +
+        (data.description ? `\n\n${data.description}` : "") + (tags ? `\n\n${tags}` : "");
+      const paragraphs = scriptText.split(/\n{2,}/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
+      const content = { title: data.title || "Pragyan reel", kind: "document", sections: [{ heading: "", paragraphs }], slides: [], wordCount: scriptText.split(/\s+/).length };
+      const buf = await buildDoc("pdf", content, { font: "Times New Roman", size: 12 });
+      await tgDocument(chatId, Buffer.from(buf), `${slug(data.title || "reel")}-script.pdf`, "application/pdf", `📄 ${data.title || "Reel"} — script`);
+
+      // subtitles (.srt)
+      const pad = (n) => String(n).padStart(2, "0");
+      const tc = (s) => `00:${pad(Math.floor(s / 60))}:${pad(Math.floor(s % 60))},000`;
+      let acc = 0;
+      const srt = scenes.map((s, i) => { const a = acc, b = acc + (s.seconds || 5); acc = b; return `${i + 1}\n${tc(a)} --> ${tc(b)}\n${s.narration}\n`; }).join("\n");
+      await tgDocument(chatId, Buffer.from(srt, "utf8"), `${slug(data.title || "reel")}.srt`, "application/x-subrip", "📝 Subtitles (.srt)");
+    } catch (err) { console.error("[telegram] pragyan docs", err?.message || err); }
+  }
+
   await send(chatId, "Make another?", { reply_markup: mainKeyboard() });
 }
 
