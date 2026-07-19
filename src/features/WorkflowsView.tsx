@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Workflow, Play, Loader2, Siren, CloudRain, CheckCircle2, Sparkle, Circle, CalendarPlus } from "lucide-react";
 import { useApp } from "../app/AppContext";
@@ -12,13 +12,13 @@ import { notify, downloadTasksICS } from "../lib/reminders";
 import { WorkflowBuilder } from "./WorkflowBuilder";
 import { Plus } from "lucide-react";
 
-interface WfMeta { id: string; k: string; accent: string; agents: string[]; example: string }
+interface WfMeta { id: string; k: string; accent: string; agents: string[]; example: string; exampleHi: string }
 
 const WF: WfMeta[] = [
-  { id: "resolve-grievance", k: "wf.grievance", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"], example: "I ordered a phone for ₹15,000; it came damaged and the seller refuses a refund." },
-  { id: "msme-launch", k: "wf.msme", accent: "#138A72", agents: ["udyam", "haq", "samay"], example: "I want to start a small home-based pickle unit and sell online. What registrations, licences and schemes do I need?" },
-  { id: "health-savings", k: "wf.health", accent: "#C0453B", agents: ["sehat", "samay"], example: "Glycomet 500 twice daily, Ecosprin 75 after dinner." },
-  { id: "explainer", k: "wf.explainer", accent: "#6D4AA7", agents: ["pragyan", "samay"], example: "Explain how UPI works in simple terms, for a 60-second video." },
+  { id: "resolve-grievance", k: "wf.grievance", accent: "#2F6F8F", agents: ["samajh", "setu", "samay"], example: "I ordered a phone for ₹15,000; it came damaged and the seller refuses a refund.", exampleHi: "मैंने ₹15,000 का फ़ोन मंगाया; वह खराब आया और विक्रेता रिफंड देने से इनकार कर रहा है।" },
+  { id: "msme-launch", k: "wf.msme", accent: "#138A72", agents: ["udyam", "haq", "samay"], example: "I want to start a small home-based pickle unit and sell online. What registrations, licences and schemes do I need?", exampleHi: "मैं घर से एक छोटी अचार यूनिट शुरू करके ऑनलाइन बेचना चाहता हूँ। मुझे कौन-कौन से रजिस्ट्रेशन, लाइसेंस और योजनाएँ चाहिए?" },
+  { id: "health-savings", k: "wf.health", accent: "#C0453B", agents: ["sehat", "samay"], example: "Glycomet 500 twice daily, Ecosprin 75 after dinner.", exampleHi: "ग्लाइकोमेट 500 दिन में दो बार, इकोस्प्रिन 75 रात के खाने के बाद।" },
+  { id: "explainer", k: "wf.explainer", accent: "#6D4AA7", agents: ["pragyan", "samay"], example: "Explain how UPI works in simple terms, for a 60-second video.", exampleHi: "UPI कैसे काम करता है, इसे सरल शब्दों में 60-सेकंड के वीडियो के लिए समझाएँ।" },
 ];
 
 const agentMeta = (k: string) => FEATURES.find((f) => f.key === (k as FeatureKey));
@@ -113,10 +113,17 @@ function Chain({ agents }: { agents: string[] }) {
 
 export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () => void; initialId?: string; initialBuild?: boolean }) {
   const { t, lang } = useApp();
+  const hi = lang.iso === "hi";
+  const ex = (w: WfMeta) => (hi ? w.exampleHi : w.example); // sample task in the current language
   const preset = initialId ? WF.find((w) => w.id === initialId) ?? null : null;
   const [sel, setSel] = useState<WfMeta | null>(preset);
   const [building, setBuilding] = useState(!!initialBuild);
-  const [seed, setSeed] = useState(preset?.example ?? "");
+  const [seed, setSeed] = useState(preset ? ex(preset) : "");
+  // when the language flips, re-fill the sample in the new language (unless the user edited it)
+  useEffect(() => {
+    if (sel) setSeed((s) => (s === sel.example || s === sel.exampleHi ? ex(sel) : s));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang.iso]);
   const [running, setRunning] = useState(false);
   const [active, setActive] = useState(-1); // index currently executing (-1 = none)
   const [steps, setSteps] = useState<StepResult[]>([]);
@@ -200,7 +207,7 @@ export function WorkflowsView({ onBack, initialId, initialBuild }: { onBack: () 
             </div>
           </button>
           {WF.map((wf) => (
-            <button key={wf.id} onClick={() => { setSel(wf); setSeed(wf.example); setSteps([]); setDone(false); setError(""); }} className="card p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
+            <button key={wf.id} onClick={() => { setSel(wf); setSeed(ex(wf)); setSteps([]); setDone(false); setError(""); }} className="card p-5 text-left transition-all hover:-translate-y-1 hover:shadow-float">
               <div className="display text-lg font-bold deva">{t(`${wf.k}.t`)}</div>
               <p className="mt-1 text-sm leading-relaxed text-muted deva">{t(`${wf.k}.d`)}</p>
               <div className="mt-4"><Chain agents={wf.agents} /></div>

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, ImagePlus, X, FileText, Loader2, CheckCircle2, Crown, UserCheck, CalendarPlus, CloudRain, AlertTriangle, MessageCircle, ChevronDown, Zap, Sparkles } from "lucide-react";
 import { useApp } from "../app/AppContext";
 import { FEATURES, VISIBLE_FEATURES, featureByKey } from "../lib/features";
 import { callFeature, fileToInlineData, FeatureKey, planAgent, runAgentStep, synthesizeAgent, getEmployees, Employee, AgentStepResult, AgentFinal } from "../lib/api";
+import { wfLoc } from "../lib/wfI18n";
 import { AgentAvatar } from "../components/AgentAvatar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CopyBlock } from "../components/ui";
@@ -57,9 +58,10 @@ export function Orchestrator({ onBack }: { onBack: () => void }) {
   const [mode, setMode] = useState<"guided" | "auto">("auto"); // auto = fully agentic plan→act→reflect→synthesise
   const [plan, setPlan] = useState<{ agent: string; task: string; why?: string }[]>([]); // the live-generated plan
   const [final, setFinal] = useState<AgentFinal | null>(null); // the synthesised deliverable
-  const [employees, setEmployees] = useState<Employee[]>([]);   // AI Workforce, shown as part of Smriti's team
+  const [rawEmployees, setRawEmployees] = useState<Employee[]>([]);   // AI Workforce, shown as part of Smriti's team
   const [empReady, setEmpReady] = useState(false);              // don't lay out the graph until the team is loaded (avoids a relayout flash)
-  useEffect(() => { getEmployees().then((e) => { setEmployees(e); setEmpReady(true); }); }, []);
+  useEffect(() => { getEmployees().then((e) => { setRawEmployees(e); setEmpReady(true); }); }, []);
+  const employees = useMemo(() => rawEmployees.map((e) => ({ ...e, ...wfLoc(e, lang.iso === "hi") })), [rawEmployees, lang.iso]);
   const historyRef = useRef("");                   // accumulated conversation context
 
   // some agents (weather, emergency, khananCopilot) map onto a visible graph node — or none
